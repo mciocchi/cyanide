@@ -29,8 +29,8 @@
                                    (emacs-lock-mode 'kill)
                                    ;; Vert. bookmark list- tracebacks/postmortems
                                    (other-window 1)
-                                   (switch-to-buffer "cyanide-sidebar")
-                                   (setq cyanide-sidebar-search-regexp
+                                   (switch-to-buffer "cyanide-panel")
+                                   (setq cyanide-panel-search-regexp
                                          (concat "\\(defun\\|"
                                                  "defmacro\\|"
                                                  "defmethod\\|"
@@ -47,7 +47,7 @@
                                     (get-buffer-window (current-buffer)) 1)
                                    (emacs-lock-mode 'kill)
                                    ;; Main browsing buffer- square of golden rectangle
-                                   (cyanide-sidebar-enable)
+                                   (cyanide-panel-enable)
                                    (other-window 1)))
                        :disable 'cyanide-default-disabler)
          ;; Every cyanide-view object is stored in this hashtable.
@@ -78,8 +78,8 @@
                                     (get-buffer-window (current-buffer)) 1)
                                    (emacs-lock-mode 'kill)
                                    (other-window 1)
-                                   (switch-to-buffer "cyanide-sidebar")
-                                   (setq cyanide-sidebar-search-regexp
+                                   (switch-to-buffer "cyanide-panel")
+                                   (setq cyanide-panel-search-regexp
                                          (concat
                                           "\\(defun\\|"
                                           "defmacro\\|"
@@ -88,7 +88,7 @@
                                    (emacs-lock-mode 'kill) ;;debug
                                    (set-window-dedicated-p
                                     (get-buffer-window (current-buffer)) 1)
-                                   (cyanide-sidebar-enable)
+                                   (cyanide-panel-enable)
                                    (other-window 1)))
                        :disable 'cyanide-default-disabler)
          cyanide-views)

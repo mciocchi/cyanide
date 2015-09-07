@@ -31,7 +31,7 @@
     
     (require 'find-lisp)
     (require 'cyanide-views)
-    (require 'cyanide-sidebar)
+    (require 'cyanide-panel)
 
     (defvar cyanide-current-view nil
       "This var is used by cyanide to determine what view it's currently in.")
@@ -63,7 +63,7 @@
     (defmethod cyanide-load-project ((proj cyanide-project))
       "Load a cyanide-project"
       ;; Override these hooks to avoid repeatedly running
-      ;; occur in cyanide-sidebar for every new buffer.
+      ;; occur in cyanide-panel for every new buffer.
       (let ((window-configuration-change-hook nil)
             (bookmark-after-jump-hook nil)
             (occur-mode-find-occurrence-hook nil)
@@ -130,7 +130,7 @@
 
     (defun cyanide-default-disabler ()
       (progn
-        (cyanide-sidebar-disable)
+        (cyanide-panel-disable)
         (cyanide-frame-windows-dedicated nil)
         (cyanide-frame-windows-locked nil)
         (delete-other-windows)
