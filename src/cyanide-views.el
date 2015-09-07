@@ -35,14 +35,14 @@
                                                  "defmacro\\|"
                                                  "defmethod\\|"
                                                  "defclass\\|"
-                                                 "class .*:\\|"
-                                                 "class .*{"
-                                                 "interface .*{"
-                                                 "def .*:\\|"
-                                                 "sub .*{\\|"
-                                                 "public .*{\\|"
-                                                 "private .*{\\|"
-                                                 "protected .*{\\|"))
+                                                 "class \\|"
+                                                 "interface .*\{\\|"
+                                                 "def \\|"
+                                                 "sub .*\{\\|"
+                                                 "public .*\{\\|"
+                                                 "private .*\{\\|"
+                                                 "protected .*\{\\)"
+                                                 ))
                                    (set-window-dedicated-p
                                     (get-buffer-window (current-buffer)) 1)
                                    (emacs-lock-mode 'kill)
