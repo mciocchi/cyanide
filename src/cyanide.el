@@ -5,7 +5,8 @@
     (progn
       (define-key map (kbd "C-c c l") 'cyanide-load-project-prompt)
       (define-key map (kbd "C-c c d") 'cyanide-disable-current-view)
-      map)))
+      (define-key map (kbd "C-c c v") 'cyanide-enable-view-prompt)
+      ) map))
 
 (easy-menu-define cyanide-menu cyanide-mode-map "CyanIDE"
 		      '("CyanIDE"
