@@ -29,18 +29,26 @@
                                    (emacs-lock-mode 'kill)
                                    ;; Vert. bookmark list- tracebacks/postmortems
                                    (other-window 1)
-                                   (switch-to-buffer "*Bookmark List*")
-                                   (bookmark-bmenu-list)
+                                   (switch-to-buffer "cyanide-sidebar")
+                                   (setq cyanide-sidebar-search-regexp
+                                         (concat "\\(defun\\|"
+                                                 "defmacro\\|"
+                                                 "defmethod\\|"
+                                                 "defclass\\|"
+                                                 "class .*:\\|"
+                                                 "class .*{"
+                                                 "interface .*{"
+                                                 "def .*:\\|"
+                                                 "sub .*{\\|"
+                                                 "public .*{\\|"
+                                                 "private .*{\\|"
+                                                 "protected .*{\\|"))
                                    (set-window-dedicated-p
                                     (get-buffer-window (current-buffer)) 1)
-                                   (add-hook 'window-configuration-change-hook
-                                             'cyanide-sidebar-match)
-                                   (add-hook 'bookmark-after-jump-hook
-                                             'cyanide-sidebar-match)
-                                   (add-hook 'occur-mode-find-occurrence-hook
-                                             'cyanide-sidebar-match)
+                                   (emacs-lock-mode 'kill)
                                    ;; Main browsing buffer- square of golden rectangle
-                                   (other-window )))
+                                   (cyanide-sidebar-enable)
+                                   (other-window 1)))
                        :disable 'cyanide-default-disabler)
          ;; Every cyanide-view object is stored in this hashtable.
          cyanide-views)
@@ -70,11 +78,17 @@
                                     (get-buffer-window (current-buffer)) 1)
                                    (emacs-lock-mode 'kill)
                                    (other-window 1)
-                                   (switch-to-buffer "*Bookmark List*")
-                                   (bookmark-bmenu-list)
+                                   (switch-to-buffer "cyanide-sidebar")
+                                   (setq cyanide-sidebar-search-regexp
+                                         (concat
+                                          "\\(defun\\|"
+                                          "defmacro\\|"
+                                          "defmethod\\|"
+                                          "defclass\\)"))
+                                   (emacs-lock-mode 'kill) ;;debug
                                    (set-window-dedicated-p
                                     (get-buffer-window (current-buffer)) 1)
-;;debug                                   (cyanide-sidebar-enable)
+                                   (cyanide-sidebar-enable)
                                    (other-window 1)))
                        :disable 'cyanide-default-disabler)
          cyanide-views)

@@ -191,7 +191,17 @@
 
           (defmethod cyanide-call-disable ((view cyanide-view))
             "Disable a cyanide-view."
-            (funcall (oref view disable))))
+            (funcall (oref view disable)))
+
+          (defun seek-window-by-buffer-name (name)
+            (let ((starting-buffer-name (buffer-name))
+                  (thunk
+                   (lambda (i) (if (not (equal name (buffer-name)))
+                                   (if (not (> i (length (window-list))))
+                                       (progn (other-window 1) (funcall thunk (+ i 1)))
+                                     (seek-window-by-buffer-name starting-buffer-name))
+                                 nil))))
+              (funcall thunk 0))))
   :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode
