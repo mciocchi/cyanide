@@ -1,11 +1,5 @@
 (provide 'cyanide-panel)
-;; cyanide sidebar object fields:
-;; excluded-buffer-regexps
-;; match-regexps
-;; call
 
-;;debug This should be set by the view.
-;; (setq cyanide-panel-search-regexp "\\(defun\\|defmacro\\|defmethod\\)")
 (defvar cyanide-panel-search-regexp nil
   "This variable controls what shows up in cyanide-panel.")
 
@@ -20,13 +14,6 @@
           (if (not (< 1 (length (frame-list))))
               (cyanide-panel-search-worker)))))
 
-;; High-level overview of what needs to be done here:
-;; change *Occur* buffer to *Occur2*
-;; change cyanide-panel to *Occur*
-;; call cyanide-panel-search
-;; rename *Occur* cyanide-panel
-;; rename *Occur2* to *Occur*
-;; position cursor back in original buffer
 (defun cyanide-panel-search-worker ()
   (let ((starting-buffer-name (buffer-name))
         (original-occur-buffer-name (generate-new-buffer-name "*Occur*")))

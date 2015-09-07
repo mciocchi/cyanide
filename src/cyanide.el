@@ -126,10 +126,8 @@
     (defun cyanide-disable-current-view ()
       "Disable current cyanide-view"
       (interactive
-       (funcall
-        (oref
-         (gethash cyanide-current-view cyanide-views)
-         disable))))
+       (cyanide-call-disable
+         (gethash cyanide-current-view cyanide-views))))
 
     (defun cyanide-default-disabler ()
       (progn
@@ -138,21 +136,6 @@
         (cyanide-frame-windows-locked nil)
         (delete-other-windows)
         (setq cyanide-current-view nil)))
-
-          (defmethod default-cyanide-load-hook (proj cyanide-project)
-            "Default cyanide load-hook"
-            (let ((view
-                   (gethash (oref proj default-view)
-                            cyanide-views)))
-              (progn
-                (cyanide-call-enable view)
-                (cyanide-call-find-file-cmd proj))))
-
-          (defmethod cyanide-call-find-file-cmd (proj cyanide-project)
-            (let ((find-file-cmd
-                   (oref proj find-file-cmd)))
-              
-              (funcall find-file-cmd)))
 
           (defclass cyanide-project ()
             ((display-name :initarg :display-name
@@ -205,10 +188,6 @@
                                      (seek-window-by-buffer-name starting-buffer-name))
                                  nil))))
               (funcall thunk 0)))
-
-;;          (defun cyanide-enable-view-prompt ()
-;;            "Prompt user to enable a cyanide-view, and then enable it."
-;;            (interactive
 
           (defun cyanide-enable-view-prompt ()
             "Prompt user to enable a cyanide-view, and then enable it."

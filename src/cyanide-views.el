@@ -87,7 +87,7 @@
                                           "defmacro\\|"
                                           "defmethod\\|"
                                           "defclass\\)"))
-                                   (emacs-lock-mode 'kill) ;;debug
+                                   (emacs-lock-mode 'kill)
                                    (set-window-dedicated-p
                                     (get-buffer-window (current-buffer)) 1)
                                    (cyanide-panel-enable)
