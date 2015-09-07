@@ -14,7 +14,7 @@
                         ["Disable Current View"
                          cyanide-disable-current-view t]
                         ["Enable View"
-                         nil t]))
+                         cyanide-enable-view-prompt t]))
 
 (define-minor-mode cyanide-mode
   "CyanIDE's Yet Another Non-IDE"  ; docstring
@@ -29,6 +29,8 @@
     (defvar cyanide-projects (make-hash-table :test 'equal)
       "This collection holds all cyanide-project objects")
     
+    ;; The find-lisp package is distributed with emacs, but needs to be included
+    ;; explicitly like this to make its functions available in userland.
     (require 'find-lisp)
     (require 'cyanide-views)
     (require 'cyanide-panel)
@@ -201,7 +203,25 @@
                                        (progn (other-window 1) (funcall thunk (+ i 1)))
                                      (seek-window-by-buffer-name starting-buffer-name))
                                  nil))))
-              (funcall thunk 0))))
+              (funcall thunk 0)))
+
+;;          (defun cyanide-enable-view-prompt ()
+;;            "Prompt user to enable a cyanide-view, and then enable it."
+;;            (interactive
+
+          (defun cyanide-enable-view-prompt ()
+            "Prompt user to enable a cyanide-view, and then enable it."
+            (interactive
+             (let ((views '())
+                   (names '()))
+               (progn
+                 (maphash (lambda (key val)
+                            (progn
+                              (push `(,(oref val display-name) . ,val) views)
+                              (push (oref val display-name) names)))
+                          cyanide-views)
+                 (cyanide-call-enable
+                  (cdr (assoc (completing-read "Enable view: " names nil 1) views))))))))
   :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode
