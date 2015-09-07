@@ -1,4 +1,4 @@
-1(provide 'cyanide-views)
+(provide 'cyanide-views)
 
 (puthash 'cyanide-default-view
          (cyanide-view "cyanide-default-view"
