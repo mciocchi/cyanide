@@ -6,16 +6,19 @@
       (define-key map (kbd "C-c c l") 'cyanide-load-project-prompt)
       (define-key map (kbd "C-c c d") 'cyanide-disable-current-view)
       (define-key map (kbd "C-c c v") 'cyanide-enable-view-prompt)
+      (define-key map (kbd "C-c c m") 'cyanide-multi-occur-all-buffers)
       ) map))
 
 (easy-menu-define cyanide-menu cyanide-mode-map "CyanIDE"
-		      '("CyanIDE"
-			["Load Project"
-                         cyanide-load-project-prompt t]
-                        ["Disable Current View"
-                         cyanide-disable-current-view t]
-                        ["Enable View"
-                         cyanide-enable-view-prompt t]))
+  '("CyanIDE"
+    ["Load Project"
+     cyanide-load-project-prompt t]
+    ["Search all buffers"
+     cyanide-multi-occur-all-buffers t]
+    ["Enable View"
+     cyanide-enable-view-prompt t]
+    ["Disable Current View"
+     cyanide-disable-current-view t]))
 
 (define-minor-mode cyanide-mode
   "CyanIDE's Yet Another Non-IDE"  ; docstring
@@ -201,7 +204,13 @@
                               (push (oref val display-name) names)))
                           cyanide-views)
                  (cyanide-call-enable
-                  (cdr (assoc (completing-read "Enable view: " names nil 1) views))))))))
+                  (cdr (assoc (completing-read "Enable view: " names nil 1) views)))))))
+          
+          (defun cyanide-multi-occur-all-buffers (str)
+            "Generic search for arbitrary string across all buffers."
+            (interactive "MOccur String: ")
+            (multi-occur-in-matching-buffers ".*" str))
+          )
   :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode

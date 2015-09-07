@@ -9,6 +9,10 @@
                                          'cyanide-default-view)
                                    ;; Tear down any other windows first.
                                    (delete-other-windows)
+                                   ;; Prevent annoying emacs habit of splitting
+                                   ;; windows without prompting from the user.
+                                   (setq split-height-threshold 80)
+                                   (setq split-width-threshold 9999)
                                    ;; Set up new window geometry.
                                    (split-window-vertically
                                     (* (/ (window-total-height) 10) 9))
@@ -63,6 +67,8 @@
                                    (setq cyanide-current-view
                                          'cyanide-elisp-view)
                                    (delete-other-windows)
+                                   (setq split-height-threshold 80)
+                                   (setq split-width-threshold 9999)
                                    (split-window-vertically
                                     (* (/ (window-total-height) 10) 9))
                                    (split-window-vertically

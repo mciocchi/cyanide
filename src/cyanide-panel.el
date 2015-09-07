@@ -48,5 +48,3 @@
 
 ;; Initial state = disabled.
 (cyanide-panel-disable)
-
-  
