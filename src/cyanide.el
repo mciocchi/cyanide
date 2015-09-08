@@ -1,3 +1,18 @@
+;; This file is part of CyanIDE.
+;;
+;; CyanIDE is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; CyanIDE is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
+
 (provide 'cyanide)
 
 (defvar cyanide-mode-map
@@ -183,13 +198,15 @@
             (funcall (oref view disable)))
 
           (defun seek-window-by-buffer-name (name)
-            (let ((starting-buffer-name (buffer-name))
+            (let ((starting-buffer-name
+                   (buffer-name))
                   (thunk
-                   (lambda (i) (if (not (equal name (buffer-name)))
-                                   (if (not (> i (length (window-list))))
-                                       (progn (other-window 1) (funcall thunk (+ i 1)))
-                                     (seek-window-by-buffer-name starting-buffer-name))
-                                 nil))))
+                   (lambda (i)
+                     (if (not (equal name (buffer-name)))
+                         (if (not (> i (length (window-list))))
+                             (progn (other-window 1) (funcall thunk (+ i 1)))
+                           (seek-window-by-buffer-name starting-buffer-name))
+                       nil))))
               (funcall thunk 0)))
 
           (defun cyanide-enable-view-prompt ()
