@@ -53,8 +53,8 @@ different window arrangements. Projects are modeled by the user in their .emacs,
 and are the only config that is actually required for cyanide to work.
 
 Currently, only cyanide-elisp-view and cyanide-default-view are available, but
-cyanide-default-view provides decent code-browsing support for elisp, java,
-ruby, python, perl, clojure, and javascript.
+cyanide-default-view provides decent code-browsing support for the languages
+listed above.
 
 The philosophy of CyanIDE is to be as extensible as possible. It should be
 relatively easy for users to define new views for various needs if they copy
