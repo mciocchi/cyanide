@@ -76,8 +76,3 @@ seek-window-by-buffer-name assumes windows always have unique buffer names,
 which is not the case when opening two windows or two frames on a single
 buffer. This function is going to be changed to use a unique identifier,
 something along the lines of "frame.buffer-position.buffer-name." --MC
-
-** cyanide-default-disabler does not tear down views cleanly
-
-cyanide-frame-windows-locked and cyanide-frame-windows-dedicated do not fully
-unlock-and un-dedicate all windows. Needs more investigation.
