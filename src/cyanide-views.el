@@ -26,6 +26,12 @@
                                    (delete-other-windows)
                                    ;; Prevent annoying emacs habit of splitting
                                    ;; windows without prompting from the user.
+                                   ;; Remember original values so that they can
+                                   ;; be restored when the view is torn down.
+                                   (setq split-height-threshold-orig
+                                         split-height-threshold)
+                                   (setq split-width-threshold-orig
+                                         split-width-threshold)
                                    (setq split-height-threshold 80)
                                    (setq split-width-threshold 9999)
                                    ;; Set up new window geometry.
@@ -82,6 +88,10 @@
                                    (setq cyanide-current-view
                                          'cyanide-elisp-view)
                                    (delete-other-windows)
+                                   (setq split-height-threshold-orig
+                                         split-height-threshold)
+                                   (setq split-width-threshold-orig
+                                         split-width-threshold)
                                    (setq split-height-threshold 80)
                                    (setq split-width-threshold 9999)
                                    (split-window-vertically

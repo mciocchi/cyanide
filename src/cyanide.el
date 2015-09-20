@@ -153,7 +153,12 @@
         (cyanide-frame-windows-dedicated nil)
         (cyanide-frame-windows-locked nil)
         (delete-other-windows)
-        (setq cyanide-current-view nil)))
+        (setq cyanide-current-view nil)
+        ;; Revert window settings back to default.
+        (if split-height-threshold-orig
+            (setq split-height-threshold split-height-threshold-orig))
+        (if split-width-threshold
+            (setq split-width-threshold split-width-threshold-orig))))
 
           (defclass cyanide-project ()
             ((display-name :initarg :display-name
