@@ -13,16 +13,13 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
-(provide 'cyanide)
-
 (defvar cyanide-mode-map
   (let ((map (make-sparse-keymap)))
     (progn
       (define-key map (kbd "C-c c l") 'cyanide-load-project-prompt)
       (define-key map (kbd "C-c c d") 'cyanide-disable-current-view)
       (define-key map (kbd "C-c c v") 'cyanide-enable-view-prompt)
-      (define-key map (kbd "C-c c m") 'cyanide-multi-occur-all-buffers)
-      ) map))
+      (define-key map (kbd "C-c c m") 'cyanide-multi-occur-all-buffers)) map))
 
 (easy-menu-define cyanide-menu cyanide-mode-map "CyanIDE"
   '("CyanIDE"
@@ -245,10 +242,11 @@
           (defun cyanide-multi-occur-all-buffers (str)
             "Generic search for arbitrary string across all buffers."
             (interactive "MOccur String: ")
-            (multi-occur-in-matching-buffers ".*" str))
-          )
+            (multi-occur-in-matching-buffers ".*" str)))
   :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode
   (lambda () (cyanide-mode 1)))
 (global-cyanide-mode 1)
+
+(provide 'cyanide)

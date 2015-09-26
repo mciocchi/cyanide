@@ -13,8 +13,6 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
-(provide 'cyanide-views)
-
 (puthash 'cyanide-default-view
          (cyanide-view "cyanide-default-view"
                        :display-name "cyanide-default-view"
@@ -129,3 +127,5 @@
                                    (other-window 1)))
                        :disable 'cyanide-default-disabler)
          cyanide-views)
+
+(provide 'cyanide-views)

@@ -13,8 +13,6 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
-(provide 'cyanide-panel)
-
 (defvar cyanide-panel-search-regexp nil
   "This variable controls what shows up in cyanide-panel.")
 
@@ -68,3 +66,5 @@
 
 ;; Initial state = disabled.
 (cyanide-panel-disable)
+
+(provide 'cyanide-panel)
