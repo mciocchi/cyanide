@@ -24,6 +24,8 @@
                                          'cyanide-default-view)
                                    ;; Tear down any other windows first.
                                    (delete-other-windows)
+                                   (setq frame-title-format
+                                         cyanide-current-project)
                                    ;; Prevent annoying emacs habit of splitting
                                    ;; windows without prompting from the user.
                                    ;; Remember original values so that they can
@@ -88,6 +90,8 @@
                                    (setq cyanide-current-view
                                          'cyanide-elisp-view)
                                    (delete-other-windows)
+                                   (setq frame-title-format
+                                         cyanide-current-project)
                                    (setq split-height-threshold-orig
                                          split-height-threshold)
                                    (setq split-width-threshold-orig
@@ -101,7 +105,7 @@
                                    (split-window-horizontally
                                     (* (/ (window-total-width) 10) 2))
                                    (other-window 2)
-                                   (switch-to-buffer "ielm")
+                                   (switch-to-buffer "*ielm*")
                                    (ielm)
                                    (set-window-dedicated-p
                                     (get-buffer-window (current-buffer)) 1)

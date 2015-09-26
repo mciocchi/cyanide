@@ -90,14 +90,15 @@
             (occur-mode-find-occurrence-hook nil)
             (proj-tree (oref proj proj-tree))
             (load-hook (oref proj load-hook))
-            (default-view (gethash (oref proj default-view) cyanide-views)))
+            (default-view (gethash (oref proj default-view) cyanide-views))
+            (display-name (oref proj display-name)))
 
         (progn
           (if cyanide-current-view (cyanide-disable-current-view))
           (if load-hook (funcall load-hook))
+          (setq cyanide-current-project display-name)
           (cyanide-find-file-project-tree proj-tree)
           (funcall (oref default-view enable))
-          (setq cyanide-current-project (oref proj display-name))
           nil)))
 
     (defun cyanide-load-project-prompt ()
