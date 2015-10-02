@@ -63,13 +63,15 @@
                                                  "class \\|"
                                                  "interface .*\{\\|"
                                                  "def \\|"
+                                                 "defn \\|"
+                                                 "fn \\|"
                                                  "function .*{\\|"
                                                  "sub .*\{\\|"
                                                  "defn \\|"
                                                  "public .*\{\\|"
                                                  "private .*\{\\|"
-                                                 "protected .*\{\\)"
-                                                 ))
+                                                 "protected .*\{"
+                                                 "^*+ \\)"))
                                    (set-window-dedicated-p
                                     (get-buffer-window (current-buffer)) 1)
                                    (emacs-lock-mode 'kill)
@@ -119,7 +121,8 @@
                                           "\\(defun\\|"
                                           "defmacro\\|"
                                           "defmethod\\|"
-                                          "defclass\\)"))
+                                          "defclass\\|"
+                                          "^*+ \\)"))
                                    (emacs-lock-mode 'kill)
                                    (set-window-dedicated-p
                                     (get-buffer-window (current-buffer)) 1)
