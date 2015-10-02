@@ -213,6 +213,8 @@
             "Disable a cyanide-view."
             (funcall (oref view disable)))
 
+          ;; This won't work if there are two buffers with the same name open.
+          ;; Need to include window and maybe frame to prevent this.
           (defun seek-window-by-buffer-name (name)
             (let ((starting-buffer-name
                    (buffer-name))
