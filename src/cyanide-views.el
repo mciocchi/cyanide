@@ -70,7 +70,7 @@
                                                  "defn \\|"
                                                  "public .*\{\\|"
                                                  "private .*\{\\|"
-                                                 "protected .*\{"
+                                                 "protected .*\{\\|"
                                                  "^*+ \\)"))
                                    (set-window-dedicated-p
                                     (get-buffer-window (current-buffer)) 1)
