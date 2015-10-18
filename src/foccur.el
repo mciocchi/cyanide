@@ -122,25 +122,33 @@
   (shell-command cmd output-buffer error-buffer))
 
 ;; case sensitive if search string has caps, or if case-fold-search is nil
-(defun foccur (regexp dir &optional nlines)
+(defun foccur (find-regexp grep-regexp dir &optional nlines)
+  (interactive "find-regexp: \nDdir: \nMgrep-regexp: \n")
   (let ((case-sensitive-arg (if (bound-and-true-p case-fold-search-e) "i" "")))
     (let ((cmd (concat
                 (or (bound-and-true-p foccur-default-find-cmd) "find") " "
                 (or (bound-and-true-p foccur-default-find-args)
-                    "-type f -exec grep -Hn" " ")
-                (if (bound-and-true-p case-fold-search) "i" ""))))
-          (output-buffer (or (bound-and-true-p foccur-default-output-buffer)
-                             "*Foccur Shell Command*"))
+                    "-type f -exec grep -Hn")
+                (if (or (bound-and-true-p case-fold-search)
+                        ) "i" "") " "))
           (error-buffer (or (bound-and-true-p foccur-default-error-buffer)
                             "*Foccur Errors*"))
           (input-all-frames (or (bound-and-true-p foccur-default-input-all-frames)
                                 t))
           (output-all-frames (or (bound-and-true-p foccur-default-output-all-frames)
-                                 t)))
-    (interactive "DDir: \nMregex: \n")
+                                 t))
+          (cmd-buffer (or (bound-and-true-p foccur-default-cmd-buffer)
+                          "*Foccur Shell Command*"))
+          (output-buffer (or (bound-and-true-p foccur-default-output-buffer)
+                             "*Foccur*")))
      (progn
        (foccur-generate-buffer cmd output-buffer error-buffer)
-       (foccur-parse-buffer cmd-buffer input-all-frames output-all-frames))))
+       (foccur-parse-buffer cmd-buffer input-all-frames output-all-frames)))))
+
+(defun foccur-case-sensitive (re)
+  (or (let ((case-fold-search nil))
+        (string-match "[$.*[:upper:].*^]" re))
+      (not case-fold-search)))
 
 ;; case sensitive if search string has caps, or if case-fold-search is nil
 ;; generate find cmd from cyanide proj-tree and excludes
