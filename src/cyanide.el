@@ -244,7 +244,71 @@
           (defun cyanide-multi-occur-all-buffers (str)
             "Generic search for arbitrary string across all buffers."
             (interactive "MOccur String: ")
-            (multi-occur-in-matching-buffers ".*" str)))
+            (multi-occur-in-matching-buffers ".*" str))
+          (defun cyanide-select-buffer-window-worker (sought-buffer &optional all-frames)
+            (let ((sought-buffer-window (get-buffer-window sought-buffer all-frames)))
+              (let ((sought-buffer-frame (window-frame sought-buffer-window)))
+                (progn
+                  (if sought-buffer-window
+                      (progn
+                        (select-frame-set-input-focus sought-buffer-frame)
+                        (select-window sought-buffer-window))
+                    nil) ;; else
+                  (switch-to-buffer sought-buffer)))))
+
+          (defun cyanide-select-buffer-window (sought-buffer
+                                               &optional all-frames)
+            "Place cursor in window.
+
+            - if window is visible, switch to it.
+
+            - If window is not visible, switch to buffer.
+
+            - If buffer does not exist, create it.
+
+            - If all-frames is t, consider all frames. See
+              `get-buffer-window' for details regarding the specific
+              behavior of that arg. In this case, if a buffer is open
+              in multiple frames, cyanide-select-buffer-window will
+              prefer to select the window of the buffer in the current
+              frame."
+            (cyanide-select-buffer-window-worker sought-buffer all-frames))
+
+;; TO DO:
+;; - Implement cyanide-window-excursion to seek via window instead for UI
+;;   adjustments, because duplicate buffers are fine during editing, but
+;;   not good for UI adjustments when seeking via buffer-name.
+;; - Address copy and paste code problem between cyanide-buffer-excursion and
+;;   cyanide-select-buffer-window.
+          (defun cyanide-buffer-excursion (func
+                                           sought-buffer
+                                           &optional all-frames)
+            "Place cursor in buffer-window, eval code, go
+             back to starting location, return output of
+             funcall func.
+
+            - If window is visible, switch to it.
+
+            - If window is not visible, switch to buffer.
+
+            - If buffer does not exist, create it.
+
+            - If all-frames is t, consider all frames. See
+              `get-buffer-window' for details regarding the specific
+              behavior of that arg. In this case, if a buffer is open
+              in multiple frames, cyanide-buffer-excursion will
+              prefer to select the window of the buffer in the current
+              frame."
+            (let ((starting-buffer (current-buffer))
+                  (starting-window (selected-window))
+                  (starting-frame  (selected-frame)))
+              (progn
+                (cyanide-select-buffer-window-worker sought-buffer all-frames)
+                (let ((return (funcall func)))
+                  (progn
+                    (select-frame-set-input-focus starting-frame)
+                    (select-window starting-window)
+                    return))))))
   :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode

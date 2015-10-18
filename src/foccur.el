@@ -1,11 +1,8 @@
-(defun foccur-output-worker (&optional enabled-mode)
-  (progn
-;;    (mark-whole-buffer)
-;;    (delete-forward-char 1)
-    (org-mode)
-    (insert (concat "[[" long-name "::" linum "][" base-name ": "
-                    (replace-regexp-in-string "^[[:space:]]+" "" res)
-                    "]]" "\n"))))
+;; (defun foccur-output-worker (&optional enabled-mode)
+;;   (progn
+;;     (insert (concat "[[" long-name "::" linum "][" base-name ": "
+;;                     (replace-regexp-in-string "^[[:space:]]+" "" res)
+;;                     "]]" "\n"))))
 
 ;; to do: pass through foccur-buffer-name.
 ;; to do: need three commands to work on entire buffer instead of one line:
@@ -18,9 +15,10 @@
 ;; Perhaps I can use vars in lexical or global scope as a shitty alternative.
 (defun foccur-output (long-name base-name res linum &optional foccur-buffer-name)
   (if (and long-name base-name linum res)
-      (cyanide-buffer-excursion 'foccur-output-worker
-                                (or foccur-buffer-name "*Foccur*")
-                                t)))
+      (progn
+        (insert (concat "[[" long-name "::" linum "][" base-name ": "
+                        (replace-regexp-in-string "^[[:space:]]+" "" res)
+                        "]]" "\n")))))
       
 
 ;; this converts grep -Hn output in a buffer into org-mode links.
@@ -103,10 +101,54 @@
                                     (foccur-output
                                      long-name base-name res linum)))))))
 
-(defun foccur-parse-buffer (buffer &optional all-frames)
+(defun foccur-parse-buffer (buffer &optional input-all-frames output-all-frames)
+  (let ((worker (lambda ()
+                  (progn
+                    (org-mode)
+                    (erase-buffer)
+                    (foccur-parse-buffer-1 buffer input-all-frames)))))
+        (cyanide-buffer-excursion
+         worker
+         (or "*Foccur*" foccur-buffer-name)
+         output-all-frames)))
+
+(defun foccur-parse-buffer-1 (buffer &optional all-frames)
   (mapcar 'foccur-worker
           (split-string
            (substring-no-properties
             (foccur-buffer-string buffer all-frames)) "\n")))
+
+(defun foccur-generate-buffer (cmd &optional output-buffer error-buffer)
+  (shell-command cmd output-buffer error-buffer))
+
+;; case sensitive if search string has caps, or if case-fold-search is nil
+(defun foccur (regexp dir &optional nlines)
+  (let ((case-sensitive-arg (if (bound-and-true-p case-fold-search-e) "i" "")))
+    (let ((cmd (concat
+                (or (bound-and-true-p foccur-default-find-cmd) "find") " "
+                (or (bound-and-true-p foccur-default-find-args)
+                    "-type f -exec grep -Hn" " ")
+                (if (bound-and-true-p case-fold-search) "i" ""))))
+          (output-buffer (or (bound-and-true-p foccur-default-output-buffer)
+                             "*Foccur Shell Command*"))
+          (error-buffer (or (bound-and-true-p foccur-default-error-buffer)
+                            "*Foccur Errors*"))
+          (input-all-frames (or (bound-and-true-p foccur-default-input-all-frames)
+                                t))
+          (output-all-frames (or (bound-and-true-p foccur-default-output-all-frames)
+                                 t)))
+    (interactive "DDir: \nMregex: \n")
+     (progn
+       (foccur-generate-buffer cmd output-buffer error-buffer)
+       (foccur-parse-buffer cmd-buffer input-all-frames output-all-frames))))
+
+;; case sensitive if search string has caps, or if case-fold-search is nil
+;; generate find cmd from cyanide proj-tree and excludes
+;;(defun cyanide-foccur
+ ;;          
+;; (progn (foccur-generate-buffer (concat "find ~/projects/sellside/trunk"
+;;                                        "-not -path '*\.svn*' -type f"
+;;                                        "-exec grep -Hni renderqueue {} +")
+;;                                (foccur-parse-buffer "*Async Shell Command*")))
 
 (provide 'foccur)
