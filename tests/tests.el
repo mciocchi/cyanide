@@ -48,9 +48,11 @@
                   (if failed nil ;if failed return false
                     t)))))))))) ;else return true
 
+;; Return true only if all tests pass.
+;; New tests need to be added here.
 (defun run-tests ()
   (let ((case-sensitive-test-result (foccur-case-sensitive-test
                                      'foccur-case-sensitive)))
-    (and case-sensitive-test-result))) ;; Return true only if all tests pass.
+    (and case-sensitive-test-result)))
 
 (run-tests)
