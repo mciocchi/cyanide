@@ -7,9 +7,9 @@
    3    | asdf | nil              | nil         | nil
    4    | asdF | nil              | nil         | nil
    5    | asdf | t                | nil         | t  
-   6    | asdF | t                | t           | t  
+   6    | asdF | t                | 3           | t  
    7    | asdf | nil              | t           | t  
-   8    | asdF | nil              | nil         | t  
+   8    | asdF | nil              | 3           | t
 "
   (let ((failed ""))
     (progn

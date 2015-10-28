@@ -124,13 +124,21 @@
 ;; case sensitive if search string has caps, or if case-fold-search is nil
 (defun foccur (find-regexp grep-regexp dir &optional nlines)
   (interactive "find-regexp: \nDdir: \nMgrep-regexp: \n")
-  (let ((case-sensitive-arg (if (bound-and-true-p case-fold-search-e) "i" "")))
+  (let ((grep-case-sensitive-arg
+         (if (foccur-case-sensitive grep-regexp) "" "i"))
+        (find-case-sensitive-arg
+         (if (foccur-case-sensitive find-regexp) "" "i")))
     (let ((cmd (concat
-                (or (bound-and-true-p foccur-default-find-cmd) "find") " "
+                (or (bound-and-true-p foccur-default-find-cmd) "find ")
                 (or (bound-and-true-p foccur-default-find-args)
-                    "-type f -exec grep -Hn")
-                (if (or (bound-and-true-p case-fold-search)
-                        ) "i" "") " "))
+                    (concat "-"
+                            find-case-sensitive-arg
+                            "name"
+                            "-type f "
+                            "-exec grep -"
+                            grep-case-sensitive-arg
+                            "Hn"))
+                 " "))
           (error-buffer (or (bound-and-true-p foccur-default-error-buffer)
                             "*Foccur Errors*"))
           (input-all-frames (or (bound-and-true-p foccur-default-input-all-frames)
@@ -146,6 +154,10 @@
        (foccur-parse-buffer cmd-buffer input-all-frames output-all-frames)))))
 
 (defun foccur-case-sensitive (re)
+  "Respect emacs defaults and determine whether foccur
+   should attempt to match with case-sensitivity.
+
+   For more information, see `foccur-case-sensitive-test'"
   (or (let ((case-fold-search nil))
         (string-match "[$.*[:upper:].*^]" re))
       (not case-fold-search)))
