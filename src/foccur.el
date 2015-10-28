@@ -82,24 +82,24 @@
    gets mapped to every line of a buffer with grep -Hn
    output."
   (let ((str1 (split-string grep-str ":[0-9]+:")))
-                        (let ((long-name (car str1))
-                              (res (car (cdr str1))))
-                          (if (and long-name res)
-                              (let ((linum
-                                     (car
-                                      (cdr
-                                       (split-string
-                                        (car
-                                         (split-string
-                                          (car
-                                           (cdr
-                                            (split-string grep-str long-name)))
-                                          res)) ":"))))
-                                    (base-name
-                                     (car (last (split-string long-name "/")))))
-                                (if (and linum base-name)
-                                    (foccur-output
-                                     long-name base-name res linum)))))))
+    (let ((long-name (car str1))
+          (res (car (cdr str1))))
+      (if (and long-name res)
+          (let ((linum
+                 (car
+                  (cdr
+                   (split-string
+                    (car
+                     (split-string
+                      (car
+                       (cdr
+                        (split-string grep-str long-name)))
+                      res)) ":"))))
+                (base-name
+                 (car (last (split-string long-name "/")))))
+            (if (and linum base-name)
+                (foccur-output
+                 long-name base-name res linum)))))))
 
 (defun foccur-parse-buffer (buffer &optional input-all-frames output-all-frames)
   (let ((worker (lambda ()
@@ -107,10 +107,10 @@
                     (org-mode)
                     (erase-buffer)
                     (foccur-parse-buffer-1 buffer input-all-frames)))))
-        (cyanide-buffer-excursion
-         worker
-         (or "*Foccur*" foccur-buffer-name)
-         output-all-frames)))
+    (cyanide-buffer-excursion
+     worker
+     (or "*Foccur*" foccur-buffer-name)
+     output-all-frames)))
 
 (defun foccur-parse-buffer-1 (buffer &optional all-frames)
   (mapcar 'foccur-worker
