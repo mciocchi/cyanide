@@ -119,26 +119,32 @@
             (foccur-buffer-string buffer all-frames)) "\n")))
 
 (defun foccur-generate-buffer (cmd &optional output-buffer error-buffer)
+  (message (concat "Executing Foccur cmd: " cmd))
+  (shell-command cmd)
   (shell-command cmd output-buffer error-buffer))
 
 ;; case sensitive if search string has caps, or if case-fold-search is nil
-(defun foccur (find-regexp grep-regexp dir &optional nlines)
-  (interactive "find-regexp: \nDdir: \nMgrep-regexp: \n")
+(defun foccur (find-regexp grep-regexp dirs &optional nlines)
+  (interactive "Mfind-regexp: \nMgrep-regexp: \nDdirs: \n")
   (let ((grep-case-sensitive-arg
          (if (foccur-case-sensitive grep-regexp) "" "i"))
         (find-case-sensitive-arg
          (if (foccur-case-sensitive find-regexp) "" "i")))
     (let ((cmd (concat
                 (or (bound-and-true-p foccur-default-find-cmd) "find ")
-                (or (bound-and-true-p foccur-default-find-args)
-                    (concat "-"
+                dirs
+                (or (bound-and-true-p foccur-default-find-grep-args)
+                    (concat " -"
                             find-case-sensitive-arg
-                            "name"
+                            "name "
+                            find-regexp
+                            " "
                             "-type f "
                             "-exec grep -"
                             grep-case-sensitive-arg
-                            "Hn"))
-                 " "))
+                            "Hn "
+                            grep-regexp
+                            " {} +"))))
           (error-buffer (or (bound-and-true-p foccur-default-error-buffer)
                             "*Foccur Errors*"))
           (input-all-frames (or (bound-and-true-p foccur-default-input-all-frames)
@@ -149,9 +155,10 @@
                           "*Foccur Shell Command*"))
           (output-buffer (or (bound-and-true-p foccur-default-output-buffer)
                              "*Foccur*")))
-     (progn
-       (foccur-generate-buffer cmd output-buffer error-buffer)
-       (foccur-parse-buffer cmd-buffer input-all-frames output-all-frames)))))
+      (progn
+        (foccur-generate-buffer cmd output-buffer error-buffer)
+        ;;(foccur-parse-buffer cmd-buffer input-all-frames output-all-frames)
+        ))))
 
 (defun foccur-case-sensitive (re)
   "Respect emacs defaults and determine whether foccur
