@@ -157,7 +157,7 @@
                              "*Foccur*")))
       (progn
         (foccur-generate-buffer cmd output-buffer error-buffer)
-        ;;(foccur-parse-buffer cmd-buffer input-all-frames output-all-frames)
+        (foccur-parse-buffer cmd-buffer input-all-frames output-all-frames)
         ))))
 
 (defun foccur-case-sensitive (re)

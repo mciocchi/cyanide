@@ -303,6 +303,10 @@
                   (starting-window (selected-window))
                   (starting-frame  (selected-frame)))
               (progn
+                (print
+                 (concat
+                  "Beginning cyanide buffer excursion. Sought-buffer: "
+                  sought-buffer))
                 (cyanide-select-buffer-window-worker sought-buffer all-frames)
                 (let ((return (funcall func)))
                   (progn
