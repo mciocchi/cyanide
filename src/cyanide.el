@@ -57,6 +57,9 @@
     (defvar cyanide-current-project nil
       "This var is used by cyanide to determine what project it's currently in.")
 
+    (defvar cyanide-verbose nil
+      "non-nil if cyanide should use verbose logging.")
+
     (defun cyanide-find-file-project-tree (proj-tree)
       "Load a project directory tree using dtable dispatch table.
        If length of proj-tree branch is 1, find-file, if 2,
@@ -77,7 +80,7 @@
                    (assq (length branch) dtable)))))))
         (mapcar worker proj-tree)
         nil))
-                      
+
     (defmethod cyanide-load-project ((proj cyanide-project))
       "Load a cyanide-project"
       ;; Override these hooks to avoid repeatedly running
@@ -145,17 +148,17 @@
                  (progn
                    (select-window x)
                    (if (not (eq emacs-lock-mode lock-arg))
-                                        (if (not lock-arg)
-                                            (call-interactively 'emacs-lock-mode)
-                                          (emacs-lock-mode lock-arg))) ;; else
-                       nil)))) ;; else
+                       (if (not lock-arg)
+                           (call-interactively 'emacs-lock-mode)
+                         (emacs-lock-mode lock-arg))) ;; else
+                   nil)))) ;; else
         (walk-windows f minibuf all-frames)))
 
     (defun cyanide-disable-current-view ()
       "Disable current cyanide-view"
       (interactive
        (cyanide-call-disable
-         (gethash cyanide-current-view cyanide-views))))
+        (gethash cyanide-current-view cyanide-views))))
 
     (defun cyanide-default-disabler ()
       (progn
@@ -171,15 +174,15 @@
             (setq split-width-threshold split-width-threshold-orig))
         nil))
 
-          (defclass cyanide-project ()
-            ((display-name :initarg :display-name
-                           :initform ""
-                           :type string
-                           :documentation "Display name for a cyanide-project")
-             (default-view :initarg :default-view
-               :type symbol
-               :documentation "Default view at startup for a cyanide-project.")
-             (proj-tree :initarg :proj-tree
+    (defclass cyanide-project ()
+      ((display-name :initarg :display-name
+                     :initform ""
+                     :type string
+                     :documentation "Display name for a cyanide-project")
+       (default-view :initarg :default-view
+         :type symbol
+         :documentation "Default view at startup for a cyanide-project.")
+       (proj-tree :initarg :proj-tree
                   :initform ()
                   :type list
                   :documentation "Project tree.")
@@ -187,78 +190,78 @@
                   :type list
                   :documentation "init-hook called at project load-time.")))
 
-          (defclass cyanide-view ()
-            ;; Display name for user interface, separate from impementation.
-            ((display-name :initarg :display-name
-                           :initform ""
-                           :type string
-                           :custom string
-                           :documentation "Display name for a cyanide-view.")
-             ;; UI setup
-             (enable :initarg :enable
-                     :type function
-                     :documentation "Enable this cyanide-view.")
-             ;; Teardown
-             (disable :initarg :disable
-                      :type symbol
-                      :documentation "Disable this cyanide-view."))
-            "Definition of a cyanide-view configuration.")
+    (defclass cyanide-view ()
+      ;; Display name for user interface, separate from impementation.
+      ((display-name :initarg :display-name
+                     :initform ""
+                     :type string
+                     :custom string
+                     :documentation "Display name for a cyanide-view.")
+       ;; UI setup
+       (enable :initarg :enable
+               :type function
+               :documentation "Enable this cyanide-view.")
+       ;; Teardown
+       (disable :initarg :disable
+                :type symbol
+                :documentation "Disable this cyanide-view."))
+      "Definition of a cyanide-view configuration.")
 
-          ;; Get quoted function from cyanide-view and execute.
-          (defmethod cyanide-call-enable ((view cyanide-view))
-            "Enable a cyanide-view."
-            (funcall (oref view enable)))
+    ;; Get quoted function from cyanide-view and execute.
+    (defmethod cyanide-call-enable ((view cyanide-view))
+      "Enable a cyanide-view."
+      (funcall (oref view enable)))
 
-          (defmethod cyanide-call-disable ((view cyanide-view))
-            "Disable a cyanide-view."
-            (funcall (oref view disable)))
+    (defmethod cyanide-call-disable ((view cyanide-view))
+      "Disable a cyanide-view."
+      (funcall (oref view disable)))
 
-          ;; This won't work if there are two buffers with the same name open.
-          ;; Need to include window and maybe frame to prevent this.
-          (defun seek-window-by-buffer-name (name)
-            (let ((starting-buffer-name
-                   (buffer-name))
-                  (thunk
-                   (lambda (i)
-                     (if (not (equal name (buffer-name)))
-                         (if (not (> i (length (window-list))))
-                             (progn (other-window 1) (funcall thunk (+ i 1)))
-                           (seek-window-by-buffer-name starting-buffer-name))
-                       nil))))
-              (funcall thunk 0)))
+    ;; This won't work if there are two buffers with the same name open.
+    ;; Need to include window and maybe frame to prevent this.
+    (defun seek-window-by-buffer-name (name)
+      (let ((starting-buffer-name
+             (buffer-name))
+            (thunk
+             (lambda (i)
+               (if (not (equal name (buffer-name)))
+                   (if (not (> i (length (window-list))))
+                       (progn (other-window 1) (funcall thunk (+ i 1)))
+                     (seek-window-by-buffer-name starting-buffer-name))
+                 nil))))
+        (funcall thunk 0)))
 
-          (defun cyanide-enable-view-prompt ()
-            "Prompt user to enable a cyanide-view, and then enable it."
-            (interactive
-             (let ((views '())
-                   (names '()))
-               (progn
-                 (maphash (lambda (key val)
-                            (progn
-                              (push `(,(oref val display-name) . ,val) views)
-                              (push (oref val display-name) names)))
-                          cyanide-views)
-                 (cyanide-call-enable
-                  (cdr (assoc (completing-read "Enable view: " names nil 1) views)))))))
-          
-          (defun cyanide-multi-occur-all-buffers (str)
-            "Generic search for arbitrary string across all buffers."
-            (interactive "MOccur String: ")
-            (multi-occur-in-matching-buffers ".*" str))
-          (defun cyanide-select-buffer-window-worker (sought-buffer &optional all-frames)
-            (let ((sought-buffer-window (get-buffer-window sought-buffer all-frames)))
-              (let ((sought-buffer-frame (window-frame sought-buffer-window)))
-                (progn
-                  (if sought-buffer-window
+    (defun cyanide-enable-view-prompt ()
+      "Prompt user to enable a cyanide-view, and then enable it."
+      (interactive
+       (let ((views '())
+             (names '()))
+         (progn
+           (maphash (lambda (key val)
                       (progn
-                        (select-frame-set-input-focus sought-buffer-frame)
-                        (select-window sought-buffer-window))
-                    nil) ;; else
-                  (switch-to-buffer sought-buffer)))))
+                        (push `(,(oref val display-name) . ,val) views)
+                        (push (oref val display-name) names)))
+                    cyanide-views)
+           (cyanide-call-enable
+            (cdr (assoc (completing-read "Enable view: " names nil 1) views)))))))
 
-          (defun cyanide-select-buffer-window (sought-buffer
-                                               &optional all-frames)
-            "Place cursor in window.
+    (defun cyanide-multi-occur-all-buffers (str)
+      "Generic search for arbitrary string across all buffers."
+      (interactive "MOccur String: ")
+      (multi-occur-in-matching-buffers ".*" str))
+    (defun cyanide-select-buffer-window-worker (sought-buffer &optional all-frames)
+      (let ((sought-buffer-window (get-buffer-window sought-buffer all-frames)))
+        (let ((sought-buffer-frame (window-frame sought-buffer-window)))
+          (progn
+            (if sought-buffer-window
+                (progn
+                  (select-frame-set-input-focus sought-buffer-frame)
+                  (select-window sought-buffer-window))
+              nil) ;; else
+            (switch-to-buffer sought-buffer)))))
+
+    (defun cyanide-select-buffer-window (sought-buffer
+                                         &optional all-frames)
+      "Place cursor in window.
 
             - if window is visible, switch to it.
 
@@ -272,18 +275,18 @@
               in multiple frames, cyanide-select-buffer-window will
               prefer to select the window of the buffer in the current
               frame."
-            (cyanide-select-buffer-window-worker sought-buffer all-frames))
+      (cyanide-select-buffer-window-worker sought-buffer all-frames))
 
-;; TO DO:
-;; - Implement cyanide-window-excursion to seek via window instead for UI
-;;   adjustments, because duplicate buffers are fine during editing, but
-;;   not good for UI adjustments when seeking via buffer-name.
-;; - Address copy and paste code problem between cyanide-buffer-excursion and
-;;   cyanide-select-buffer-window.
-          (defun cyanide-buffer-excursion (func
-                                           sought-buffer
-                                           &optional all-frames)
-            "Place cursor in buffer-window, eval code, go
+    ;; TO DO:
+    ;; - Implement cyanide-window-excursion to seek via window instead for UI
+    ;;   adjustments, because duplicate buffers are fine during editing, but
+    ;;   not good for UI adjustments when seeking via buffer-name.
+    ;; - Address copy and paste code problem between cyanide-buffer-excursion and
+    ;;   cyanide-select-buffer-window.
+    (defun cyanide-buffer-excursion (func
+                                     sought-buffer
+                                     &optional all-frames)
+      "Place cursor in buffer-window, eval code, go
              back to starting location, return output of
              funcall func.
 
@@ -299,20 +302,29 @@
               in multiple frames, cyanide-buffer-excursion will
               prefer to select the window of the buffer in the current
               frame."
-            (let ((starting-buffer (current-buffer))
-                  (starting-window (selected-window))
-                  (starting-frame  (selected-frame)))
-              (progn
-                (print
-                 (concat
-                  "Beginning cyanide buffer excursion. Sought-buffer: "
-                  sought-buffer))
-                (cyanide-select-buffer-window-worker sought-buffer all-frames)
-                (let ((return (funcall func)))
-                  (progn
-                    (select-frame-set-input-focus starting-frame)
-                    (select-window starting-window)
-                    return))))))
+      (let ((starting-buffer (current-buffer))
+            (starting-window (selected-window))
+            (starting-frame  (selected-frame)))
+        (progn
+          (cyanide-message
+           (concat
+            "Beginning cyanide buffer excursion with sought-buffer "
+            sought-buffer))
+          (cyanide-select-buffer-window-worker sought-buffer all-frames)
+          (let ((return (funcall func)))
+            (progn
+              (select-frame-set-input-focus starting-frame)
+              (select-window starting-window)
+              (cyanide-message
+               (concat
+                "Finished cyanide buffer excursion with sought-buffer "
+                sought-buffer))
+              return)))))
+
+    (defun cyanide-message (str)
+      "message str if cyanide-verbose is non-nil"
+      (if cyanide-verbose
+          (message str))))
   :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode
