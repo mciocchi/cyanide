@@ -38,7 +38,7 @@
   " cyanide "                      ; lighter
   :keymap cyanide-mode-map         ; keymap
   (progn                           ; body
-    
+
     (defvar cyanide-views (make-hash-table :test 'equal)
       "this collection holds all cyanide-view objects.")
 
@@ -50,6 +50,8 @@
     (require 'find-lisp)
     (require 'cyanide-views)
     (require 'cyanide-panel)
+    (require 'cyanide-buffer-excursion)
+    (require 'foccur)
 
     (defvar cyanide-current-view nil
       "This var is used by cyanide to determine what view it's currently in.")
@@ -275,56 +277,7 @@
               in multiple frames, cyanide-select-buffer-window will
               prefer to select the window of the buffer in the current
               frame."
-      (cyanide-select-buffer-window-worker sought-buffer all-frames))
-
-    ;; TO DO:
-    ;; - Implement cyanide-window-excursion to seek via window instead for UI
-    ;;   adjustments, because duplicate buffers are fine during editing, but
-    ;;   not good for UI adjustments when seeking via buffer-name.
-    ;; - Address copy and paste code problem between cyanide-buffer-excursion and
-    ;;   cyanide-select-buffer-window.
-    (defun cyanide-buffer-excursion (func
-                                     sought-buffer
-                                     &optional all-frames)
-      "Place cursor in buffer-window, eval code, go
-             back to starting location, return output of
-             funcall func.
-
-            - If window is visible, switch to it.
-
-            - If window is not visible, switch to buffer.
-
-            - If buffer does not exist, create it.
-
-            - If all-frames is t, consider all frames. See
-              `get-buffer-window' for details regarding the specific
-              behavior of that arg. In this case, if a buffer is open
-              in multiple frames, cyanide-buffer-excursion will
-              prefer to select the window of the buffer in the current
-              frame."
-      (let ((starting-buffer (current-buffer))
-            (starting-window (selected-window))
-            (starting-frame  (selected-frame)))
-        (progn
-          (cyanide-message
-           (concat
-            "Beginning cyanide buffer excursion with sought-buffer "
-            sought-buffer))
-          (cyanide-select-buffer-window-worker sought-buffer all-frames)
-          (let ((return (funcall func)))
-            (progn
-              (select-frame-set-input-focus starting-frame)
-              (select-window starting-window)
-              (cyanide-message
-               (concat
-                "Finished cyanide buffer excursion with sought-buffer "
-                sought-buffer))
-              return)))))
-
-    (defun cyanide-message (str)
-      "message str if cyanide-verbose is non-nil"
-      (if cyanide-verbose
-          (message str))))
+      (cyanide-select-buffer-window-worker sought-buffer all-frames)))
   :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode

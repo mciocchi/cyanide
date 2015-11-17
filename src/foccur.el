@@ -1,3 +1,18 @@
+;; This file is part of Foccur.
+;;
+;; Foccur is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; Foccur is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with Foccur.  If not, see <http://www.gnu.org/licenses/>.
+
 ;; Foccur: fast/find occur by Matt Ciocchi.
 ;;
 ;; This lib provides string-match with jump-to-definition for searching code.
@@ -12,118 +27,21 @@
 ;; which can result in a very long initial load time for large projects. For that
 ;; use case, Foccur should be more efficient than Multi-Occur.
 ;;
-;; Eventually this module could be replaced by a Multi-Occur with persistent
-;; cacheing and indexing, but this solution has the advantage of simplicity and
-;; works pretty well for now.
+;; Eventually this module could be replaced by an even faster Multi-Occur with
+;; persistent cacheing and indexing, but the current solution has the advantage
+;; of simplicity and works pretty well for now.
+
+(require 'cyanide-buffer-excursion)
 
 (defvar foccur-verbose nil
   "non-nil if foccur should use verbose logging.")
 
-(defun foccur-output (long-name base-name res linum &optional foccur-buffer-name)
-  (if (and long-name base-name linum res)
-      (progn
-        (insert (concat "[[" long-name "::" linum "][" base-name ": "
-                        (replace-regexp-in-string "^[[:space:]]+" "" res)
-                        "]]" "\n")))))
-
-(defun foccur-grep-output-current-buffer ()
-  (mapcar (lambda (x) (let ((str1 (split-string x ":[0-9]+:")))
-                        (let ((long-name (car str1))
-                              (res (car (cdr str1))))
-                          (if (and long-name res)
-                              (let ((linum
-                                     (car
-                                      (cdr
-                                       (split-string
-                                        (car
-                                         (split-string
-                                          (car
-                                           (cdr
-                                            (split-string x long-name)))
-                                          res)) ":"))))
-                                    (base-name
-                                     (car (last (split-string long-name "/")))))
-                                (if (and linum base-name)
-                                    (foccur-output
-                                     long-name base-name res linum)))))))
-          (split-string (substring-no-properties (buffer-string)) "\n")))
-
-(defun foccur-buffer-string (buffer &optional all-frames)
-  "Call `buffer-string' on target buffer. If all-frames is
-   true, seek buffer across all frames. Return buffer-string"
-  (cyanide-buffer-excursion 'buffer-string buffer all-frames))
-
-(defun foccur-worker (grep-str)
-  "Implementation of worker logic for foccur. This worker
-   gets mapped to every line of a buffer with grep -Hn
-   output."
-  (progn
-    (foccur-message (concat "Executing foccur-worker with grep-str " grep-str))
-    (let ((str1 (split-string grep-str ":[0-9]+:")))
-      (let ((long-name (car str1))
-            (res (car (cdr str1))))
-        (if (and long-name res)
-            (let ((linum
-                   (car
-                    (cdr
-                     (split-string
-                      (car
-                       (split-string
-                        (car
-                         (cdr
-                          (split-string grep-str long-name)))
-                        res)) ":"))))
-                  (base-name
-                   (car (last (split-string long-name "/")))))
-              (if (and linum base-name)
-                  (progn
-                    (foccur-message
-                     (concat "foccur-worker executing foccur-output on "
-                             "long-name: " long-name " "
-                             "base-name: " base-name " "
-                             "res: " res " "
-                             "linum: " linum))
-                    (foccur-output
-                     long-name base-name res linum)))))))))
-
-(defun foccur-parse-buffer (input-buffer &optional input-all-frames output-all-frames)
-  (let ((worker (lambda ()
-                  (progn
-                    (org-mode)
-                    (erase-buffer)
-                    (foccur-message
-                     (concat "foccur-parse-buffer executing "
-                             "foccur-parse-buffer-1 on input-buffer "
-                             input-buffer))
-                    (foccur-parse-buffer-1 input-buffer input-all-frames)))))
-    (cyanide-buffer-excursion
-     worker
-     (or "*Foccur*" foccur-buffer-name)
-     output-all-frames)))
-
-(defun foccur-parse-buffer-1 (input-buffer &optional all-frames)
-  (progn
-    (foccur-message (concat
-                     "foccur-parse-buffer-1 executing foccur-worker on "
-                     "input-buffer " input-buffer))
-    (mapcar 'foccur-worker
-            (split-string
-             (substring-no-properties
-              (foccur-buffer-string input-buffer all-frames)) "\n"))))
-
-(defun foccur-generate-buffer (cmd &optional output-buffer error-buffer)
-  (foccur-message (concat "foccur-generate-buffer executing Foccur cmd: " cmd
-                          "\n"
-                          "foccur-generate-buffer executing cmd with "
-                          "output-buffer " output-buffer
-                          "\n"
-                          "foccur-generate-buffer executing cmd with "
-                          "error-buffer " error-buffer))
-  (shell-command cmd output-buffer error-buffer))
-
 ;; Case sensitive if search string has caps, or if case-fold-search is nil.
-(defun foccur (find-regexp grep-regexp dirs &optional nlines)
-  (interactive "Mfind-regexp: \nMgrep-regexp: \nDdirs: \n")
+(defun foccur (dirs find-regexp grep-regexp &optional nlines)
+  (interactive "Ddirs: \nMfind-regexp: \nMgrep-regexp: \n")
+  (foccur-1 dirs find-regexp grep-regexp nlines))
+
+(defun foccur-1 (dirs find-regexp grep-regexp &optional nlines)
   (let ((grep-case-sensitive-arg
          (if (foccur-case-sensitive grep-regexp) "" "i"))
         (find-case-sensitive-arg
@@ -169,6 +87,86 @@
   (or (let ((case-fold-search nil))
         (string-match "[$.*[:upper:].*^]" re))
       (not case-fold-search)))
+
+(defun foccur-parse-buffer (input-buffer &optional input-all-frames output-all-frames)
+  (let ((worker (lambda ()
+                  (progn
+                    (org-mode)
+                    (erase-buffer)
+                    (foccur-message
+                     (concat "foccur-parse-buffer executing "
+                             "foccur-parse-buffer-1 on input-buffer "
+                             input-buffer))
+                    (foccur-parse-buffer-1 input-buffer input-all-frames)))))
+    (cyanide-buffer-excursion
+     worker
+     (or "*Foccur*" foccur-buffer-name)
+     output-all-frames)))
+
+(defun foccur-parse-buffer-1 (input-buffer &optional all-frames)
+  (progn
+    (foccur-message (concat
+                     "foccur-parse-buffer-1 executing foccur-worker on "
+                     "input-buffer " input-buffer))
+    (mapcar 'foccur-worker
+            (split-string
+             (substring-no-properties
+              (foccur-buffer-string input-buffer all-frames)) "\n"))))
+
+(defun foccur-generate-buffer (cmd &optional output-buffer error-buffer)
+  (foccur-message (concat "foccur-generate-buffer executing Foccur cmd: " cmd
+                          "\n"
+                          "foccur-generate-buffer executing cmd with "
+                          "output-buffer " output-buffer
+                          "\n"
+                          "foccur-generate-buffer executing cmd with "
+                          "error-buffer " error-buffer))
+  (shell-command cmd output-buffer error-buffer))
+
+(defun foccur-output (long-name linum base-name res)
+  (if (and long-name base-name linum res)
+      (progn
+        (insert (concat "[[" long-name "::" linum "]["linum ":" base-name ": "
+                        (replace-regexp-in-string "^[[:space:]]+" "" res)
+                        "]]" "\n")))))
+
+(defun foccur-buffer-string (buffer &optional all-frames)
+  "Call `buffer-string' on target buffer. If all-frames is
+   true, seek buffer across all frames. Return buffer-string"
+  (cyanide-buffer-excursion 'buffer-string buffer all-frames))
+
+(defun foccur-worker (grep-str)
+  "Implementation of worker logic for foccur. This worker
+   gets mapped to every line of a buffer with grep -Hn
+   output."
+  (progn
+    (foccur-message (concat "Executing foccur-worker with grep-str " grep-str))
+    (let ((str1 (split-string grep-str ":[0-9]+:")))
+      (let ((long-name (car str1))
+            (res (car (cdr str1))))
+        (if (and long-name res)
+            (let ((linum
+                   (car
+                    (cdr
+                     (split-string
+                      (car
+                       (split-string
+                        (car
+                         (cdr
+                          (split-string grep-str long-name)))
+                        res)) ":"))))
+                  (base-name
+                   (car (last (split-string long-name "/")))))
+              (if (and linum base-name)
+                  (progn
+                    (foccur-message
+                     (concat "foccur-worker executing foccur-output on "
+                             "long-name: " long-name " "
+                             "base-name: " base-name " "
+                             "res: " res " "
+                             "linum: " linum))
+                    (foccur-output
+                     long-name linum base-name res)))))))))
 
 (defun foccur-message (str)
   "Message str if foccur-verbose is non-nil. "
