@@ -42,42 +42,61 @@
   (foccur-1 dirs find-regexp grep-regexp nlines))
 
 (defun foccur-1 (dirs find-regexp grep-regexp &optional nlines)
+  (foccur-2 dirs find-regexp grep-regexp 'foccur-cmd-builder 'foccur-parse-buffer 'foccur-generate-buffer nlines))
+
+(defun foccur-2 (dirs find-regexp grep-regexp cmd-builder parser generator &optional nlines)
+  (let ((cmd (funcall cmd-builder dirs find-regexp grep-regexp nlines))
+        (error-buffer (or (bound-and-true-p foccur-default-error-buffer)
+                          "*Foccur Errors*"))
+        (input-all-frames (or (bound-and-true-p foccur-default-input-all-frames)
+                              t))
+        (output-all-frames (or (bound-and-true-p foccur-default-input-all-frames)
+                               t))
+        (input-buffer (or (bound-and-true-p foccur-default-input-buffer)
+                          "*Foccur Shell Command*"))
+        (output-buffer (or (bound-and-true-p foccur-default-output-buffer)
+                           "*Foccur Shell Command*")))
+    (funcall generator cmd output-buffer error-buffer)
+    (funcall parser input-buffer input-all-frames output-all-frames)))
+
+(defun foccur-cmd-builder (dirs find-regexp grep-regexp &optional nlines)
   (let ((grep-case-sensitive-arg
          (if (foccur-case-sensitive grep-regexp) "" "i"))
         (find-case-sensitive-arg
          (if (foccur-case-sensitive find-regexp) "" "i")))
-    (let ((cmd (concat
-                (or (bound-and-true-p foccur-default-find-cmd) "find ")
-                dirs
-                (or (bound-and-true-p foccur-default-find-grep-args)
-                    (concat " -"
-                            find-case-sensitive-arg
-                            "name "
-                            find-regexp
-                            " "
-                            "-type f "
-                            "-exec grep -"
-                            grep-case-sensitive-arg
-                            "Hn "
-                            grep-regexp
-                            " {} +"))))
-          (error-buffer (or (bound-and-true-p foccur-default-error-buffer)
+    (let ((error-buffer (or (bound-and-true-p foccur-default-error-buffer)
                             "*Foccur Errors*"))
           (input-all-frames (or (bound-and-true-p foccur-default-input-all-frames)
                                 t))
-          (output-all-frames (or (bound-and-true-p foccur-default-output-all-frames)
+          (output-all-frames (or (bound-and-true-p foccur-default-input-all-frames)
                                  t))
           (input-buffer (or (bound-and-true-p foccur-default-input-buffer)
-                          "*Foccur Shell Command*"))
+                            "*Foccur Shell Command*"))
           (output-buffer (or (bound-and-true-p foccur-default-output-buffer)
                              "*Foccur Shell Command*")))
-      (progn
-        (if (not (equal output-buffer input-buffer))
-            (message (concat "output-buffer " output-buffer " and input-buffer "
-                             input-buffer " are not the same. foccur may not "
-                             "work!")))
-        (foccur-generate-buffer cmd output-buffer error-buffer)
-        (foccur-parse-buffer input-buffer input-all-frames output-all-frames)))))
+      (let ((cmd
+             (concat
+              (or (bound-and-true-p foccur-default-find-cmd) "find ")
+              dirs
+              (or (bound-and-true-p foccur-default-find-grep-args)
+                  (concat " -"
+                          find-case-sensitive-arg
+                          "name "
+                          find-regexp
+                          " "
+                          "-type f "
+                          "-exec grep -"
+                          grep-case-sensitive-arg
+                          "Hn "
+                          grep-regexp
+                          " {} +")))))
+        (progn
+          (foccur-message (concat "foccur-cmd-builder built cmd " cmd))
+          (if (not (equal output-buffer input-buffer))
+              (message (concat "output-buffer " output-buffer " and input-buffer "
+                               input-buffer " are not the same. foccur may not "
+                               "work!")))
+          cmd))))) ;; return
 
 (defun foccur-case-sensitive (re)
   "Respect emacs defaults and determine whether foccur
