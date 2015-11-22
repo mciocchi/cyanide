@@ -42,9 +42,11 @@
   (foccur-1 dirs find-regexp grep-regexp nlines))
 
 (defun foccur-1 (dirs find-regexp grep-regexp &optional nlines)
-  (foccur-2 dirs find-regexp grep-regexp 'foccur-cmd-builder 'foccur-parse-buffer 'foccur-generate-buffer nlines))
+  (foccur-2 dirs find-regexp grep-regexp 'foccur-cmd-builder 'foccur-parse-buffer
+            'foccur-generate-buffer nlines))
 
-(defun foccur-2 (dirs find-regexp grep-regexp cmd-builder parser generator &optional nlines)
+(defun foccur-2 (dirs find-regexp grep-regexp cmd-builder parser generator
+                      &optional nlines)
   (let ((cmd (funcall cmd-builder dirs find-regexp grep-regexp nlines))
         (error-buffer (or (bound-and-true-p foccur-default-error-buffer)
                           "*Foccur Errors*"))
