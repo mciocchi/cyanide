@@ -23,7 +23,9 @@
                                    ;; Tear down any other windows first.
                                    (delete-other-windows)
                                    (setq frame-title-format
-                                         cyanide-current-project)
+                                         (oref (gethash cyanide-current-project
+                                                        cyanide-projects)
+                                               display-name))
                                    ;; Prevent annoying emacs habit of splitting
                                    ;; windows without prompting from the user.
                                    ;; Remember original values so that they can
@@ -41,6 +43,11 @@
                                     (* (/ (window-total-height) 10) 9))
                                    (split-window-horizontally
                                     (* (/ (window-total-width) 10) 2))
+                                   ;; ag search configuration
+                                   (setq ag-reuse-window-orig ag-reuse-window)
+                                   (setq ag-reuse-buffers-orig ag-reuse-buffers)
+                                   (setq ag-reuse-window t)
+                                   (setq ag-reuse-buffers t)
                                    ;; Horiz. bottom window for build/deployment
                                    (other-window 2)
                                    (switch-to-buffer "*Async Shell Command*")
@@ -52,7 +59,7 @@
                                    (set-window-dedicated-p
                                     (get-buffer-window (current-buffer)) 1)
                                    (emacs-lock-mode 'kill)
-                                   ;; Vert. bookmark list- tracebacks/postmortems
+                                   ;; Vert. panel with function/class defs
                                    (other-window 1)
                                    (switch-to-buffer "cyanide-panel")
                                    (setq cyanide-panel-search-regexp
@@ -75,7 +82,7 @@
                                    (set-window-dedicated-p
                                     (get-buffer-window (current-buffer)) 1)
                                    (emacs-lock-mode 'kill)
-                                   ;; Main browsing buffer- square of golden rectangle
+                                   ;; Main browsing buffer
                                    (cyanide-panel-enable)
                                    (other-window 1)))
                        :disable 'cyanide-default-disabler)
@@ -91,7 +98,9 @@
                                          'cyanide-elisp-view)
                                    (delete-other-windows)
                                    (setq frame-title-format
-                                         cyanide-current-project)
+                                         (oref (gethash cyanide-current-project
+                                                        cyanide-projects)
+                                               display-name))
                                    (setq split-height-threshold-orig
                                          split-height-threshold)
                                    (setq split-width-threshold-orig
@@ -104,6 +113,11 @@
                                     (* (/ (window-total-height) 10) 9))
                                    (split-window-horizontally
                                     (* (/ (window-total-width) 10) 2))
+                                   ;; ag search configuration
+                                   (setq ag-reuse-window-orig ag-reuse-window)
+                                   (setq ag-reuse-buffers-orig ag-reuse-buffers)
+                                   (setq ag-reuse-window t)
+                                   (setq ag-reuse-buffers t)
                                    (other-window 2)
                                    (switch-to-buffer "*ielm*")
                                    (ielm)

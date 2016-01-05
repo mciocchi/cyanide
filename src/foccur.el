@@ -156,7 +156,7 @@
    true, seek buffer across all frames. Return buffer-string"
   (cyanide-buffer-excursion 'buffer-string buffer all-frames))
 
-(defun foccur-worker (grep-str)
+(defun foccur-worker (grep-str match-num)
   "Implementation of worker logic for foccur. This worker
    gets mapped to every line of a buffer with grep -Hn
    output."

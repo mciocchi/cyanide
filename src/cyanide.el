@@ -52,12 +52,15 @@
     (require 'cyanide-panel)
     (require 'cyanide-buffer-excursion)
     (require 'foccur)
+    (require 'ag)
 
     (defvar cyanide-current-view nil
-      "This var is used by cyanide to determine what view it's currently in.")
+      "This var stores a symbol used by cyanide to determine
+       what view it's currently in.")
 
     (defvar cyanide-current-project nil
-      "This var is used by cyanide to determine what project it's currently in.")
+      "This var stores a symbol used by cyanide to determine
+       what project it's currently in.")
 
     (defvar cyanide-verbose nil
       "non-nil if cyanide should use verbose logging.")
@@ -93,30 +96,27 @@
             (proj-tree (oref proj proj-tree))
             (load-hook (oref proj load-hook))
             (default-view (gethash (oref proj default-view) cyanide-views))
-            (display-name (oref proj display-name)))
-
-        (progn
+            (sym (cdr (assoc (oref proj display-name)
+                             (cyanide-hash-by-display-name cyanide-projects)))))
           (if cyanide-current-view (cyanide-disable-current-view))
           (if load-hook (funcall load-hook))
-          (setq cyanide-current-project display-name)
-          (cyanide-find-file-project-tree proj-tree)
+          (setq cyanide-current-project sym)
+          ;; remove this- don't pre-load buffers, just use ag
+          ;; (cyanide-find-file-project-tree proj-tree)
           (funcall (oref default-view enable))
-          nil)))
+          nil))
 
     (defun cyanide-load-project-prompt ()
-      "Prompt the user for a project to load, take user input, and then load it."
+      "Prompt the user for a project to load, take user input,
+       and then load it."
       (interactive
-       (let ((projects '())
-             (names '()))
-         (progn
-           (maphash
-            (lambda (key val)
-              (progn (push `(,(oref val display-name) . ,val) projects)
-                     (push (oref val display-name) names)))
-            cyanide-projects)
-           (cyanide-load-project
-            (cdr (assoc (completing-read "Load project: " names nil 1)
-                        projects)))))))
+       (let ((projects (cyanide-hash-by-display-name cyanide-projects)))
+         (let ((project-names (mapcar 'car projects)))
+           (cyanide-load-project (cyanide-get-by-display-name
+                                  (completing-read "Load project: "
+                                                   project-names nil 1)
+                                  projects
+                                  cyanide-projects))))))
 
     (defun cyanide-find-file-subtree (dir regex)
       "Open every file in an arbitrary subdirectory tree."
@@ -174,6 +174,10 @@
             (setq split-height-threshold split-height-threshold-orig))
         (if split-width-threshold
             (setq split-width-threshold split-width-threshold-orig))
+        (if ag-reuse-window-orig
+            (setq ag-reuse-window ag-reuse-window-orig))
+        (if ag-reuse-buffers-orig
+            (setq ag-reuse-buffers ag-reuse-buffers-orig))
         nil))
 
     (defclass cyanide-project ()
@@ -235,16 +239,13 @@
     (defun cyanide-enable-view-prompt ()
       "Prompt user to enable a cyanide-view, and then enable it."
       (interactive
-       (let ((views '())
-             (names '()))
-         (progn
-           (maphash (lambda (key val)
-                      (progn
-                        (push `(,(oref val display-name) . ,val) views)
-                        (push (oref val display-name) names)))
-                    cyanide-views)
+       (let ((views (cyanide-hash-by-display-name cyanide-views)))
+         (let ((names (mapcar 'car views)))
            (cyanide-call-enable
-            (cdr (assoc (completing-read "Enable view: " names nil 1) views)))))))
+            (cyanide-get-by-display-name
+             (completing-read "Enable view: " names nil 1)
+             views
+             cyanide-views))))))
 
     (defun cyanide-multi-occur-all-buffers (str)
       "Generic search for arbitrary string across all buffers."
@@ -277,7 +278,65 @@
               in multiple frames, cyanide-select-buffer-window will
               prefer to select the window of the buffer in the current
               frame."
-      (cyanide-select-buffer-window-worker sought-buffer all-frames)))
+      (cyanide-select-buffer-window-worker sought-buffer all-frames))
+
+    (cl-defun cyanide-ag-search (string
+                                 &key (regexp nil) (file-regex nil) (file-type nil))
+      "Run ag searching for the STRING given in DIRECTORY.
+       If REGEXP is non-nil, treat STRING as a regular expression."
+      (let ((arguments ag-arguments)
+            (shell-command-switch "-c"))
+        (unless regexp
+          (setq arguments (cons "--literal" arguments)))
+        (if ag-highlight-search
+            (setq arguments (append '("--color" "--color-match" "30;43") arguments))
+          (setq arguments (append '("--nocolor") arguments)))
+        (when (char-or-string-p file-regex)
+          (setq arguments (append `("--file-search-regex" ,file-regex) arguments)))
+        (when file-type
+          (setq arguments (cons (format "--%s" file-type) arguments)))
+        (when ag-ignore-list
+          (setq arguments (append (ag/format-ignore ag-ignore-list) arguments)))
+        (unless (file-exists-p default-directory)
+          (error "No such directory %s" default-directory))
+        (let ((command-string
+               (mapconcat #'shell-quote-argument
+                          (append (list ag-executable) arguments (list string "/home/user/.emacs.d/"))
+                          " ")))
+          ;; If we're called with a prefix, let the user modify the command before
+          ;; running it. Typically this means they want to pass additional arguments.
+          (when current-prefix-arg
+            ;; Make a space in the command-string for the user to enter more arguments.
+            (setq command-string (ag/replace-first command-string " -- " "  -- "))
+            ;; Prompt for the command.
+            (let ((adjusted-point (- (length command-string) (length string) 5)))
+              (setq command-string
+                    (read-from-minibuffer "ag command: "
+                                          (cons command-string adjusted-point)))))
+          ;; Call ag.
+          (compilation-start
+           command-string
+           #'ag-mode
+           `(lambda (mode-name) ,(ag/buffer-name string "merp" regexp))))))
+
+    (defun cyanide-ag (string)
+      "Search for an arbitrary string in current project
+       directory."
+      (interactive (list (ag/read-from-minibuffer "Search string")))
+      (cyanide-ag-search string))
+
+    (defun cyanide-hash-by-display-name (hash)
+      "Take in a hash, associate display names to keys
+       for speedy lookup in UI."
+      (let ((x '()))
+        (maphash (lambda (key val)
+                   (push `(,(oref val display-name) . ,key) x))
+                 hash) x))
+
+    (defun cyanide-get-by-display-name (display-name display-names hash)
+      "Get from hash by display-name."
+      (let ((sym (cdr (assoc display-name display-names))))
+        (gethash sym hash))))
   :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode
