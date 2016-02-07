@@ -44,7 +44,7 @@
 
     (defvar cyanide-projects (make-hash-table :test 'equal)
       "This collection holds all cyanide-project objects")
-    
+
     ;; The find-lisp package is distributed with emacs, but needs to be included
     ;; explicitly like this to make its functions available in userland.
     (require 'find-lisp)
@@ -128,7 +128,7 @@
        in the current frame.
 
        For more information on minibuf and all-frames args,
-       see `walk-windows'."      
+       see `walk-windows'."
       (let ((f (lambda (x)
                  (set-window-dedicated-p x bool))))
         (walk-windows f minibuf all-frames)))
@@ -251,7 +251,9 @@
       "Generic search for arbitrary string across all buffers."
       (interactive "MOccur String: ")
       (multi-occur-in-matching-buffers ".*" str))
-    (defun cyanide-select-buffer-window-worker (sought-buffer &optional all-frames)
+
+    (defun cyanide-select-buffer-window-worker (sought-buffer
+                                                &optional all-frames)
       (let ((sought-buffer-window (get-buffer-window sought-buffer all-frames)))
         (let ((sought-buffer-frame (window-frame sought-buffer-window)))
           (progn
@@ -281,7 +283,9 @@
       (cyanide-select-buffer-window-worker sought-buffer all-frames))
 
     (cl-defun cyanide-ag-search (string
-                                 &key (regexp nil) (file-regex nil) (file-type nil))
+                                 &key (regexp nil)
+                                 (file-regex nil)
+                                 (file-type nil))
       "Run ag searching for the STRING given in DIRECTORY.
        If REGEXP is non-nil, treat STRING as a regular expression."
       (let ((arguments ag-arguments)
@@ -289,10 +293,13 @@
         (unless regexp
           (setq arguments (cons "--literal" arguments)))
         (if ag-highlight-search
-            (setq arguments (append '("--color" "--color-match" "30;43") arguments))
-          (setq arguments (append '("--nocolor") arguments)))
+            (setq arguments
+                  (append '("--color" "--color-match" "30;43") arguments))
+          (setq arguments
+                (append '("--nocolor") arguments)))
         (when (char-or-string-p file-regex)
-          (setq arguments (append `("--file-search-regex" ,file-regex) arguments)))
+          (setq arguments
+                (append `("--file-search-regex" ,file-regex) arguments)))
         (when file-type
           (setq arguments (cons (format "--%s" file-type) arguments)))
         (when ag-ignore-list
@@ -301,18 +308,27 @@
           (error "No such directory %s" default-directory))
         (let ((command-string
                (mapconcat #'shell-quote-argument
-                          (append (list ag-executable) arguments (list string "/home/user/.emacs.d/"))
+                          (append
+                           (list ag-executable)
+                           arguments
+                           (list string "/home/user/.emacs.d/"))
                           " ")))
-          ;; If we're called with a prefix, let the user modify the command before
-          ;; running it. Typically this means they want to pass additional arguments.
+          ;; If we're called with a prefix, let the user modify
+          ;; the command before
+          ;; running it. Typically this means they want to pass
+          ;; additional arguments.
           (when current-prefix-arg
-            ;; Make a space in the command-string for the user to enter more arguments.
-            (setq command-string (ag/replace-first command-string " -- " "  -- "))
+            ;; Make a space in the command-string for the user
+            ;; to enter more arguments.
+            (setq command-string
+                  (ag/replace-first command-string " -- " "  -- "))
             ;; Prompt for the command.
-            (let ((adjusted-point (- (length command-string) (length string) 5)))
+            (let ((adjusted-point
+                   (- (length command-string) (length string) 5)))
               (setq command-string
                     (read-from-minibuffer "ag command: "
-                                          (cons command-string adjusted-point)))))
+                                          (cons
+                                           command-string adjusted-point)))))
           ;; Call ag.
           (compilation-start
            command-string
@@ -336,7 +352,65 @@
     (defun cyanide-get-by-display-name (display-name display-names hash)
       "Get from hash by display-name."
       (let ((sym (cdr (assoc display-name display-names))))
-        (gethash sym hash))))
+        (gethash sym hash)))
+
+    (defclass cyanide-window-tree ()
+      ((window-tree :initarg :window-tree
+                    :type list
+                    :documentation
+                    "Object-oriented construct designed to
+                     be more user-friendly than standard
+                     emacs window-tree.")))
+
+    (defmethod init ((cy-win-tree cyanide-window-tree) win-tree)
+      "constructor that takes in window-tree
+       and builds cyanide-window-tree, similar construct but
+       object-oriented. All relevant changes to
+       cyanide-window-tree will also trickle over to
+       window-tree and emacs environment, but the goal of
+       cyanide-window-tree is to provide a richer
+       object-oriented interface that allows users to receive
+       and send window and buffer management events."
+      win-tree) ; test
+
+    (defun getminibuff (win-tree)
+      (let ((buff (cadr win-tree)))
+        (if (windowp buff)
+            buff ; return buff
+          nil))) ; else return nil
+
+    (defun getnodes (win-tree)
+      (if (getminibuff win-tree)
+          (cddr (car win-tree))
+        (cdr win-tree))) ; else
+
+    (defmethod tokenize-window-tree-node ((cy-win-tree cyanide-window-tree)
+                                          node)
+      (progn
+        (message (concat "node = " (format "%s" node)))
+        (if (windowp node)
+            `(win ,node)
+          (if (booleanp node)
+              `(split ,node)
+            (let ((x (car node)))
+              (let ((type (type-of x)))
+                (if (equal 'window type)
+                    `(win-tree-not-split-with-minibuff ,node)
+                  (if (booleanp x) ; else if
+                      `(win-tree-split-no-minibuff ,node)
+                    (if (integerp  x)
+                        `(coords ,node)
+                      (if (booleanp (car x))
+                          `(win-tree-split-with-minibuff ,node)))))))))))
+
+    ;; note: if you only mapcar, there's no root object... prob need to fix
+    ;; that. It's not a proper tree without a root.
+    ;;
+    ;; Try- if the length of the root is one, don't mapcar, else mapcar.
+    (defmethod parse-window-tree-node ((cy-win-tree cyanide-window-tree)
+                                       node)
+      (let ((f (lambda (n) (tokenize-window-tree-node cy-win-tree n))))
+        (mapcar f node))))
   :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode

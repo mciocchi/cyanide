@@ -24,8 +24,8 @@
 ;;
 ;; Multi-Occur is very good, but requires all buffers that it searches to be
 ;; loaded into memory and indexed. This requires a lot of initial CPU cycles,
-;; which can result in a very long initial load time for large projects. For that
-;; use case, Foccur should be more efficient than Multi-Occur.
+;; which can result in a very long initial load time for large projects.
+;; For that use case, Foccur should be more efficient than Multi-Occur.
 ;;
 ;; Eventually this module could be replaced by an even faster Multi-Occur with
 ;; persistent cacheing and indexing, but the current solution has the advantage
@@ -42,7 +42,11 @@
   (foccur-1 dirs find-regexp grep-regexp nlines))
 
 (defun foccur-1 (dirs find-regexp grep-regexp &optional nlines)
-  (foccur-2 dirs find-regexp grep-regexp 'foccur-cmd-builder 'foccur-parse-buffer
+  (foccur-2 dirs
+            find-regexp
+            grep-regexp
+            'foccur-cmd-builder
+            'foccur-parse-buffer
             'foccur-generate-buffer nlines))
 
 (defun foccur-2 (dirs find-regexp grep-regexp cmd-builder parser generator
@@ -52,8 +56,9 @@
                           "*Foccur Errors*"))
         (input-all-frames (or (bound-and-true-p foccur-default-input-all-frames)
                               t))
-        (output-all-frames (or (bound-and-true-p foccur-default-input-all-frames)
-                               t))
+        (output-all-frames (or
+                            (bound-and-true-p foccur-default-input-all-frames)
+                            t))
         (input-buffer (or (bound-and-true-p foccur-default-input-buffer)
                           "*Foccur Shell Command*"))
         (output-buffer (or (bound-and-true-p foccur-default-output-buffer)
@@ -68,10 +73,12 @@
          (if (foccur-case-sensitive find-regexp) "" "i")))
     (let ((error-buffer (or (bound-and-true-p foccur-default-error-buffer)
                             "*Foccur Errors*"))
-          (input-all-frames (or (bound-and-true-p foccur-default-input-all-frames)
-                                t))
-          (output-all-frames (or (bound-and-true-p foccur-default-input-all-frames)
-                                 t))
+          (input-all-frames
+           (or (bound-and-true-p foccur-default-input-all-frames)
+               t))
+          (output-all-frames
+           (or (bound-and-true-p foccur-default-input-all-frames)
+               t))
           (input-buffer (or (bound-and-true-p foccur-default-input-buffer)
                             "*Foccur Shell Command*"))
           (output-buffer (or (bound-and-true-p foccur-default-output-buffer)
@@ -95,9 +102,10 @@
         (progn
           (foccur-message (concat "foccur-cmd-builder built cmd " cmd))
           (if (not (equal output-buffer input-buffer))
-              (message (concat "output-buffer " output-buffer " and input-buffer "
-                               input-buffer " are not the same. foccur may not "
-                               "work!")))
+              (message
+               (concat "output-buffer " output-buffer " and input-buffer "
+                       input-buffer " are not the same. foccur may not "
+                       "work!")))
           cmd))))) ;; return
 
 (defun foccur-case-sensitive (re)
@@ -109,7 +117,9 @@
         (string-match "[$.*[:upper:].*^]" re))
       (not case-fold-search)))
 
-(defun foccur-parse-buffer (input-buffer &optional input-all-frames output-all-frames)
+(defun foccur-parse-buffer (input-buffer &optional
+                                         input-all-frames
+                                         output-all-frames)
   (let ((worker (lambda ()
                   (progn
                     (org-mode)
