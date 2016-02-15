@@ -39,51 +39,15 @@
                                    ;; Set up new window geometry.
                                    (split-window-vertically
                                     (* (/ (window-total-height) 10) 9))
-                                   (split-window-vertically
-                                    (* (/ (window-total-height) 10) 9))
-                                   (split-window-horizontally
-                                    (* (/ (window-total-width) 10) 2))
                                    ;; ag search configuration
                                    (setq ag-reuse-window-orig ag-reuse-window)
                                    (setq ag-reuse-buffers-orig ag-reuse-buffers)
                                    (setq ag-reuse-window t)
                                    (setq ag-reuse-buffers t)
-                                   ;; Horiz. bottom window for build/deployment
-                                   (other-window 2)
-                                   (switch-to-buffer "*Async Shell Command*")
-                                   (set-window-dedicated-p
-                                    (get-buffer-window (current-buffer)) 1)
-                                   ;; Horiz. bottommost window for moccur search
                                    (other-window 1)
                                    (switch-to-buffer "*Occur*")
                                    (set-window-dedicated-p
                                     (get-buffer-window (current-buffer)) 1)
-                                   (emacs-lock-mode 'kill)
-                                   ;; Vert. panel with function/class defs
-                                   (other-window 1)
-                                   (switch-to-buffer "*cyanide-panel*")
-                                   (setq cyanide-panel-search-regexp
-                                         (concat "\\(defun\\|"
-                                                 "defmacro\\|"
-                                                 "defmethod\\|"
-                                                 "defclass\\|"
-                                                 "class \\|"
-                                                 "interface .*\{\\|"
-                                                 "def \\|"
-                                                 "defn \\|"
-                                                 "fn \\|"
-                                                 "function .*{\\|"
-                                                 "sub .*\{\\|"
-                                                 "defn \\|"
-                                                 "public .*\{\\|"
-                                                 "private .*\{\\|"
-                                                 "protected .*\{\\|"
-                                                 "^*+ \\)"))
-                                   (set-window-dedicated-p
-                                    (get-buffer-window (current-buffer)) 1)
-                                   (emacs-lock-mode 'kill)
-                                   ;; Main browsing buffer
-                                   (cyanide-panel-enable)
                                    (other-window 1)))
                        :disable 'cyanide-default-disabler)
          ;; Every cyanide-view object is stored in this hashtable.
@@ -111,37 +75,21 @@
                                     (* (/ (window-total-height) 10) 9))
                                    (split-window-vertically
                                     (* (/ (window-total-height) 10) 9))
-                                   (split-window-horizontally
-                                    (* (/ (window-total-width) 10) 2))
                                    ;; ag search configuration
                                    (setq ag-reuse-window-orig ag-reuse-window)
                                    (setq ag-reuse-buffers-orig ag-reuse-buffers)
                                    (setq ag-reuse-window t)
                                    (setq ag-reuse-buffers t)
                                    (other-window 2)
-                                   (switch-to-buffer "*ielm*")
-                                   (ielm)
-                                   (set-window-dedicated-p
-                                    (get-buffer-window (current-buffer)) 1)
-                                   (other-window 1)
                                    (switch-to-buffer "*Occur*")
                                    (set-window-dedicated-p
                                     (get-buffer-window (current-buffer)) 1)
-                                   (emacs-lock-mode 'kill)
-                                   (other-window 1)
-                                   (switch-to-buffer "*cyanide-panel*")
-                                   (setq cyanide-panel-search-regexp
-                                         (concat
-                                          "\\(defun\\|"
-                                          "defmacro\\|"
-                                          "defmethod\\|"
-                                          "defclass\\|"
-                                          "^*+ \\)"))
-                                   (emacs-lock-mode 'kill)
+                                   (other-window 2)
+                                   (switch-to-buffer "*ielm*")
                                    (set-window-dedicated-p
                                     (get-buffer-window (current-buffer)) 1)
-                                   (cyanide-panel-enable)
-                                   (other-window 1)))
+                                   (ielm)
+                                   (other-window 2)))
                        :disable 'cyanide-default-disabler)
          cyanide-views)
 

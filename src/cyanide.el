@@ -52,7 +52,6 @@
     ;; explicitly like this to make its functions available in userland.
     (require 'find-lisp)
     (require 'cyanide-views)
-    (require 'cyanide-panel)
     (require 'cyanide-buffer-excursion)
     (require 'ag)
 
@@ -165,7 +164,6 @@
 
     (defun cyanide-default-disabler ()
       (progn
-        (cyanide-panel-disable)
         (cyanide-windows-dedicated nil)
         (cyanide-windows-locked nil)
         (delete-other-windows)
