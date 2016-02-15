@@ -25,7 +25,7 @@
   '("CyanIDE"
     ["Load Project"
      cyanide-load-project-prompt t]
-    ["ag Search Project"
+    ["cyanide-ag-search Project"
      cyanide-ag-search t]
     ["Enable View"
      cyanide-enable-view-prompt t]
@@ -93,7 +93,6 @@
       (let ((window-configuration-change-hook nil)
             (bookmark-after-jump-hook nil)
             (occur-mode-find-occurrence-hook nil)
-            (proj-tree (oref proj proj-tree))
             (load-hook (oref proj load-hook))
             (default-view (gethash (oref proj default-view) cyanide-views))
             (sym (cdr (assoc (oref proj display-name)
@@ -188,10 +187,6 @@
        (default-view :initarg :default-view
          :type symbol
          :documentation "Default view at startup for a cyanide-project.")
-       (proj-tree :initarg :proj-tree
-                  :initform ()
-                  :type list
-                  :documentation "Project tree.")
        (proj-root :initarg :proj-root
                   :initform ""
                   :type string
