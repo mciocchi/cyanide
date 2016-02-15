@@ -19,14 +19,14 @@
       (define-key map (kbd "C-c c l") 'cyanide-load-project-prompt)
       (define-key map (kbd "C-c c d") 'cyanide-disable-current-view)
       (define-key map (kbd "C-c c v") 'cyanide-enable-view-prompt)
-      (define-key map (kbd "C-c c m") 'cyanide-multi-occur-all-buffers)) map))
+      (define-key map (kbd "C-c c a") 'cyanide-ag-search)) map))
 
 (easy-menu-define cyanide-menu cyanide-mode-map "CyanIDE"
   '("CyanIDE"
     ["Load Project"
      cyanide-load-project-prompt t]
-    ["Search all buffers"
-     cyanide-multi-occur-all-buffers t]
+    ["ag Search Project"
+     cyanide-ag-search t]
     ["Enable View"
      cyanide-enable-view-prompt t]
     ["Disable Current View"
@@ -98,13 +98,13 @@
             (default-view (gethash (oref proj default-view) cyanide-views))
             (sym (cdr (assoc (oref proj display-name)
                              (cyanide-hash-by-display-name cyanide-projects)))))
-          (if cyanide-current-view (cyanide-disable-current-view))
-          (if load-hook (funcall load-hook))
-          (setq cyanide-current-project sym)
-          ;; remove this- don't pre-load buffers, just use ag
-          ;; (cyanide-find-file-project-tree proj-tree)
-          (funcall (oref default-view enable))
-          nil))
+        (if cyanide-current-view (cyanide-disable-current-view))
+        (when load-hook
+          (mapcar
+           'funcall load-hook))
+        (setq cyanide-current-project sym)
+        (funcall (oref default-view enable))
+        nil))
 
     (defun cyanide-load-project-prompt ()
       "Prompt the user for a project to load, take user input,
@@ -192,6 +192,10 @@
                   :initform ()
                   :type list
                   :documentation "Project tree.")
+       (proj-root :initarg :proj-root
+                  :initform ""
+                  :type string
+                  :documentation "Project root.")
        (load-hook :initarg :load-hook
                   :type list
                   :documentation "init-hook called at project load-time.")))
@@ -282,8 +286,12 @@
               frame."
       (cyanide-select-buffer-window-worker sought-buffer all-frames))
 
+    ;; Source: https://github.com/Wilfred/ag.el/blob/master/ag.el
+    ;; Tiny alteration on ag/search from Wilfred's ag.el to make it
+    ;; project-aware.
     (cl-defun cyanide-ag-search (string
-                                 &key (regexp nil)
+                                 &key
+                                 (regexp nil)
                                  (file-regex nil)
                                  (file-type nil))
       "Run ag searching for the STRING given in DIRECTORY.
@@ -311,7 +319,7 @@
                           (append
                            (list ag-executable)
                            arguments
-                           (list string "/home/user/.emacs.d/"))
+                           (list string cyanide-current-project))
                           " ")))
           ;; If we're called with a prefix, let the user modify
           ;; the command before
@@ -410,7 +418,30 @@
     (defmethod parse-window-tree-node ((cy-win-tree cyanide-window-tree)
                                        node)
       (let ((f (lambda (n) (tokenize-window-tree-node cy-win-tree n))))
-        (mapcar f node))))
+        (mapcar f node)))
+
+    (defun cyanide-ag-search (string)
+      (let ((proj-root
+             (oref
+              (gethash cyanide-current-project cyanide-projects) proj-root)))
+        (interactive (list (ag/read-from-minibuffer "Search string")))
+        (ag/search string directory)))
+
+    (defun cyanide-ag-search (string)
+      "Search using ag in a given DIRECTORY for a given search STRING,
+       with STRING defaulting to the symbol under point.
+
+       If called with a prefix, prompts for flags to pass to ag."
+      (interactive (list (ag/read-from-minibuffer "Search string")))
+      (if cyanide-current-project
+          (let ((directory
+                 (oref
+                  (gethash cyanide-current-project
+                           cyanide-projects) proj-root)))
+            (ag/search string directory))
+        (error (concat "cyanide-current-project is nil. "
+                       "Cannot invoke cyanide-ag-search "
+                       "before loading a cyanide-project.")))))
   :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode
