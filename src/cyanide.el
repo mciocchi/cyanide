@@ -19,7 +19,8 @@
       (define-key map (kbd "C-c c l") 'cyanide-load-project-prompt)
       (define-key map (kbd "C-c c d") 'cyanide-disable-current-view)
       (define-key map (kbd "C-c c v") 'cyanide-enable-view-prompt)
-      (define-key map (kbd "C-c c a") 'cyanide-ag-search)) map))
+      (define-key map (kbd "C-c c a") 'cyanide-ag-search)
+      (define-key map (kbd "C-c c f") 'cyanide-find-dired)) map))
 
 (easy-menu-define cyanide-menu cyanide-mode-map "CyanIDE"
   '("CyanIDE"
@@ -27,6 +28,8 @@
      cyanide-load-project-prompt t]
     ["cyanide-ag-search Project"
      cyanide-ag-search t]
+    ["Find in Project"
+     cyanide-find-dired t]
     ["Enable View"
      cyanide-enable-view-prompt t]
     ["Disable Current View"
@@ -51,7 +54,6 @@
     (require 'cyanide-views)
     (require 'cyanide-panel)
     (require 'cyanide-buffer-excursion)
-    (require 'foccur)
     (require 'ag)
 
     (defvar cyanide-current-view nil
@@ -416,17 +418,6 @@
         (mapcar f node)))
 
     (defun cyanide-ag-search (string)
-      (let ((proj-root
-             (oref
-              (gethash cyanide-current-project cyanide-projects) proj-root)))
-        (interactive (list (ag/read-from-minibuffer "Search string")))
-        (ag/search string directory)))
-
-    (defun cyanide-ag-search (string)
-      "Search using ag in a given DIRECTORY for a given search STRING,
-       with STRING defaulting to the symbol under point.
-
-       If called with a prefix, prompts for flags to pass to ag."
       (interactive (list (ag/read-from-minibuffer "Search string")))
       (if cyanide-current-project
           (let ((directory
@@ -434,9 +425,39 @@
                   (gethash cyanide-current-project
                            cyanide-projects) proj-root)))
             (ag/search string directory))
-        (error (concat "cyanide-current-project is nil. "
+        (error (concat "cyanide-current-project is nil. " ; else
                        "Cannot invoke cyanide-ag-search "
-                       "before loading a cyanide-project.")))))
+                       "before loading a cyanide-project."))))
+
+    (defun cyanide-case-sensitive (re)
+      "Respect emacs defaults and determine whether cyanide
+       should attempt to match with case-sensitivity.
+
+       For more information, see `cyanide-case-sensitive-test'"
+      (or (let ((case-fold-search nil))
+            (string-match "[$.*[:upper:].*^]" re))
+          (not case-fold-search)))
+
+    (defun cyanide-find-dired (string)
+      (interactive "Mstring: ")
+      (if cyanide-current-project
+          (let ((directory
+                 (oref
+                  (gethash cyanide-current-project
+                           cyanide-projects) proj-root))
+                (find-case-sensitive-arg
+                 (if (cyanide-case-sensitive string) "" "i")))
+            (find-dired directory (concat
+                                   " -"
+                                   find-case-sensitive-arg
+                                   "name "
+                                   "'*"
+                                   string
+                                   "*' "
+                                   "-type f "))
+        (error (concat "cyanide-current-project is nil. " ; else
+                       "Cannot invoke cyanide-find-dired "
+                       "before loading a cyanide-project."))))))
   :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode

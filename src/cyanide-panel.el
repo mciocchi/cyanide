@@ -21,48 +21,53 @@
 ;; make-frame-command, window-configuration-change-hook, and emacs-lock are used
 ;; at the same time.
 (defun cyanide-panel-search ()
-  (if cyanide-panel
-      (if (not (string-match (buffer-name)
-                             (concat
-                              ".*Occur.*\\|"
-                              ".*Minibuf.*\\|"
-                              ".*Messages.*\\|"
-                              ".*Completions.*\\|"
-                              ".*cyanide-panel.*")))
-          (if (not (< 1 (length (frame-list))))
-              (cyanide-panel-search-worker)))))
+  (if (get-buffer "*cyanide-panel*")
+      (progn
+        (when (not (string-match (buffer-name)
+                                 (concat "\*.*\*")))
+          (when (not (< 1 (length (frame-list))))
+            (cyanide-panel-search-worker))))
+    (cyanide-panel-disable))) ;; break out if panel is closed.
 
 (defun cyanide-panel-search-worker ()
-  (let ((starting-buffer-name (buffer-name))
-        (original-occur-buffer-name (generate-new-buffer-name "*Occur*")))
-    (progn
-      (seek-window-by-buffer-name "*Occur*")
-      (rename-buffer (generate-new-buffer-name "*Occur*"))
-      (seek-window-by-buffer-name "cyanide-panel")
-      (rename-buffer "*Occur*")
-      (seek-window-by-buffer-name starting-buffer-name)
-      (occur cyanide-panel-search-regexp)
-      (message nil) ;; immediately blank out annoying occur minibuffer messages.
-      (seek-window-by-buffer-name "*Occur*")
-      (rename-buffer "cyanide-panel")
-      (seek-window-by-buffer-name original-occur-buffer-name)
-      (rename-buffer "*Occur*")
-      (seek-window-by-buffer-name starting-buffer-name))))
-
-(add-hook 'window-configuration-change-hook
-          'cyanide-panel-search)
-
-(add-hook 'bookmark-after-jump-hook
-          'cyanide-panel-search)
-
-(add-hook 'occur-mode-find-occurrence-hook
-          'cyanide-panel-search)
+  (if (get-buffer "*cyanide-panel*")
+      (let ((starting-buffer-name (buffer-name))
+            (original-occur-buffer-name (generate-new-buffer-name "*Occur*"))
+            )
+        (progn
+          (seek-window-by-buffer-name "*Occur*")
+          (rename-buffer (generate-new-buffer-name "*Occur*"))
+          (seek-window-by-buffer-name "*cyanide-panel*")
+          (rename-buffer "*Occur*")
+          (seek-window-by-buffer-name starting-buffer-name)
+          (occur cyanide-panel-search-regexp)
+          (message nil) ;; immediately blank out annoying
+                        ;; occur minibuffer messages.
+          (seek-window-by-buffer-name "*Occur*")
+          (rename-buffer "*cyanide-panel*")
+          (seek-window-by-buffer-name original-occur-buffer-name)
+          (rename-buffer "*Occur*")
+          (seek-window-by-buffer-name starting-buffer-name)))))
 
 (defun cyanide-panel-enable ()
-  (setq cyanide-panel t))
+  (progn
+    (add-hook 'window-configuration-change-hook
+              'cyanide-panel-search)
+
+    (add-hook 'bookmark-after-jump-hook
+              'cyanide-panel-search)
+
+    (add-hook 'occur-mode-find-occurrence-hook
+              'cyanide-panel-search)))
 
 (defun cyanide-panel-disable ()
-  (setq cyanide-panel nil))
+  (progn
+    (setq window-configuration-change-hook
+          (remove-hook 'cyanide-panel-search window-configuration-change-hook))
+    (setq bookmark-after-jump-hook
+          (remove-hook 'cyanide-panel-search bookmark-after-jump-hook))
+    (setq occur-mode-find-occurrence-hook
+          (remove-hook 'cyanide-panel-search occur-mode-find-occurrence-hook))))
 
 ;; Initial state = disabled.
 (cyanide-panel-disable)

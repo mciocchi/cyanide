@@ -61,7 +61,7 @@
                                    (emacs-lock-mode 'kill)
                                    ;; Vert. panel with function/class defs
                                    (other-window 1)
-                                   (switch-to-buffer "cyanide-panel")
+                                   (switch-to-buffer "*cyanide-panel*")
                                    (setq cyanide-panel-search-regexp
                                          (concat "\\(defun\\|"
                                                  "defmacro\\|"
@@ -129,7 +129,7 @@
                                     (get-buffer-window (current-buffer)) 1)
                                    (emacs-lock-mode 'kill)
                                    (other-window 1)
-                                   (switch-to-buffer "cyanide-panel")
+                                   (switch-to-buffer "*cyanide-panel*")
                                    (setq cyanide-panel-search-regexp
                                          (concat
                                           "\\(defun\\|"
