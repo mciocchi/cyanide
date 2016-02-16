@@ -149,10 +149,11 @@
       (let ((f (lambda (x)
                  (progn
                    (select-window x)
-                   (if (not (eq emacs-lock-mode lock-arg))
-                       (if (not lock-arg)
-                           (call-interactively 'emacs-lock-mode)
-                         (emacs-lock-mode lock-arg))) ;; else
+                   (when (boundp 'emacs-lock-mode)
+                     (if (not (eq emacs-lock-mode lock-arg))
+                         (if (not lock-arg)
+                             (call-interactively 'emacs-lock-mode)
+                           (emacs-lock-mode lock-arg)))) ;; else
                    nil)))) ;; else
         (walk-windows f minibuf all-frames)))
 
