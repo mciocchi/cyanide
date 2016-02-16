@@ -2,10 +2,10 @@
 
 * about
 
-CyanIDE is a global minor mode that provides an extensible development framework
-which runs on top of emacs. It provides functionality for project-aware
-searching and browsing of java, perl, python, clojure, ruby, javascript, and
-emacs-lisp code.
+CyanIDE is a global minor mode that provides an extensible development
+environment which runs on top of emacs. It provides functionality for
+project-aware searching and browsing of java, perl, python, clojure, ruby,
+javascript, and emacs-lisp code.
 
 I decided to write CyanIDE because I was looking for an emacs mode to do the
 same thing, but could not find one with sensible defaults that was easy to
@@ -14,12 +14,21 @@ configuration.
 
 * install instructions:
 
-<code> cd ~/.emacs.d/
+<code>
 
-git clone https://github.com/mciocchi/cyanide.git </code> In .emacs add the
-following:
+cd ~/.emacs.d/
 
-<code> (require 'eieio)
+git clone https://github.com/mciocchi/cyanide.git
+
+</code>
+
+In .emacs or .emacs.d/init.el add the following. Adjust proj-root, display-name,
+
+default-view, etc. as the need arises.
+
+<code>
+
+(require 'eieio)
 
 (require 'cyanide)
 
@@ -31,48 +40,46 @@ following:
          
                           :display-name "dot-emacs"
                           
-                          ;; Use cyanide-default-view for other languages.
+                          ;; Use cyanide-default-view for other languages,
+                          ;; or write your own view.
                           :default-view 'cyanide-elisp-view
                           
                           :load-hook '()
                           
-                          :proj-tree '(("/home/user/.emacs")
-                          
-                                       ("/home/user/.emacs.d/" ".*\.el$")))
-                                       
-         cyanide-projects) </code>
+                          :proj-root "/home/user/.emacs.d/"
 
-Follow the example above to map more projects into cyanide.
+         cyanide-projects)
+</code>
+
+Follow the example above to map other projects into cyanide.
 
 * views and projects
 
-CyanIDE is roughly based upon the model-view-controller design
-pattern. cyanide.el controls bootstrap logic and high-level
-functions. cyanide-views.el defines view objects to manage setup and teardown of
-different window arrangements. Projects are modeled by the user in their .emacs,
-and are the only config that is actually required for cyanide to work.
+CyanIDE is roughly based upon a model-view-controller design. cyanide.el
+controls bootstrap logic and high-level functions. cyanide-views.el defines view
+objects that manage setup and teardown of different buffer and window
+arrangements. Projects are modeled by the user in their .emacs, just like in the
+example above.
 
 Currently, only cyanide-elisp-view and cyanide-default-view are available, but
-cyanide-default-view provides decent code-browsing support for the languages
-listed above.
+cyanide-default-view provides decent searching and code-browsing support for the
+languages listed above.
 
-The philosophy of CyanIDE is to be as extensible as possible. It should be
-relatively easy for users to define new views for various needs if they copy
-those that already exist in cyanide-views.el. I would be very grateful to anyone
-who writes these or can help with any bugs and contribute back.
+The philosophy of CyanIDE is to be as extensible as possible while also
+providing sane defaults that work "out of the box" with minimal configuration.
+It should be relatively easy for users to define new views for various needs if
+they copy those that already exist in cyanide-views.el. I would be very
+grateful to anyone who writes these or can help with any bugs and contribute
+back.
 
 * to do/known issues
 
-** Long-term: object-oriented abstraction layer for buffer/window management
+** IN PROGRESS object-oriented abstraction layer for buffer/window management
 
-Still looking into the feasibility of this.
+Still looking into the feasibility/sustainability of this in the long-term.
 
-** bug while selecting region in one buffer that is open in two windows
+** IN PROGRESS "subview" abstractions to simplify and clean up views
 
-Cursor jumps to wrong window somehow.
+** DONE bug while selecting region in one buffer that is open in two windows
 
-Note- I've figured out the root-cause of this issue. I believe it's because
-seek-window-by-buffer-name assumes windows always have unique buffer names,
-which is not the case when opening two windows or two frames on a single
-buffer. This function is going to be changed to use a unique identifier,
-something along the lines of "frame.buffer-position.buffer-name." --MC
+Solved in latest release!
