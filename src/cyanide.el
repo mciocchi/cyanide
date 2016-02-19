@@ -339,12 +339,6 @@
            #'ag-mode
            `(lambda (mode-name) ,(ag/buffer-name string "merp" regexp))))))
 
-    (defun cyanide-ag (string)
-      "Search for an arbitrary string in current project
-       directory."
-      (interactive (list (ag/read-from-minibuffer "Search string")))
-      (cyanide-ag-search string))
-
     (defun cyanide-hash-by-display-name (hash)
       "Take in a hash, associate display names to keys
        for speedy lookup in UI."
