@@ -492,11 +492,9 @@
 
 (defvar cyanide-window-local-variables (make-hash-table :test 'equal))
 
-(defclass cyanide-window (win)
-  ((cyanide-id :initarg :)))
-
-
-    :global t)
+;; (defclass cyanide-window (win)
+;;   ((cyanide-id :initarg :)))
+) :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode
   (lambda () (cyanide-mode 1)))
