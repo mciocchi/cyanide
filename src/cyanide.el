@@ -492,9 +492,15 @@
 
 (defvar cyanide-window-local-variables (make-hash-table :test 'equal))
 
-(defclass cyanide-window (win)
-  ((cyanide-id :initarg :)))
-
+(defclass cyanide-window ()
+  ((win    :initarg :win
+           :initform nil
+           :type symbol
+           :documentation "")
+   (buff   :initarg :buff
+           :initform nil
+           :type symbol
+           :documentation "")))
 
     :global t)
 
