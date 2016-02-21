@@ -450,8 +450,53 @@
                                    "-type f "))
         (error (concat "cyanide-current-project is nil. " ; else
                        "Cannot invoke cyanide-find-dired "
-                       "before loading a cyanide-project."))))))
-  :global t)
+                       "before loading a cyanide-project.")))))
+
+    (defvar cyanide-global-id-pool '())
+
+    (defun generate-id (id-length)
+      (let ((max-lisp-eval-depth 2400)
+            (f (lambda (id)
+                 (if (< (length id) id-length)
+                     (progn
+                       (random t)
+                       (let ((rand (abs (random 127))))
+                         (if (or
+                              (and (< 47 rand) (> 58 rand))
+                              (and (< 96 rand) (> 123 rand))
+                              (and (< 47 rand) (> 58 rand)))
+                             (funcall f (concat id (format "%c" rand)))
+                           (funcall f id))))
+                   id))))
+        (funcall f "")))
+
+    (defun cyanide-gensym ()
+      "Gensym for symbols 'discovered' in the environment to be wrapped in
+       objects. Can't use a user-generated unique symbol here because these are
+       constructed automatically, so we need to use a gensym as a pointer to
+       retreive objects."
+      (let ((uuid
+             (intern
+              (concat (generate-id 8) "-"
+                      (generate-id 4) "-"
+                      (generate-id 4) "-"
+                      (generate-id 4) "-"
+                      (generate-id 12)))))
+        (if (not (memql uuid cyanide-global-id-pool)) ; check for collisions
+            (progn
+              (setq cyanide-global-id-pool
+                    (cons
+                     uuid cyanide-global-id-pool))
+              uuid)                             ; return unique id
+          (cyanide-gensym))))
+
+(defvar cyanide-window-local-variables (make-hash-table :test 'equal))
+
+(defclass cyanide-window (win)
+  ((cyanide-id :initarg :)))
+
+
+    :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode
   (lambda () (cyanide-mode 1)))
