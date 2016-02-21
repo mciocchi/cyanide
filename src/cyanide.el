@@ -447,10 +447,10 @@
                                    "'*"
                                    string
                                    "*' "
-                                   "-type f "))
+                                   "-type f ")))
         (error (concat "cyanide-current-project is nil. " ; else
                        "Cannot invoke cyanide-find-dired "
-                       "before loading a cyanide-project.")))))
+                       "before loading a cyanide-project."))))
 
     (defvar cyanide-global-id-pool '())
 
@@ -500,7 +500,7 @@
    (buff   :initarg :buff
            :initform nil
            :type symbol
-           :documentation "")))
+           :documentation ""))))
 
     :global t)
 
