@@ -500,7 +500,25 @@
    (buff   :initarg :buff
            :initform nil
            :type symbol
-           :documentation ""))))
+           :documentation "")))
+
+(defun window-number (&optional win)
+  "Derive window number by casting window to string, parsing
+   it out, and casting to integer."
+  (let ((window-configuration-change-hook nil)
+        (original-win (selected-window))
+        (f (lambda (wn)
+             (string-to-int
+              (car
+               (split-string
+                (cadr
+                 (split-string
+                  (format "%s" wn) "window "))
+                " on "))))))
+    (if win (funcall f win)                     ; if optional arg
+      (funcall f (selected-window)))))          ; else use selected window
+
+)
 
     :global t)
 
