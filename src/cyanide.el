@@ -492,15 +492,40 @@
 
 (defvar cyanide-window-local-variables (make-hash-table :test 'equal))
 
-(defclass cyanide-window ()
-  ((win    :initarg :win
-           :initform nil
-           :type symbol
-           :documentation "")
-   (buff   :initarg :buff
-           :initform nil
-           :type symbol
-           :documentation "")))
+(defclass cyanide-treenode ()
+  ((frame :initarg :frame
+          :type frame)
+   (edge-left :initarg :edge-left
+              :initform 0
+              :type integer
+              :documentation "")
+   (edge-top :initarg :edge-top
+              :initform 0
+              :type integer
+              :documentation "")
+   (edge-right :initarg :edge-right
+               :initform 0
+               :type integer
+               :documentation "")
+   (edge-bottom :initarg :edge-bottom
+                :initform 0
+                :type integer
+                :documentation "")))
+
+(defclass cyanide-window (cyanide-treenode)
+  ((window   :initarg :window
+             :type window
+             :documentation "")
+   (buffer   :initarg :buffer
+             :type buffer
+             :documentation "")))
+
+(defclass cyanide-tree (cyanide-treenode)
+  ((sub-treenodes :initarg :sub-treenodes
+                  :initform '()
+                  :type list)
+   (split-direction :initarg :split-direction
+                    :type boolean)))
 
 (defun window-number (&optional win)
   "Derive window number by casting window to string, parsing
@@ -518,6 +543,12 @@
     (if win (funcall f win)                     ; if optional arg
       (funcall f (selected-window)))))          ; else use selected window
 
+(defun cyanide-window-list ()
+  (mapcar
+   (lambda (w)
+     `(,(window-number w)
+       ,(selected-window)))
+   (window-list)))
 )
 
     :global t)
