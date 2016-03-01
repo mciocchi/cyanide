@@ -527,7 +527,7 @@
    (split-direction :initarg :split-direction
                     :type boolean)))
 
-(defun window-number (&optional win)
+(defun cyanide-window-number (&optional win)
   "Derive window number by casting window to string, parsing
    it out, and casting to integer."
   (let ((window-configuration-change-hook nil)
@@ -546,7 +546,7 @@
 (defun cyanide-window-list ()
   (mapcar
    (lambda (w)
-     `(,(window-number w)
+     `(,(cyanide-window-number w)
        ,(selected-window)))
    (window-list)))
 )
