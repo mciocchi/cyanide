@@ -48,6 +48,10 @@
     (defvar cyanide-projects (make-hash-table :test 'equal)
       "This collection holds all cyanide-project objects")
 
+    (defvar cyanide-window-local-variables (make-hash-table :test 'equal))
+
+    (defvar cyanide-windows (make-hash-table))
+
     ;; The find-lisp package is distributed with emacs, but needs to be included
     ;; explicitly like this to make its functions available in userland.
     (require 'find-lisp)
@@ -490,10 +494,15 @@
               uuid)                             ; return unique id
           (cyanide-gensym))))
 
-(defvar cyanide-window-local-variables (make-hash-table :test 'equal))
-
 (defclass cyanide-treenode ()
-  ((frame :initarg :frame
+  ((uuid :initarg :uuid
+         :initform nil
+         :type symbol
+         :documentation "Use uuid so that we don't
+                         have to rely solely upon object
+                         hashing or lower-level
+                         constructs like window id.")
+   (frame :initarg :frame
           :type frame)
    (edge-left :initarg :edge-left
               :initform 0
@@ -513,7 +522,10 @@
                 :documentation "")))
 
 (defclass cyanide-window (cyanide-treenode)
-  ((window   :initarg :window
+  ((window-number :initarg :window-number
+                  :initform 0
+                  :type integer)
+   (window   :initarg :window
              :type window
              :documentation "")
    (buffer   :initarg :buffer
@@ -521,11 +533,38 @@
              :documentation "")))
 
 (defclass cyanide-tree (cyanide-treenode)
-  ((sub-treenodes :initarg :sub-treenodes
+  ((supernode     :initarg :supernode
+                  :initform 0
+                  :type integer)
+   (sub-treenodes :initarg :sub-treenodes
                   :initform '()
                   :type list)
    (split-direction :initarg :split-direction
                     :type boolean)))
+
+(defun cyanide-window-builder (window)
+  (let ((uuid (cyanide-gensym))
+        (window-number (cyanide-window-number window))
+        (buffer (window-buffer))
+        (frame (window-frame window))
+        (edge-left (car (window-edges)))
+        (edge-top (cadr (window-edges)))
+        (edge-right (car (cddr (window-edges))))
+        (edge-bottom (cadr (cddr (window-edges)))))
+    (puthash window-number
+             (cyanide-window
+              window-number
+              :window window
+              :uuid uuid
+              :window-number window-number
+              :buffer buffer
+              :frame frame
+              :edge-left edge-left
+              :edge-top edge-top
+              :edge-right edge-right
+              :edge-bottom edge-bottom)
+             cyanide-windows)))
+              
 
 (defun cyanide-window-number (&optional win)
   "Derive window number by casting window to string, parsing
