@@ -360,25 +360,6 @@
       (let ((sym (cdr (assoc display-name display-names))))
         (gethash sym hash)))
 
-    (defclass cyanide-window-tree ()
-      ((window-tree :initarg :window-tree
-                    :type list
-                    :documentation
-                    "Object-oriented construct designed to
-                     be more user-friendly than standard
-                     emacs window-tree.")))
-
-    (defmethod init ((cy-win-tree cyanide-window-tree) win-tree)
-      "constructor that takes in window-tree
-       and builds cyanide-window-tree, similar construct but
-       object-oriented. All relevant changes to
-       cyanide-window-tree will also trickle over to
-       window-tree and emacs environment, but the goal of
-       cyanide-window-tree is to provide a richer
-       object-oriented interface that allows users to receive
-       and send window and buffer management events."
-      win-tree) ; test
-
     (defun cyanide-tokenize-window-tree-node (node)
       (progn
         (message (concat "node = " (format "%s" node)))
