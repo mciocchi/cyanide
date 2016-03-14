@@ -54,6 +54,8 @@
 
     (defvar cyanide-trees (make-hash-table))
 
+    (defvar cyanide-global-id-pool '())
+
     ;; The find-lisp package is distributed with emacs, but needs to be included
     ;; explicitly like this to make its functions available in userland.
     (require 'find-lisp)
@@ -437,8 +439,6 @@
                        "Cannot invoke cyanide-find-dired "
                        "before loading a cyanide-project."))))
 
-    (defvar cyanide-global-id-pool '())
-
     (defun cyanide-gensym (id-length)
       (let ((max-lisp-eval-depth 2400)
             (f (lambda (id)
@@ -526,90 +526,90 @@
               ; processing for edges/split direction?
           )))
 
-(defclass cyanide-window (cyanide-treenode)
-  ((window-number :initarg :window-number
-                  :initform 0
-                  :type integer)
-   (window   :initarg :window
-             :type window
-             :documentation "")
-   (buffer   :initarg :buffer
-             :type buffer
-             :documentation "")))
+    (defclass cyanide-window (cyanide-treenode)
+      ((window-number :initarg :window-number
+                      :initform 0
+                      :type integer)
+       (window   :initarg :window
+                 :type window
+                 :documentation "")
+       (buffer   :initarg :buffer
+                 :type buffer
+                 :documentation "")))
 
-(defun cyanide-window-builder (window)
-  (let ((position (cyanide-position window))
-        (uuid (cyanide-gensym))
-        (window-number (cyanide-window-number window))
-        (buffer (window-buffer))
-        (frame (window-frame window))
-        (edge-left (car (window-edges)))
-        (edge-top (cadr (window-edges)))
-        (edge-right (car (cddr (window-edges))))
-        (edge-bottom (cadr (cddr (window-edges)))))
-    (puthash window-number
-             (cyanide-window
-              window-number
-              :window window
-              :uuid uuid
-              :window-number window-number
-              :buffer buffer
-              :frame frame
-              :edge-left edge-left
-              :edge-top edge-top
-              :edge-right edge-right
-              :edge-bottom edge-bottom)
-             cyanide-windows)))
+    (defun cyanide-window-builder (window)
+      (let ((position (cyanide-position window))
+            (uuid (cyanide-gensym))
+            (window-number (cyanide-window-number window))
+            (buffer (window-buffer))
+            (frame (window-frame window))
+            (edge-left (car (window-edges)))
+            (edge-top (cadr (window-edges)))
+            (edge-right (car (cddr (window-edges))))
+            (edge-bottom (cadr (cddr (window-edges)))))
+        (puthash window-number
+                 (cyanide-window
+                  window-number
+                  :window window
+                  :uuid uuid
+                  :window-number window-number
+                  :buffer buffer
+                  :frame frame
+                  :edge-left edge-left
+                  :edge-top edge-top
+                  :edge-right edge-right
+                  :edge-bottom edge-bottom)
+                 cyanide-windows)))
 
-(defclass cyanide-tree (cyanide-treenode)
-  ((supernode     :initarg :supernode
-                  :initform 0
-                  :type integer)
-   (sub-treenodes :initarg :sub-treenodes
-                  :initform '()
-                  :type list)
-   (split-direction :initarg :split-direction
-                    :type boolean)))
+    (defclass cyanide-tree (cyanide-treenode)
+      ((supernode     :initarg :supernode
+                      :initform 0
+                      :type integer)
+       (sub-treenodes :initarg :sub-treenodes
+                      :initform '()
+                      :type list)
+       (split-direction :initarg :split-direction
+                        :type boolean)))
 
-(defun cyanide-tree-builder (tree)
-  (let ((uuid (cyanide-gensym))
-        (frame (window-frame window))
-        (edge-left (car (window-edges)))
-        (edge-top (cadr (window-edges)))
-        (edge-right (car (cddr (window-edges))))
-        (edge-bottom (cadr (cddr (window-edges)))))
-    (puthash uuid ; is this right?
-             (cyanide-tree
-              :uuid uuid
-              :frame frame
-              :edge-left edge-left
-              :edge-top edge-top
-              :edge-right edge-right
-              :edge-bottom edge-bottom)
-             cyanide-trees)))
+    (defun cyanide-tree-builder (tree)
+      (let ((uuid (cyanide-gensym))
+            (frame (window-frame window))
+            (edge-left (car (window-edges)))
+            (edge-top (cadr (window-edges)))
+            (edge-right (car (cddr (window-edges))))
+            (edge-bottom (cadr (cddr (window-edges)))))
+        (puthash uuid ; is this right?
+                 (cyanide-tree
+                  :uuid uuid
+                  :frame frame
+                  :edge-left edge-left
+                  :edge-top edge-top
+                  :edge-right edge-right
+                  :edge-bottom edge-bottom)
+                 cyanide-trees)))
 
-(defun cyanide-window-number (&optional win)
-  "Derive window number by casting window to string, parsing
-   it out, and casting to integer."
-  (let ((window-configuration-change-hook nil)
-        (original-win (selected-window))
-        (f (lambda (wn)
-             (string-to-int
-              (car
-               (split-string
-                (cadr
-                 (split-string
-                  (format "%s" wn) "window "))
-                " on "))))))
-    (if win (funcall f win)                     ; if optional arg
-      (funcall f (selected-window)))))          ; else use selected window
+    (defun cyanide-window-number (&optional win)
+      "Derive window number by casting window to string, parsing
+       it out, and casting to integer."
+      (let ((window-configuration-change-hook nil)
+            (original-win (selected-window))
+            (f (lambda (wn)
+                 (string-to-int
+                  (car
+                   (split-string
+                    (cadr
+                     (split-string
+                      (format "%s" wn) "window "))
+                    " on "))))))
+        (if win (funcall f win)                     ; if optional arg
+          (funcall f (selected-window)))))          ; else use selected window
 
-(defun cyanide-window-list ()
-  (mapcar
-   (lambda (w)
-     `(,(cyanide-window-number w)
-       ,(selected-window)))
-   (window-list)))
+    (defun cyanide-window-list ()
+      (mapcar
+       (lambda (w)
+         `(,(cyanide-window-number w)
+           ,(selected-window)))
+       (window-list)))
 )
 
     :global t)
