@@ -52,6 +52,8 @@
 
     (defvar cyanide-windows (make-hash-table))
 
+    (defvar cyanide-trees (make-hash-table))
+
     ;; The find-lisp package is distributed with emacs, but needs to be included
     ;; explicitly like this to make its functions available in userland.
     (require 'find-lisp)
@@ -375,44 +377,23 @@
        and send window and buffer management events."
       win-tree) ; test
 
-    (defun getminibuff (win-tree)
-      (let ((buff (cadr win-tree)))
-        (if (windowp buff)
-            buff ; return buff
-          nil))) ; else return nil
-
-    (defun getnodes (win-tree)
-      (if (getminibuff win-tree)
-          (cddr (car win-tree))
-        (cdr win-tree))) ; else
-
-    (defmethod tokenize-window-tree-node ((cy-win-tree cyanide-window-tree)
-                                          node)
+    (defun cyanide-tokenize-window-tree-node (node)
       (progn
         (message (concat "node = " (format "%s" node)))
         (if (windowp node)
-            `(win ,node)
+            `(window ,node)
           (if (booleanp node)
-              `(split ,node)
+              `(split-direction ,node)
             (let ((x (car node)))
               (let ((type (type-of x)))
                 (if (equal 'window type)
-                    `(win-tree-not-split-with-minibuff ,node)
+                    `(tree-root ,node)
                   (if (booleanp x) ; else if
-                      `(win-tree-split-no-minibuff ,node)
+                      `(tree ,node)
                     (if (integerp  x)
-                        `(coords ,node)
+                        `(edges ,node)
                       (if (booleanp (car x))
-                          `(win-tree-split-with-minibuff ,node)))))))))))
-
-    ;; note: if you only mapcar, there's no root object... prob need to fix
-    ;; that. It's not a proper tree without a root.
-    ;;
-    ;; Try- if the length of the root is one, don't mapcar, else mapcar.
-    (defmethod parse-window-tree-node ((cy-win-tree cyanide-window-tree)
-                                       node)
-      (let ((f (lambda (n) (tokenize-window-tree-node cy-win-tree n))))
-        (mapcar f node)))
+                          `(tree ,node)))))))))))
 
     (defun cyanide-ag-search (string)
       (interactive (list (ag/read-from-minibuffer "Search string")))
@@ -458,7 +439,7 @@
 
     (defvar cyanide-global-id-pool '())
 
-    (defun generate-id (id-length)
+    (defun cyanide-gensym (id-length)
       (let ((max-lisp-eval-depth 2400)
             (f (lambda (id)
                  (if (< (length id) id-length)
@@ -481,11 +462,11 @@
        retreive objects."
       (let ((uuid
              (intern
-              (concat (generate-id 8) "-"
-                      (generate-id 4) "-"
-                      (generate-id 4) "-"
-                      (generate-id 4) "-"
-                      (generate-id 12)))))
+              (concat (cyanide-gensym 8) "-"
+                      (cyanide-gensym 4) "-"
+                      (cyanide-gensym 4) "-"
+                      (cyanide-gensym 4) "-"
+                      (cyanide-gensym 12)))))
         (if (not (memql uuid cyanide-global-id-pool)) ; check for collisions
             (progn
               (setq cyanide-global-id-pool
@@ -494,32 +475,56 @@
               uuid)                             ; return unique id
           (cyanide-gensym))))
 
-(defclass cyanide-treenode ()
-  ((uuid :initarg :uuid
-         :initform nil
-         :type symbol
-         :documentation "Use uuid so that we don't
+    (defclass cyanide-treenode ()
+      ((uuid :initarg :uuid
+             :initform nil
+             :type symbol
+             :documentation "Use uuid so that we don't
                          have to rely solely upon object
                          hashing or lower-level
                          constructs like window id.")
-   (frame :initarg :frame
-          :type frame)
-   (edge-left :initarg :edge-left
-              :initform 0
-              :type integer
-              :documentation "")
-   (edge-top :initarg :edge-top
-              :initform 0
-              :type integer
-              :documentation "")
-   (edge-right :initarg :edge-right
-               :initform 0
-               :type integer
-               :documentation "")
-   (edge-bottom :initarg :edge-bottom
-                :initform 0
-                :type integer
-                :documentation "")))
+       (position :initarg :position
+                 :initform -2
+                 :type integer
+                 :documentation "Position of this cyanide-treenode inside of its
+                             super-treenode. -2 indicates that this value was
+                             not initialized. -1 indicates that this treenode is
+                             a root and therefore has no position because it has
+                             no super-treenode.")
+       (frame :initarg :frame
+              :type frame)
+       (edge-left :initarg :edge-left
+                  :initform 0
+                  :type integer
+                  :documentation "")
+       (edge-top :initarg :edge-top
+                 :initform 0
+                 :type integer
+                 :documentation "")
+       (edge-right :initarg :edge-right
+                   :initform 0
+                   :type integer
+                   :documentation "")
+       (edge-bottom :initarg :edge-bottom
+                    :initform 0
+                    :type integer
+                    :documentation "")))
+
+    (defun cyanide-treenode-builder (node)
+      (let ((win-tree (cyanide-tree-builder node)))
+        (let ((f (lambda (sub-treenode)
+                   (cyanide-tokenize-window-tree-node node sub-treenode))))
+          (mapcar f win-tree))))
+
+    (defun cyanide-treenode-builder-1 (super-treenode-obj node)
+      (let  (token (cyanide-tokenize-window-tree-node node))
+        (progn
+          (if (or (eq window token)
+                  (eq tree token))
+              (add-sub-treenode super-treenode-obj node) ; TO DO
+            ) ; else do something else... do we need
+              ; processing for edges/split direction?
+          )))
 
 (defclass cyanide-window (cyanide-treenode)
   ((window-number :initarg :window-number
@@ -532,18 +537,9 @@
              :type buffer
              :documentation "")))
 
-(defclass cyanide-tree (cyanide-treenode)
-  ((supernode     :initarg :supernode
-                  :initform 0
-                  :type integer)
-   (sub-treenodes :initarg :sub-treenodes
-                  :initform '()
-                  :type list)
-   (split-direction :initarg :split-direction
-                    :type boolean)))
-
 (defun cyanide-window-builder (window)
-  (let ((uuid (cyanide-gensym))
+  (let ((position (cyanide-position window))
+        (uuid (cyanide-gensym))
         (window-number (cyanide-window-number window))
         (buffer (window-buffer))
         (frame (window-frame window))
@@ -564,7 +560,33 @@
               :edge-right edge-right
               :edge-bottom edge-bottom)
              cyanide-windows)))
-              
+
+(defclass cyanide-tree (cyanide-treenode)
+  ((supernode     :initarg :supernode
+                  :initform 0
+                  :type integer)
+   (sub-treenodes :initarg :sub-treenodes
+                  :initform '()
+                  :type list)
+   (split-direction :initarg :split-direction
+                    :type boolean)))
+
+(defun cyanide-tree-builder (tree)
+  (let ((uuid (cyanide-gensym))
+        (frame (window-frame window))
+        (edge-left (car (window-edges)))
+        (edge-top (cadr (window-edges)))
+        (edge-right (car (cddr (window-edges))))
+        (edge-bottom (cadr (cddr (window-edges)))))
+    (puthash uuid ; is this right?
+             (cyanide-tree
+              :uuid uuid
+              :frame frame
+              :edge-left edge-left
+              :edge-top edge-top
+              :edge-right edge-right
+              :edge-bottom edge-bottom)
+             cyanide-trees)))
 
 (defun cyanide-window-number (&optional win)
   "Derive window number by casting window to string, parsing
