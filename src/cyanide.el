@@ -292,7 +292,7 @@
 
     ;; Source: https://github.com/Wilfred/ag.el/blob/master/ag.el
     ;; Tiny alteration on ag/search from Wilfred's ag.el to make it
-    ;; project-aware.
+    ;; cyanide-project-aware.
     (cl-defun cyanide-ag-search (string
                                  &key
                                  (regexp nil)
@@ -491,6 +491,15 @@
                     :type integer
                     :documentation "")))
 
+    ; TO DO - it may not be possible to construct a node without being aware
+    ;         of the super-treenode of that node, unless "node" here is a
+    ;         root. This is because node could always be EDGES or
+    ;         SPLIT-DIRECTION.
+    ;
+    ;         Therefore this needs a refac. Either change node to root, and
+    ;         always construct the entire treenode from root (shit is that even
+    ;         possible?) OR always call cyanide-treenode-builder with
+    ;         super-treenode-obj except when node is a root. Is that possible?
     (defun cyanide-treenode-builder (node)
       (let ((win-tree (cyanide-tree-builder node)))
         (let ((f (lambda (sub-treenode)
@@ -498,6 +507,14 @@
           (mapcar f win-tree))))
 
     (defun cyanide-treenode-builder-1 (super-treenode-obj node)
+      "- If node is a window, build a `cyanide-window'
+
+       - If node is a tree, build a `cyanide-tree'
+
+       - If node is SPLIT-DIRECTION or EDGES:
+
+         add this property to the super-treenode"
+
       (let  (token (cyanide-tokenize-window-tree-node node))
         (progn
           (if (or (eq window token)
