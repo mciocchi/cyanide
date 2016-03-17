@@ -360,23 +360,24 @@
       (let ((sym (cdr (assoc display-name display-names))))
         (gethash sym hash)))
 
-    (defun cyanide-tokenize-window-tree-node (node)
-      (progn
-        (message (concat "node = " (format "%s" node)))
-        (if (windowp node)
-            'window
-          (if (booleanp node)
-              'split-direction
-            (let ((x (car node)))
-              (let ((type (type-of x)))
-                (if (equal 'window type)
-                    'tree                ; tree without properties
-                  (if (booleanp x)       ; else if
-                      'tree
-                    (if (integerp  x)
-                        'edges
-                      (if (booleanp (car x))
-                          'tree))))))))))
+    (defun cyanide-tokenize-window-treenode (node)
+      (if (windowp node)
+          'window
+        (if (booleanp node)
+            'split-direction
+          (let ((x (car node)))
+            (let ((type (type-of x)))
+              (if (equal 'window type)
+                  'tree                ; tree without properties
+                (if (booleanp x)       ; else if
+                    'tree
+                  (if (integerp  x)
+                      'edges
+                    (if (booleanp (car x))
+                        'tree
+                      (error
+                       (concat "Invalid input to "
+                               "cyanide-tokenize-window-treenode")))))))))))
 
     (defun cyanide-ag-search (string)
       (interactive (list (ag/read-from-minibuffer "Search string")))
@@ -508,7 +509,7 @@
     ;; (defun cyanide-treenode-builder (node)
     ;;   (let ((win-tree (cyanide-tree-builder node)))
     ;;     (let ((f (lambda (sub-treenode)
-    ;;                (cyanide-tokenize-window-tree-node node sub-treenode))))
+    ;;                (cyanide-tokenize-window-treenode node sub-treenode))))
     ;;       (mapcar f win-tree))))
     ;; if you have the super-treenode of every window, you do not need to get
     ;; cyanide-treenodes directly, only via their constituent cyanide-windows
@@ -550,19 +551,21 @@
 
          add this property to the super-tree"
 
-      (let  (token (cyanide-tokenize-window-tree-node node))
-        (progn
-          (when (eq 'window token)
-            (cyanide-window-builder node))
-          (when (eq 'tree token)
-            (if super-tree
-                (cyanide-tree-builder node super-tree)    ; TO DO
-              (cyanide-tree-root-builder node))) ; else node is a root. TO DO
-          (when (eq 'edges token)
-            (set-edges super-tree node))                  ; TO DO
-          (when (eq 'split-direction token)                           ; TO DO
-            (set-split-direction super-tree node))
-          )))     ; TO DO
+      (let  (token (cyanide-tokenize-window-treenode node))
+        (if (eq 'window token)
+            (cyanide-window-builder node)
+          (if (eq 'tree token)
+              (if super-tree
+                  (cyanide-tree-builder node super-tree)  ; TO DO
+                (cyanide-tree-root-builder
+                 node)) ; else node is a root.              TO DO
+            (if (eq 'edges token)
+                (set-edges super-tree node)               ; TO DO
+              (if (eq 'split-direction token)             ; TO DO
+                  (set-split-direction super-tree node)   ; TO DO
+                (error
+                 (concat "Invalid input to "
+                         "cyanide-treenode-builder.")))))))) ; else error.
 
     (defclass cyanide-window (cyanide-treenode)
       ((window-number :initarg :window-number
