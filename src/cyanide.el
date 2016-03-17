@@ -364,19 +364,19 @@
       (progn
         (message (concat "node = " (format "%s" node)))
         (if (windowp node)
-            `(window ,node)
+            'window
           (if (booleanp node)
-              `(split-direction ,node)
+              'split-direction
             (let ((x (car node)))
               (let ((type (type-of x)))
                 (if (equal 'window type)
-                    `(tree-root ,node)
-                  (if (booleanp x) ; else if
-                      `(tree ,node)
+                    'tree                ; tree without properties
+                  (if (booleanp x)       ; else if
+                      'tree
                     (if (integerp  x)
-                        `(edges ,node)
+                        'edges
                       (if (booleanp (car x))
-                          `(tree ,node)))))))))))
+                          'tree))))))))))
 
     (defun cyanide-ag-search (string)
       (interactive (list (ag/read-from-minibuffer "Search string")))
@@ -460,18 +460,23 @@
       ((uuid :initarg :uuid
              :initform nil
              :type symbol
-             :documentation "Use uuid so that we don't
-                         have to rely solely upon object
-                         hashing or lower-level
-                         constructs like window id.")
+             :documentation
+             "Use uuid so that we don't have to rely solely upon object hashing
+              or lower-level constructs like window id.")
        (position :initarg :position
                  :initform -2
                  :type integer
-                 :documentation "Position of this cyanide-treenode inside of its
-                             super-treenode. -2 indicates that this value was
-                             not initialized. -1 indicates that this treenode is
-                             a root and therefore has no position because it has
-                             no super-treenode.")
+                 :documentation
+                 "Position of this cyanide-treenode inside of its
+                  super-treenode. -2 indicates that this value was not
+                  initialized. -1 indicates that this treenode is a root and
+                  therefore has no position because it has no super-treenode.")
+       (super-treenode :initarg :super-treenode
+                       :initform []
+                       :type vector
+                       :documentation
+                       "Pass an object as a vector here to refer to the
+                        super-treenode of this treenode.")
        (frame :initarg :frame
               :type frame)
        (edge-left :initarg :edge-left
@@ -500,29 +505,64 @@
     ;         always construct the entire treenode from root (shit is that even
     ;         possible?) OR always call cyanide-treenode-builder with
     ;         super-treenode-obj except when node is a root. Is that possible?
-    (defun cyanide-treenode-builder (node)
-      (let ((win-tree (cyanide-tree-builder node)))
-        (let ((f (lambda (sub-treenode)
-                   (cyanide-tokenize-window-tree-node node sub-treenode))))
-          (mapcar f win-tree))))
+    ;; (defun cyanide-treenode-builder (node)
+    ;;   (let ((win-tree (cyanide-tree-builder node)))
+    ;;     (let ((f (lambda (sub-treenode)
+    ;;                (cyanide-tokenize-window-tree-node node sub-treenode))))
+    ;;       (mapcar f win-tree))))
+    ;; if you have the super-treenode of every window, you do not need to get
+    ;; cyanide-treenodes directly, only via their constituent cyanide-windows
+    ;; during split / recombine, which are only invoked publicly on windows.
+    ;;
+    ;; well- that's not exactly true, because split / recombine has some times
+    ;; when new windows are created in a new tree. At that point, neither the
+    ;; window, nor the tree are objects yet, which means we can't get by
+    ;; super-treenode or sub-treenode, because they're not defined yet.
+    ;;
+    ;; At that point, we will have to infer which split was newly created, and
+    ;; we have the following contextual information to guide us: 1) constituent
+    ;; window number (one is already an object, the other is also new)
+    ;; 2) position of the new tree. Position and :super-treenode
+    ;; should be the same as the old :position and :super-treenode of the window
+    ;; which was split.
+    ;;
+    ;; The other implication of this is that I'm going to have to write a
+    ;; function that traverses window-tree every time a split takes place
+    ;; and constructs new objects for the new split and window, and also
+    ;; adjusts position and super-treenode of the window that was split after
+    ;; the split. It will need to be aware of co-ordinates like this:
+    ;; (3 4 1) which indicates 3rd position, 4th position, 1st position in each
+    ;; split. e.g.:
+    ;;
+    ;; (N-SUPERNODE-POSITIONS TREENODE-POSITION)
+    ;;
+    ;; recombine will have a similar issue.
 
-    (defun cyanide-treenode-builder-1 (super-treenode-obj node)
-      "- If node is a window, build a `cyanide-window'
+    (defun cyanide-treenode-builder (node super-tree)
+      "- If super-tree is nil, assume node is a
+         root.
+
+       - If node is a window, build a `cyanide-window'
 
        - If node is a tree, build a `cyanide-tree'
 
        - If node is SPLIT-DIRECTION or EDGES:
 
-         add this property to the super-treenode"
+         add this property to the super-tree"
 
       (let  (token (cyanide-tokenize-window-tree-node node))
         (progn
-          (if (or (eq window token)
-                  (eq tree token))
-              (add-sub-treenode super-treenode-obj node) ; TO DO
-            ) ; else do something else... do we need
-              ; processing for edges/split direction?
-          )))
+          (when (eq 'window token)
+            (cyanide-window-builder node))
+          (when (eq 'tree token)
+            (if super-tree
+                (cyanide-tree-builder node super-tree)    ; TO DO
+              (cyanide-tree-root-builder node))) ; else node is a root. TO DO
+          (when (eq 'edges token)
+            (set-edges super-tree node))                  ; TO DO
+          (when (eq 'split-direction token)                           ; TO DO
+            (set-split-direction super-tree node))
+          )))     ; TO DO
 
     (defclass cyanide-window (cyanide-treenode)
       ((window-number :initarg :window-number
@@ -560,31 +600,30 @@
                  cyanide-windows)))
 
     (defclass cyanide-tree (cyanide-treenode)
-      ((supernode     :initarg :supernode
-                      :initform 0
-                      :type integer)
-       (sub-treenodes :initarg :sub-treenodes
+      ((sub-treenodes :initarg :sub-treenodes
                       :initform '()
                       :type list)
        (split-direction :initarg :split-direction
                         :type boolean)))
 
-    (defun cyanide-tree-builder (tree)
+    (defun cyanide-tree-builder (tree super-tree)
       (let ((uuid (cyanide-gensym))
             (frame (window-frame window))
             (edge-left (car (window-edges)))
             (edge-top (cadr (window-edges)))
             (edge-right (car (cddr (window-edges))))
-            (edge-bottom (cadr (cddr (window-edges)))))
-        (puthash uuid ; is this right?
-                 (cyanide-tree
-                  :uuid uuid
-                  :frame frame
-                  :edge-left edge-left
-                  :edge-top edge-top
-                  :edge-right edge-right
-                  :edge-bottom edge-bottom)
-                 cyanide-trees)))
+            (edge-bottom (cadr (cddr (window-edges))))
+            (sym (cyanide-gensym)))
+        (let ((tree-obj (cyanide-tree sym)))
+          (set-uuid tree-obj sym)    ; TO DO
+          (set-frame tree-obj frame) ; TO DO
+          (let ((f (lambda (x) (cyanide-treenode-builder x tree-obj))))
+            (add-sub-treenode super-tree tree-obj)  ; TO DO
+            (puthash sym
+                     tree-obj
+                     cyanide-treenodes) ; Is this really necessary? TO DO
+            (mapcar f tree)
+            tree-obj)))) ; return tree-obj
 
     (defun cyanide-window-number (&optional win)
       "Derive window number by casting window to string, parsing
