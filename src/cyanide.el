@@ -368,14 +368,14 @@
           (let ((x (car node)))
             (let ((type (type-of x)))
               (if (equal 'window type)
-                  'tree                ; tree without properties
-                (if (booleanp x)       ; else if
+                  'tree                    ; tree without properties
+                (if (booleanp x)           ; else if
                     'tree
                   (if (integerp  x)
                       'edges
                     (if (booleanp (car x))
                         'tree
-                      (error
+                      (error               ; else error- guard input
                        (concat "Invalid input to "
                                "cyanide-tokenize-window-treenode")))))))))))
 
