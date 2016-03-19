@@ -42,6 +42,13 @@
   :keymap cyanide-mode-map         ; keymap
   (progn                           ; body
 
+    ;; The find-lisp package is distributed with emacs, but needs to be included
+    ;; explicitly like this to make its functions available in userland.
+    (require 'find-lisp)
+    (require 'cyanide-views)
+    (require 'cyanide-buffer-excursion)
+    (require 'ag)
+
     (defvar cyanide-views (make-hash-table :test 'equal)
       "this collection holds all cyanide-view objects.")
 
@@ -50,18 +57,7 @@
 
     (defvar cyanide-window-local-variables (make-hash-table :test 'equal))
 
-    (defvar cyanide-windows (make-hash-table))
-
-    (defvar cyanide-trees (make-hash-table))
-
-    (defvar cyanide-global-id-pool '())
-
-    ;; The find-lisp package is distributed with emacs, but needs to be included
-    ;; explicitly like this to make its functions available in userland.
-    (require 'find-lisp)
-    (require 'cyanide-views)
-    (require 'cyanide-buffer-excursion)
-    (require 'ag)
+    (defvar cyanide-treenodes (cyanide-treenodes (cl-gensym)))
 
     (defvar cyanide-current-view nil
       "This var stores a symbol used by cyanide to determine
@@ -421,48 +417,12 @@
                        "Cannot invoke cyanide-find-dired "
                        "before loading a cyanide-project."))))
 
-    (defun cyanide-gensym (id-length)
-      (let ((max-lisp-eval-depth 2400)
-            (f (lambda (id)
-                 (if (< (length id) id-length)
-                     (progn
-                       (random t)
-                       (let ((rand (abs (random 127))))
-                         (if (or
-                              (and (< 47 rand) (> 58 rand))
-                              (and (< 96 rand) (> 123 rand))
-                              (and (< 47 rand) (> 58 rand)))
-                             (funcall f (concat id (format "%c" rand)))
-                           (funcall f id))))
-                   id))))
-        (funcall f "")))
-
-    (defun cyanide-gensym ()
-      "Gensym for symbols 'discovered' in the environment to be wrapped in
-       objects. Can't use a user-generated unique symbol here because these are
-       constructed automatically, so we need to use a gensym as a pointer to
-       retreive objects."
-      (let ((uuid
-             (intern
-              (concat (cyanide-gensym 8) "-"
-                      (cyanide-gensym 4) "-"
-                      (cyanide-gensym 4) "-"
-                      (cyanide-gensym 4) "-"
-                      (cyanide-gensym 12)))))
-        (if (not (memql uuid cyanide-global-id-pool)) ; check for collisions
-            (progn
-              (setq cyanide-global-id-pool
-                    (cons
-                     uuid cyanide-global-id-pool))
-              uuid)                             ; return unique id
-          (cyanide-gensym))))
-
     (defclass cyanide-treenode ()
-      ((uuid :initarg :uuid
+      ((id   :initarg :id
              :initform nil
              :type symbol
              :documentation
-             "Use uuid so that we don't have to rely solely upon object hashing
+             "Use id so that we don't have to rely solely upon object hashing
               or lower-level constructs like window id.")
        (position :initarg :position
                  :initform -2
@@ -538,7 +498,7 @@
 
     (defun cyanide-window-builder (window super-tree)
       (let ((position (cyanide-position window))
-            (uuid (cyanide-gensym))
+            (id (cl-gensym))
             (window-number (cyanide-window-number window))
             (buffer (window-buffer))
             (frame (window-frame window))
@@ -549,7 +509,7 @@
         (let ((win (cyanide-window
                   window-number
                   :window window
-                  :uuid uuid
+                  :id id
                   :window-number window-number
                   :buffer buffer
                   :frame frame
@@ -557,8 +517,9 @@
                   :edge-top edge-top
                   :edge-right edge-right
                   :edge-bottom edge-bottom)))
-          (add-to-list cyanide-windows win)
-          (add-sub-treenode super-tree win))))
+          (add-to-list cyanide-treenodes win)
+          (add-sub-treenode super-tree win)     ; TO DO
+          (add-super-treenode win super-tree)))) ; TO DO
 
     (defclass cyanide-tree (cyanide-treenode)
       ((sub-treenodes :initarg :sub-treenodes
@@ -568,21 +529,19 @@
                         :type boolean)))
 
     (defun cyanide-tree-builder (tree super-tree)
-      (let ((uuid (cyanide-gensym))
+      (let ((id (cl-gensym))
             (frame (window-frame window))
             (edge-left (car (window-edges)))
             (edge-top (cadr (window-edges)))
             (edge-right (car (cddr (window-edges))))
-            (edge-bottom (cadr (cddr (window-edges))))
-            (sym (cyanide-gensym)))
-        (let ((tree-obj (cyanide-tree sym)))
-          (set-uuid tree-obj sym)    ; TO DO
+            (edge-bottom (cadr (cddr (window-edges)))))
+        (let ((tree-obj (cyanide-tree id)))
+          (set-id tree-obj id)       ; TO DO
           (set-frame tree-obj frame) ; TO DO
           (let ((f (lambda (x) (cyanide-treenode-builder x tree-obj))))
-            (add-sub-treenode super-tree tree-obj)  ; TO DO
-            (puthash sym
-                     tree-obj
-                     cyanide-treenodes) ; Is this really necessary? TO DO
+            (add-sub-treenode super-tree tree-obj)   ; TO DO
+            (add-super-treenode tree-obj super-tree) ; TO DO
+            (add-to-list cyanide-treenodes tree-obj)
             (mapcar f tree)
             tree-obj)))) ; return tree-obj
 
@@ -608,9 +567,17 @@
          `(,(cyanide-window-number w)
            ,(selected-window)))
        (window-list)))
-)
 
-    :global t)
+    (defclass cyanide-treenodes ()
+      ((treenodes :initarg :treenodes
+                  :initform '()
+                  :type list)))
+
+    (defmethod cyanide-add-treenode ((nodes cyanide-treenodes) node)
+      (object-add-to-list nodes :treenodes node))
+
+    (defmethod cyanide-remove-treenode ((nodes cyanide-treenodes) node)
+      (object-remove-from-list nodes :treenodes node))) :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode
   (lambda () (cyanide-mode 1)))
