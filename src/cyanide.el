@@ -497,48 +497,6 @@
                     :type integer
                     :documentation "")))
 
-    ; TO DO - it may not be possible to construct a node without being aware
-    ;         of the super-treenode of that node, unless "node" here is a
-    ;         root. This is because node could always be EDGES or
-    ;         SPLIT-DIRECTION.
-    ;
-    ;         Therefore this needs a refac. Either change node to root, and
-    ;         always construct the entire treenode from root (shit is that even
-    ;         possible?) OR always call cyanide-treenode-builder with
-    ;         super-treenode-obj except when node is a root. Is that possible?
-    ;; (defun cyanide-treenode-builder (node)
-    ;;   (let ((win-tree (cyanide-tree-builder node)))
-    ;;     (let ((f (lambda (sub-treenode)
-    ;;                (cyanide-tokenize-window-treenode node sub-treenode))))
-    ;;       (mapcar f win-tree))))
-    ;; if you have the super-treenode of every window, you do not need to get
-    ;; cyanide-treenodes directly, only via their constituent cyanide-windows
-    ;; during split / recombine, which are only invoked publicly on windows.
-    ;;
-    ;; well- that's not exactly true, because split / recombine has some times
-    ;; when new windows are created in a new tree. At that point, neither the
-    ;; window, nor the tree are objects yet, which means we can't get by
-    ;; super-treenode or sub-treenode, because they're not defined yet.
-    ;;
-    ;; At that point, we will have to infer which split was newly created, and
-    ;; we have the following contextual information to guide us: 1) constituent
-    ;; window number (one is already an object, the other is also new)
-    ;; 2) position of the new tree. Position and :super-treenode
-    ;; should be the same as the old :position and :super-treenode of the window
-    ;; which was split.
-    ;;
-    ;; The other implication of this is that I'm going to have to write a
-    ;; function that traverses window-tree every time a split takes place
-    ;; and constructs new objects for the new split and window, and also
-    ;; adjusts position and super-treenode of the window that was split after
-    ;; the split. It will need to be aware of co-ordinates like this:
-    ;; (3 4 1) which indicates 3rd position, 4th position, 1st position in each
-    ;; split. e.g.:
-    ;;
-    ;; (N-SUPERNODE-POSITIONS TREENODE-POSITION)
-    ;;
-    ;; recombine will have a similar issue.
-
     (defun cyanide-treenode-builder (node super-tree)
       "- If super-tree is nil, assume node is a
          root.
@@ -553,7 +511,7 @@
 
       (let  (token (cyanide-tokenize-window-treenode node))
         (if (eq 'window token)
-            (cyanide-window-builder node)
+            (cyanide-window-builder node super-tree)
           (if (eq 'tree token)
               (if super-tree
                   (cyanide-tree-builder node super-tree)  ; TO DO
@@ -578,7 +536,7 @@
                  :type buffer
                  :documentation "")))
 
-    (defun cyanide-window-builder (window)
+    (defun cyanide-window-builder (window super-tree)
       (let ((position (cyanide-position window))
             (uuid (cyanide-gensym))
             (window-number (cyanide-window-number window))
@@ -588,8 +546,7 @@
             (edge-top (cadr (window-edges)))
             (edge-right (car (cddr (window-edges))))
             (edge-bottom (cadr (cddr (window-edges)))))
-        (puthash window-number
-                 (cyanide-window
+        (let ((win (cyanide-window
                   window-number
                   :window window
                   :uuid uuid
@@ -599,8 +556,9 @@
                   :edge-left edge-left
                   :edge-top edge-top
                   :edge-right edge-right
-                  :edge-bottom edge-bottom)
-                 cyanide-windows)))
+                  :edge-bottom edge-bottom)))
+          (add-to-list cyanide-windows win)
+          (add-sub-treenode super-tree win))))
 
     (defclass cyanide-tree (cyanide-treenode)
       ((sub-treenodes :initarg :sub-treenodes
