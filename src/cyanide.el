@@ -42,15 +42,15 @@
   :keymap cyanide-mode-map         ; keymap
   (progn                           ; body
 
+    (defvar cyanide-views (make-hash-table :test 'equal)
+      "this collection holds all cyanide-view objects.")
+    (require 'cyanide-views)
+
     ;; The find-lisp package is distributed with emacs, but needs to be included
     ;; explicitly like this to make its functions available in userland.
     (require 'find-lisp)
-    (require 'cyanide-views)
     (require 'cyanide-buffer-excursion)
     (require 'ag)
-
-    (defvar cyanide-views (make-hash-table :test 'equal)
-      "this collection holds all cyanide-view objects.")
 
     (defvar cyanide-projects (make-hash-table :test 'equal)
       "This collection holds all cyanide-project objects")
