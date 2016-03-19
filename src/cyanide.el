@@ -57,7 +57,7 @@
 
     (defvar cyanide-window-local-variables (make-hash-table :test 'equal))
 
-    (defvar cyanide-treenodes (cyanide-treenodes (cl-gensym)))
+    (defvar cyanide-treenodes (cyanide-treenode-collection (cl-gensym)))
 
     (defvar cyanide-current-view nil
       "This var stores a symbol used by cyanide to determine
@@ -517,9 +517,9 @@
                   :edge-top edge-top
                   :edge-right edge-right
                   :edge-bottom edge-bottom)))
-          (add-to-list cyanide-treenodes win)
-          (add-sub-treenode super-tree win)     ; TO DO
-          (add-super-treenode win super-tree)))) ; TO DO
+          (cyanide-add-treenode cyanide-treenodes win)
+          (cyanide-add-sub-treenode super-tree win)      ; TO DO
+          (cyanide-add-super-treenode win super-tree)))) ; TO DO
 
     (defclass cyanide-tree (cyanide-treenode)
       ((sub-treenodes :initarg :sub-treenodes
@@ -539,9 +539,9 @@
           (set-id tree-obj id)       ; TO DO
           (set-frame tree-obj frame) ; TO DO
           (let ((f (lambda (x) (cyanide-treenode-builder x tree-obj))))
-            (add-sub-treenode super-tree tree-obj)   ; TO DO
-            (add-super-treenode tree-obj super-tree) ; TO DO
-            (add-to-list cyanide-treenodes tree-obj)
+            (cyanide-add-sub-treenode super-tree tree-obj)   ; TO DO
+            (cyanide-add-super-treenode tree-obj super-tree) ; TO DO
+            (cyanide-add-treenode cyanide-treenodes tree-obj)
             (mapcar f tree)
             tree-obj)))) ; return tree-obj
 
@@ -568,15 +568,17 @@
            ,(selected-window)))
        (window-list)))
 
-    (defclass cyanide-treenodes ()
+    (defclass cyanide-treenode-collection ()
       ((treenodes :initarg :treenodes
                   :initform '()
                   :type list)))
 
-    (defmethod cyanide-add-treenode ((nodes cyanide-treenodes) node)
+    (defmethod cyanide-add-treenode ((nodes cyanide-treenode-collection)
+                                     node)
       (object-add-to-list nodes :treenodes node))
 
-    (defmethod cyanide-remove-treenode ((nodes cyanide-treenodes) node)
+    (defmethod cyanide-remove-treenode ((nodes cyanide-treenode-collection)
+                                        node)
       (object-remove-from-list nodes :treenodes node))) :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode
