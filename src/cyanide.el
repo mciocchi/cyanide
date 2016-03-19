@@ -45,7 +45,6 @@
     (defvar cyanide-views (make-hash-table :test 'equal)
       "this collection holds all cyanide-view objects.")
     (require 'cyanide-views)
-
     ;; The find-lisp package is distributed with emacs, but needs to be included
     ;; explicitly like this to make its functions available in userland.
     (require 'find-lisp)
@@ -457,6 +456,10 @@
                     :type integer
                     :documentation "")))
 
+    (defmethod cyanide-set-super-treenode ((node cyanide-treenode)
+                                           super-treenode)
+      (oset node :super-treenode super-treenode))
+
     (defun cyanide-treenode-builder (node super-tree)
       "- If super-tree is nil, assume node is a
          root.
@@ -519,28 +522,34 @@
                   :edge-bottom edge-bottom)))
           (cyanide-add-treenode cyanide-treenodes win)
           (cyanide-add-sub-treenode super-tree win)      ; TO DO
-          (cyanide-add-super-treenode win super-tree)))) ; TO DO
+          (cyanide-set-super-treenode win super-tree)))) ; TO DO
 
     (defclass cyanide-tree (cyanide-treenode)
       ((sub-treenodes :initarg :sub-treenodes
-                      :initform '()
-                      :type list)
+                      :initform []
+                      :type vector
+                      :documentation
+                      "Collection containing sub-treenodes of this node.")
        (split-direction :initarg :split-direction
                         :type boolean)))
 
+    (defmethod cyanide-add-sub-treenode ((super-treenode cyanide-tree)
+                                         sub-treenode)
+      (cyanide-add-treenode (oref super-treenode :sub-treenodes)
+                            sub-treenode))
+
+    (defmethod cyanide-remove-sub-treenode ((super-treenode cyanide-tree)
+                                            sub-treenode)
+      (cyanide-remove-treenode (oref super-treenode :sub-treenodes)
+                               sub-treenode))
+
     (defun cyanide-tree-builder (tree super-tree)
-      (let ((id (cl-gensym))
-            (frame (window-frame window))
-            (edge-left (car (window-edges)))
-            (edge-top (cadr (window-edges)))
-            (edge-right (car (cddr (window-edges))))
-            (edge-bottom (cadr (cddr (window-edges)))))
-        (let ((tree-obj (cyanide-tree id)))
-          (set-id tree-obj id)       ; TO DO
-          (set-frame tree-obj frame) ; TO DO
+      (let ((id (cl-gensym)))
+        (let ((tree-obj (cyanide-tree id :id id)))
+          (cyanide-set-frame tree-obj frame) ; TO DO
           (let ((f (lambda (x) (cyanide-treenode-builder x tree-obj))))
             (cyanide-add-sub-treenode super-tree tree-obj)   ; TO DO
-            (cyanide-add-super-treenode tree-obj super-tree) ; TO DO
+            (cyanide-set-super-treenode tree-obj super-tree) ; TO DO
             (cyanide-add-treenode cyanide-treenodes tree-obj)
             (mapcar f tree)
             tree-obj)))) ; return tree-obj
