@@ -481,12 +481,38 @@
                 (cyanide-tree-root-builder
                  node)) ; else node is a root.              TO DO
             (if (eq 'edges token)
-                (set-edges super-tree node)               ; TO DO
+                (cyanide-set-edges super-tree node)               ; TO DO
               (if (eq 'split-direction token)             ; TO DO
-                  (set-split-direction super-tree node)   ; TO DO
+                  (cyanide-set-split-direction super-tree node)   ; TO DO
                 (error
                  (concat "Invalid input to "
                          "cyanide-treenode-builder.")))))))) ; else error.
+
+    ; replace cyanide-treenode-builder with this.
+    ; if no super-treenode, node is a root.
+    (defun cyanide-parse-treenodes (nodes pos &optional super-treenode)
+      (when nodes  ; else break out
+        (let ((node (car nodes))
+              (nodes (cdr nodes))
+              (pos (+ 1 pos)))
+          (cyanide-parse-treenode node pos super-treenode)
+          (cyanide-parse-treenodes nodes pos super-treenode))))
+
+    (defun cyanide-parse-treenode (node pos &optional super-treenode)
+      (let ((token cyanide-tokenize-window-treenode node))
+        (if (eq 'split-direction token)
+            (cyanide-parse-split-direction (node pos super-treenode)) ; TO DO
+          (if (eq 'edges token)
+              (cyanide-parse-edges (node pos super-treenode))         ; TO DO
+            (if (eq 'window token)
+                (cyanide-parse-window (node pos super-treenode))      ; TO DO
+              (if (eq 'tree token)
+                  (cyanide-parse-tree node pos super-treenode)        ; TO DO
+                (error "cyanide-parse-treenode: unrecognized token")))))))
+
+    ; call cyanide-tree-builder
+    (defun cyanide-parse-tree (node pos super-treenode)
+      )
 
     (defclass cyanide-window (cyanide-treenode)
       ((window-number :initarg :window-number
@@ -548,8 +574,8 @@
         (let ((tree-obj (cyanide-tree id :id id)))
           (cyanide-set-frame tree-obj frame) ; TO DO
           (let ((f (lambda (x) (cyanide-treenode-builder x tree-obj))))
-            (cyanide-add-sub-treenode super-tree tree-obj)   ; TO DO
-            (cyanide-set-super-treenode tree-obj super-tree) ; TO DO
+            (cyanide-add-sub-treenode super-tree tree-obj)
+            (cyanide-set-super-treenode tree-obj super-tree)
             (cyanide-add-treenode cyanide-treenodes tree-obj)
             (mapcar f tree)
             tree-obj)))) ; return tree-obj
