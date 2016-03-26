@@ -428,15 +428,15 @@
                  :type integer
                  :documentation
                  "Position of this cyanide-treenode inside of its
-                  super-treenode. -2 indicates that this value was not
+                  super-tree. -2 indicates that this value was not
                   initialized. -1 indicates that this treenode is a root and
-                  therefore has no position because it has no super-treenode.")
-       (super-treenode :initarg :super-treenode
+                  therefore has no position because it has no super-tree.")
+       (super-tree :initarg :super-tree
                        :initform []
                        :type vector
                        :documentation
                        "Pass an object as a vector here to refer to the
-                        super-treenode of this treenode.")
+                        super-tree of this treenode.")
        (frame :initarg :frame
               :type frame)
        (edge-left :initarg :edge-left
@@ -456,67 +456,37 @@
                     :type integer
                     :documentation "")))
 
-    (defmethod cyanide-set-super-treenode ((node cyanide-treenode)
-                                           super-treenode)
-      (oset node :super-treenode super-treenode))
+    (defmethod cyanide-set-super-tree ((node cyanide-treenode)
+                                       super-tree)
+      (oset node :super-tree super-tree))
 
-    ;; (defun cyanide-treenode-builder (node pos super-tree) ; TO DO
-    ;;   "- If super-tree is nil, assume node is a
-    ;;      root.
-
-    ;;    - If node is a window, build a `cyanide-window'
-
-    ;;    - If node is a tree, build a `cyanide-tree'
-
-    ;;    - If node is SPLIT-DIRECTION or EDGES:
-
-    ;;      add this property to the super-tree"
-
-    ;;   (let  (token (cyanide-tokenize-window-treenode node))
-    ;;     (if (eq 'window token)
-    ;;         (cyanide-window-builder node super-tree)
-    ;;       (if (eq 'tree token)
-    ;;           (if super-tree
-    ;;               (cyanide-tree-builder node super-tree)  ; TO DO
-    ;;             (cyanide-tree-root-builder
-    ;;              node)) ; else node is a root.              TO DO
-    ;;         (if (eq 'edges token)
-    ;;             (cyanide-set-edges super-tree node)               ; TO DO
-    ;;           (if (eq 'split-direction token)             ; TO DO
-    ;;               (cyanide-set-split-direction super-tree node)   ; TO DO
-    ;;             (error
-    ;;              (concat "Invalid input to "
-    ;;                      "cyanide-treenode-builder."))))))))
-                                        ; else error.
-
-    ; replace cyanide-treenode-builder with this.
-    ; if no super-treenode, node is a root.
-    (defun cyanide-parse-treenodes (nodes pos &optional super-treenode)
+    ; if no super-tree, node is a root.
+    (defun cyanide-parse-treenodes (nodes pos &optional super-tree)
       (when nodes  ; else break out
         (let ((node (car nodes))
               (nodes (cdr nodes))
               (pos (+ 1 pos)))
-          (cyanide-parse-treenode node pos super-treenode)
-          (cyanide-parse-treenodes nodes pos super-treenode))))
+          (cyanide-parse-treenode node pos super-tree)
+          (cyanide-parse-treenodes nodes pos super-tree))))
 
-    (defun cyanide-parse-treenode (node pos &optional super-treenode)
+    (defun cyanide-parse-treenode (node pos &optional super-tree)
       (let ((token (cyanide-tokenize-window-treenode node)))
         (if (eq 'split-direction token)
-            (cyanide-parse-split-direction node pos super-treenode) ; TO DO
+            (cyanide-parse-split-direction node pos super-tree) ; TO DO
           (if (eq 'edges token)
-              (cyanide-parse-edges node pos super-treenode)         ; TO DO
+              (cyanide-parse-edges node pos super-tree)         ; TO DO
             (if (eq 'window token)
-                (cyanide-parse-window node pos super-treenode)      ; TO DO
+                (cyanide-parse-window node pos super-tree)      ; TO DO
               (if (eq 'tree token)
-                  (cyanide-parse-tree node pos super-treenode)      ; TO DO
+                  (cyanide-parse-tree node pos super-tree)      ; TO DO
                 (error "cyanide-parse-treenode: unrecognized token")))))))
 
     ; call cyanide-tree-builder
     ; build sub-treenodes            TO DO
-    (defun cyanide-parse-tree (tree pos super-treenode)
+    (defun cyanide-parse-tree (tree pos super-tree)
       (cyanide-tree-builder tree pos super-tree))
 
-    (defun cyanide-parse-window (tree pos super-treenode)
+    (defun cyanide-parse-window (tree pos super-tree)
       (cyanide-window-builder window pos super-tree))
 
     (defclass cyanide-window (cyanide-treenode)
@@ -554,7 +524,7 @@
                   :edge-bottom edge-bottom)))
           (cyanide-add-treenode cyanide-treenodes win)
           (cyanide-add-sub-treenode super-tree win)
-          (cyanide-set-super-treenode win super-tree))))
+          (cyanide-set-super-tree win super-tree))))
 
     (defclass cyanide-tree (cyanide-treenode)
       ((sub-treenodes :initarg :sub-treenodes
@@ -565,29 +535,37 @@
        (split-direction :initarg :split-direction
                         :type boolean)))
 
-    (defmethod cyanide-add-sub-treenode ((super-treenode cyanide-tree)
+    (defmethod cyanide-add-sub-treenode ((super-tree cyanide-tree)
                                          sub-treenode)
-      (cyanide-add-treenode (oref super-treenode :sub-treenodes)
+      (cyanide-add-treenode (oref super-tree :sub-treenodes)
                             sub-treenode))
 
-    (defmethod cyanide-remove-sub-treenode ((super-treenode cyanide-tree)
+    (defmethod cyanide-remove-sub-treenode ((super-tree cyanide-tree)
                                             sub-treenode)
-      (cyanide-remove-treenode (oref super-treenode :sub-treenodes)
+      (cyanide-remove-treenode (oref super-tree :sub-treenodes)
                                sub-treenode))
 
-    ; TO DO handle pos and super tree correctly here.
+    ; TO DO handle:
+    ;       pos
+    ;       super-tree
+    ;       call parse-treenodes on this tree
+    ;       root nodes
     (defun cyanide-tree-builder (tree pos super-tree)
       (let ((id (cl-gensym)))
         (let ((tree-obj (cyanide-tree id :id id)))
           (cyanide-set-frame tree-obj frame) ; TO DO
-          ; TO DO: replace cyanide-treenode-builder here with
-          ; (cyanide-parse-treenodes nodes pos &optional super-tree
-          (let ((f (lambda (x) (cyanide-treenode-builder x tree-obj))))
-            (cyanide-add-sub-treenode super-tree tree-obj)
-            (cyanide-set-super-treenode tree-obj super-tree)
-            (cyanide-add-treenode cyanide-treenodes tree-obj)
-            (mapcar f tree)
-            tree-obj)))) ; return tree-obj
+          ; TO DO:
+          ; set-super-tree
+          ; add-sub-treenode...
+          ; handle root treenodes
+          (cyanide-parse-treenodes tree pos tree-obj))))
+
+          ;; (let ((f (lambda (x) (cyanide-treenode-builder x tree-obj))))
+          ;;   (cyanide-add-sub-treenode super-tree tree-obj)
+          ;;   (cyanide-set-super-tree tree-obj super-tree)
+          ;;   (cyanide-add-treenode cyanide-treenodes tree-obj)
+          ;;   (mapcar f tree)
+          ;;   tree-obj)))) ; return tree-obj
 
     (defun cyanide-window-number (&optional win)
       "Derive window number by casting window to string, parsing
