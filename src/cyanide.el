@@ -460,6 +460,32 @@
                                        super-tree)
       (oset node :super-tree super-tree))
 
+    (defmethod cyanide-set-position ((node cyanide-treenode)
+                                     position)
+      (oset node :position position))
+
+    (defmethod cyanide-set-frame ((node cyanide-treenode)
+                                  frame)
+      (oset node :frame frame))
+
+    (defmethod cyanide-set-edge ((node cyanide-treenode)
+                                 edge-name
+                                 value)
+      (progn
+        (when (not (memq edge-name '(:edge-left
+                                     :edge-top
+                                     :edge-right
+                                     :edge-bottom)))
+          (error (concat "Invalid edge name: " (format "%s" edge-name))))
+        (oset node edge-name value)))
+
+    (defmethod cyanide-set-edges ((node cyanide-treenode) edges)
+      (progn
+        (cyanide-set-edge node :edge-left (car edges))
+        (cyanide-set-edge node :edge-top (cadr edges))
+        (cyanide-set-edge node :edge-right (car (cddr edges)))
+        (cyanide-set-edge node :edge-bottom (car (last edges)))))
+
     ; if no super-tree, node is a root.
     (defun cyanide-parse-treenodes (nodes pos &optional super-tree)
       (when nodes  ; else break out
@@ -545,27 +571,15 @@
       (cyanide-remove-treenode (oref super-tree :sub-treenodes)
                                sub-treenode))
 
-    ; TO DO handle:
-    ;       pos
-    ;       super-tree
-    ;       call parse-treenodes on this tree
-    ;       root nodes
+    ; TO DO:
+    ;       construct tree-obj without sub-treenodes
+    ;       handle root nodes
     (defun cyanide-tree-builder (tree pos super-tree)
       (let ((id (cl-gensym)))
         (let ((tree-obj (cyanide-tree id :id id)))
           (cyanide-set-frame tree-obj frame) ; TO DO
-          ; TO DO:
-          ; set-super-tree
-          ; add-sub-treenode...
-          ; handle root treenodes
+          (cyanide-set-position tree-obj pos)
           (cyanide-parse-treenodes tree pos tree-obj))))
-
-          ;; (let ((f (lambda (x) (cyanide-treenode-builder x tree-obj))))
-          ;;   (cyanide-add-sub-treenode super-tree tree-obj)
-          ;;   (cyanide-set-super-tree tree-obj super-tree)
-          ;;   (cyanide-add-treenode cyanide-treenodes tree-obj)
-          ;;   (mapcar f tree)
-          ;;   tree-obj)))) ; return tree-obj
 
     (defun cyanide-window-number (&optional win)
       "Derive window number by casting window to string, parsing
