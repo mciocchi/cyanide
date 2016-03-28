@@ -591,6 +591,8 @@
       (object-remove-from-list nodes :treenodes node))
 
     (defclass cyanide-edges ()
+      "cyanide-edges encapsulates `window-edges' for the 
+       CyanIDE API."
       ((id     :initarg :id
                :initform nil
                :type symbol)
@@ -608,8 +610,8 @@
                :type integer)))
 
     (defun cyanide-edge-builder (edge-list)
-      "Object to encapsulate window edge dimensions.
-       See `window-edges' for more information."
+      "Build object to encapsulate window edge dimensions.
+       See also `window-edges' and `cyanide-edges'."
       (let ((id (cl-gensym)))
         (let ((edge-obj (cyanide-edges id :id id)))
           (cyanide-set-edges edge-obj edge-list)
@@ -618,6 +620,8 @@
     (defmethod cyanide-set-edge ((edges cyanide-edges)
                                  edge-name
                                  value)
+      "Set the value of a `cyanide-window' edge by name.
+       Valid names are :left :top :right or :bottom."
       (progn
         (when (not (memq edge-name '(:left :top :right :bottom)))
           (error (concat "Invalid edge name: " (format "%s" edge-name))))
@@ -627,12 +631,17 @@
 
     (defmethod cyanide-get-edge ((edges cyanide-edges)
                                  edge-name)
+      "Get the value of a `cyanide-window' edge by name.
+       Valid names are :left :top :right or :bottom."
       (progn
         (when (not (memq edge-name '(:left :top :right :bottom)))
           (error (concat "Invalid edge name: " (format "%s" edge-name))))
         (eval `(oref edges ,edge-name))))
 
     (defmethod cyanide-set-edges ((edges cyanide-edges) new-edge-list)
+      "Set multiple `cyanide-window' edge values at the same
+       time. This can be used to easily parse
+       `window-edges'."
       (progn
         (cyanide-set-edge edges :left (car new-edge-list))
         (cyanide-set-edge edges :top (cadr new-edge-list))
@@ -640,6 +649,8 @@
         (cyanide-set-edge edges :bottom (car (last new-edge-list)))))
 
     (defmethod cyanide-get-edges ((edges cyanide-edges))
+      "Get the value of all `cyanide-window' edges in a
+       structure identical to `window-edges'."
       `(,(cyanide-get-edge edges :left)
         ,(cyanide-get-edge edges :top)
         ,(cyanide-get-edge edges :right)
