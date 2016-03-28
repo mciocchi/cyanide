@@ -1,4 +1,18 @@
-(defun cyanide-case-sensitive-test (func)
+(defvar tests '(cyanide-case-sensitive-test
+              ; fail-test
+                cyanide-edges-test)
+  "All new tests need to be mapped here.")
+
+;; check if test suite reports failiures correctly.
+;; (defun fail-test ()
+;;   (progn
+;;     (print "fail-test [FAILED]")
+;;     nil))
+
+(defun cyanide-case-sensitive-test ()
+  (cyanide-case-sensitive-test-1 'cyanide-case-sensitive))
+
+(defun cyanide-case-sensitive-test-1 (func)
   "case | arg  | case-fold-search | func output | test output
         |      |                  |             | (nil = fail)
    -----+------+------------------+-------------+-------------
@@ -45,14 +59,37 @@
                                    "uppercase arg.\n"))))
                   (if failed (print failed)
                     (print "cyanide-case-sensitive-test [PASSED]\n")) ;; else
-                  (if failed nil ;if failed return false
-                    t)))))))))) ;else return true
+                  (if failed nil ; if failed return false
+                    t))))))))))  ; else return true
 
-;; Return true only if all tests pass.
-;; New tests need to be added here.
+(defun cyanide-edges-test ()
+  "Construct cyanide-edges object, check getters and setters."
+  (let ((id (cl-gensym))
+        (edge-list `(,(abs (random))
+                     ,(abs (random))
+                     ,(abs (random))
+                     ,(abs (random)))))
+    (let ((edges (cyanide-edge-builder edge-list)))
+      (cyanide-edges-test-1 edges
+                            edge-list))))
+
+(defun cyanide-edges-test-1 (edges edge-list)
+  (progn
+    (cyanide-set-edges edges edge-list)
+    (if (equal edge-list (cyanide-get-edges edges))
+        (progn
+          (print "cyanide-edges-test [PASSED]")
+          t) ; if success return t
+      (progn
+        (print (concat "cyanide-edges-test [FAILED]: "
+                       "set value != get value."))
+        nil)))) ; else return nil
+
 (defun run-tests ()
-  (let ((case-sensitive-test-result (cyanide-case-sensitive-test
-                                     'cyanide-case-sensitive)))
-    (and case-sensitive-test-result)))
+  (let ((results (mapcar 'funcall
+                         tests)))
+    (if (eval (cons 'and results))
+        "all tests passed."
+        "some tests failed!")))
 
 (run-tests)
