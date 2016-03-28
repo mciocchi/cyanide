@@ -52,11 +52,12 @@
     (require 'ag)
 
     (defvar cyanide-projects (make-hash-table :test 'equal)
-      "This collection holds all cyanide-project objects")
+      "This collection holds all cyanide-project objects.")
 
     (defvar cyanide-window-local-variables (make-hash-table :test 'equal))
 
-    (defvar cyanide-treenodes (cyanide-treenode-collection (cl-gensym)))
+    (defvar cyanide-treenodes (cyanide-treenode-collection (cl-gensym))
+      "This collection holds all cyanide-treenode objects.")
 
     (defvar cyanide-current-view nil
       "This var stores a symbol used by cyanide to determine
@@ -417,44 +418,33 @@
                        "before loading a cyanide-project."))))
 
     (defclass cyanide-treenode ()
-      ((id   :initarg :id
-             :initform nil
-             :type symbol
-             :documentation
-             "Use id so that we don't have to rely solely upon object hashing
-              or lower-level constructs like window id.")
-       (position :initarg :position
-                 :initform -2
-                 :type integer
-                 :documentation
-                 "Position of this cyanide-treenode inside of its
-                  super-tree. -2 indicates that this value was not
-                  initialized. -1 indicates that this treenode is a root and
-                  therefore has no position because it has no super-tree.")
-       (super-tree :initarg :super-tree
-                       :initform []
-                       :type vector
-                       :documentation
-                       "Pass an object as a vector here to refer to the
-                        super-tree of this treenode.")
-       (frame :initarg :frame
-              :type frame)
-       (edge-left :initarg :edge-left
-                  :initform 0
-                  :type integer
-                  :documentation "")
-       (edge-top :initarg :edge-top
-                 :initform 0
-                 :type integer
-                 :documentation "")
-       (edge-right :initarg :edge-right
-                   :initform 0
+      ((id         :initarg :id
+                   :initform nil
+                   :type symbol
+                   :documentation
+                   "Use id so that we don't have to rely solely upon object
+                    hashing or lower-level constructs like window id.")
+       (position   :initarg :position
+                   :initform -2
                    :type integer
-                   :documentation "")
-       (edge-bottom :initarg :edge-bottom
-                    :initform 0
-                    :type integer
-                    :documentation "")))
+                   :documentation
+                  "Position of this cyanide-treenode inside of its
+                   super-tree. -2 indicates that this value was not
+                   initialized. -1 indicates that this treenode is a root and
+                   therefore has no position because it has no super-tree.")
+       (super-tree :initarg :super-tree
+                   :initform []
+                   :type vector
+                   :documentation
+                   "Object that refers to the super-tree of this treenode.")
+       (frame      :initarg :frame
+                   :type frame)
+       (edges      :initarg :edges
+                   :initform []
+                   :type vector
+                   :documentation
+                   "Object to encapsulate window edge dimensions.
+                    see `window-edges' for more information.")))
 
     (defmethod cyanide-set-super-tree ((node cyanide-treenode)
                                        super-tree)
@@ -467,24 +457,6 @@
     (defmethod cyanide-set-frame ((node cyanide-treenode)
                                   frame)
       (oset node :frame frame))
-
-    (defmethod cyanide-set-edge ((node cyanide-treenode)
-                                 edge-name
-                                 value)
-      (progn
-        (when (not (memq edge-name '(:edge-left
-                                     :edge-top
-                                     :edge-right
-                                     :edge-bottom)))
-          (error (concat "Invalid edge name: " (format "%s" edge-name))))
-        (oset node edge-name value)))
-
-    (defmethod cyanide-set-edges ((node cyanide-treenode) edges)
-      (progn
-        (cyanide-set-edge node :edge-left (car edges))
-        (cyanide-set-edge node :edge-top (cadr edges))
-        (cyanide-set-edge node :edge-right (car (cddr edges)))
-        (cyanide-set-edge node :edge-bottom (car (last edges)))))
 
     ; if no super-tree, node is a root.
     (defun cyanide-parse-treenodes (nodes pos &optional super-tree)
@@ -532,25 +504,26 @@
             (window-number (cyanide-window-number window))
             (buffer (window-buffer))
             (frame (window-frame window))
-            (edge-left (car (window-edges)))
-            (edge-top (cadr (window-edges)))
-            (edge-right (car (cddr (window-edges))))
-            (edge-bottom (cadr (cddr (window-edges)))))
-        (let ((win (cyanide-window
-                  window-number
-                  :window window
-                  :id id
-                  :position pos
-                  :window-number window-number
-                  :buffer buffer
-                  :frame frame
-                  :edge-left edge-left
-                  :edge-top edge-top
-                  :edge-right edge-right
-                  :edge-bottom edge-bottom)))
-          (cyanide-add-treenode cyanide-treenodes win)
-          (cyanide-add-sub-treenode super-tree win)
-          (cyanide-set-super-tree win super-tree))))
+            (edge-left (car (window-edges window)))
+            (edge-top (cadr (window-edges window)))
+            (edge-right (car (cddr (window-edges window))))
+            (edge-bottom (cadr (cddr (window-edges window)))))
+        (let ((edges (cyanide-edge-builder `(,edge-left
+                                             ,edge-top
+                                             ,edge-right
+                                             ,edge-bottom))))
+          (let ((win (cyanide-window
+                      window-number
+                      :window window
+                      :id id
+                      :position pos
+                      :window-number window-number
+                      :buffer buffer
+                      :frame frame
+                      :edges edges)))
+            (cyanide-add-treenode cyanide-treenodes win)
+            (cyanide-add-sub-treenode super-tree win)
+            (cyanide-set-super-tree win super-tree)))))
 
     (defclass cyanide-tree (cyanide-treenode)
       ((sub-treenodes :initarg :sub-treenodes
@@ -615,7 +588,62 @@
 
     (defmethod cyanide-remove-treenode ((nodes cyanide-treenode-collection)
                                         node)
-      (object-remove-from-list nodes :treenodes node))) :global t)
+      (object-remove-from-list nodes :treenodes node))
+
+    (defclass cyanide-edges ()
+      ((id     :initarg :id
+               :initform nil
+               :type symbol)
+       (left   :initarg :left
+               :initform -1
+               :type integer)
+       (top    :initarg :top
+               :initform -1
+               :type integer)
+       (right  :initarg :right
+               :initform -1
+               :type integer)
+       (bottom :initarg :bottom
+               :initform -1
+               :type integer)))
+
+    (defun cyanide-edge-builder (edge-list)
+      "Object to encapsulate window edge dimensions.
+       See `window-edges' for more information."
+      (let ((id (cl-gensym)))
+        (let ((edge-obj (cyanide-edges id :id id)))
+          (cyanide-set-edges edge-obj edge-list)
+          edge-obj))) ; return edge-obj
+
+    (defmethod cyanide-set-edge ((edges cyanide-edges)
+                                 edge-name
+                                 value)
+      (progn
+        (when (not (memq edge-name '(:left :top :right :bottom)))
+          (error (concat "Invalid edge name: " (format "%s" edge-name))))
+        (when (not (eq value (abs value)))
+          (error "Window dimensions cannot be negative"))
+        (eval `(oset edges ,edge-name value))))
+
+    (defmethod cyanide-get-edge ((edges cyanide-edges)
+                                 edge-name)
+      (progn
+        (when (not (memq edge-name '(:left :top :right :bottom)))
+          (error (concat "Invalid edge name: " (format "%s" edge-name))))
+        (eval `(oref edges ,edge-name))))
+
+    (defmethod cyanide-set-edges ((edges cyanide-edges) new-edge-list)
+      (progn
+        (cyanide-set-edge edges :left (car new-edge-list))
+        (cyanide-set-edge edges :top (cadr new-edge-list))
+        (cyanide-set-edge edges :right (car (cddr new-edge-list)))
+        (cyanide-set-edge edges :bottom (car (last new-edge-list)))))
+
+    (defmethod cyanide-get-edges ((edges cyanide-edges))
+      `(,(cyanide-get-edge edges :left)
+        ,(cyanide-get-edge edges :top)
+        ,(cyanide-get-edge edges :right)
+        ,(cyanide-get-edge edges :bottom)))) :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode
   (lambda () (cyanide-mode 1)))
