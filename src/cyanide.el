@@ -56,6 +56,11 @@
 
     (defvar cyanide-window-local-variables (make-hash-table :test 'equal))
 
+    (defclass cyanide-treenode-collection ()
+      ((treenodes :initarg :treenodes
+                  :initform '()
+                  :type list)))
+
     (defvar cyanide-treenodes (cyanide-treenode-collection (cl-gensym))
       "This collection holds all cyanide-treenode objects.")
 
@@ -438,7 +443,10 @@
                    :documentation
                    "Object that refers to the super-tree of this treenode.")
        (frame      :initarg :frame
-                   :type frame)
+                   :initform []
+                   :type vector
+                   :documentation
+                   "Object to encapsulate emacs frames.")
        (edges      :initarg :edges
                    :initform []
                    :type vector
@@ -460,6 +468,8 @@
 
     ; if no super-tree, node is a root.
     (defun cyanide-parse-treenodes (nodes pos &optional super-tree)
+      "Convert entire emacs `window-tree' into
+       object-oriented constructs for CyanIDE."
       (when nodes  ; else break out
         (let ((node (car nodes))
               (nodes (cdr nodes))
@@ -468,6 +478,8 @@
           (cyanide-parse-treenodes nodes pos super-tree))))
 
     (defun cyanide-parse-treenode (node pos &optional super-tree)
+      "Convert individual nodes of emacs `window-tree' into
+       object-oriented constructs for CyanIDE."
       (let ((token (cyanide-tokenize-window-treenode node)))
         (if (eq 'split-direction token)
             (cyanide-parse-split-direction node pos super-tree) ; TO DO
@@ -487,6 +499,7 @@
     (defun cyanide-parse-window (tree pos super-tree)
       (cyanide-window-builder window pos super-tree))
 
+    ; CyanIDE object to encapsulate emacs windows.
     (defclass cyanide-window (cyanide-treenode)
       ((window-number :initarg :window-number
                       :initform 0
@@ -499,11 +512,11 @@
                  :documentation "")))
 
     (defun cyanide-window-builder (window pos super-tree)
+      "Constructor for `cyanide-window'."
       (let ((position pos)
             (id (cl-gensym))
             (window-number (cyanide-window-number window))
             (buffer (window-buffer))
-            (frame (window-frame window))
             (edge-left (car (window-edges window)))
             (edge-top (cadr (window-edges window)))
             (edge-right (car (cddr (window-edges window))))
@@ -512,19 +525,21 @@
                                              ,edge-top
                                              ,edge-right
                                              ,edge-bottom))))
-          (let ((win (cyanide-window
-                      window-number
-                      :window window
-                      :id id
-                      :position pos
-                      :window-number window-number
-                      :buffer buffer
-                      :frame frame
-                      :edges edges)))
-            (cyanide-add-treenode cyanide-treenodes win)
-            (cyanide-add-sub-treenode super-tree win)
-            (cyanide-set-super-tree win super-tree)))))
+          (let ((frame (cyanide-frame-builder (window-frame window))))
+            (let ((win (cyanide-window
+                        window-number
+                        :window window
+                        :id id
+                        :position pos
+                        :window-number window-number
+                        :buffer buffer
+                        :frame frame
+                        :edges edges)))
+              (cyanide-add-treenode cyanide-treenodes win)
+              (cyanide-add-sub-treenode super-tree win)
+              (cyanide-set-super-tree win super-tree))))))
 
+    ; CyanIDE object to encapsulate emacs window-tree.
     (defclass cyanide-tree (cyanide-treenode)
       ((sub-treenodes :initarg :sub-treenodes
                       :initform []
@@ -548,6 +563,7 @@
     ;       construct tree-obj without sub-treenodes
     ;       handle root nodes
     (defun cyanide-tree-builder (tree pos super-tree)
+      "Constructor for `cyanide-tree'. "
       (let ((id (cl-gensym)))
         (let ((tree-obj (cyanide-tree id :id id)))
           (cyanide-set-frame tree-obj frame) ; TO DO
@@ -577,11 +593,6 @@
            ,(selected-window)))
        (window-list)))
 
-    (defclass cyanide-treenode-collection ()
-      ((treenodes :initarg :treenodes
-                  :initform '()
-                  :type list)))
-
     (defmethod cyanide-add-treenode ((nodes cyanide-treenode-collection)
                                      node)
       (object-add-to-list nodes :treenodes node))
@@ -590,9 +601,8 @@
                                         node)
       (object-remove-from-list nodes :treenodes node))
 
+    ; "CyanIDE object to encapsulate window-edges."
     (defclass cyanide-edges ()
-      "cyanide-edges encapsulates `window-edges' for the 
-       CyanIDE API."
       ((id     :initarg :id
                :initform nil
                :type symbol)
@@ -610,8 +620,7 @@
                :type integer)))
 
     (defun cyanide-edge-builder (edge-list)
-      "Build object to encapsulate window edge dimensions.
-       See also `window-edges' and `cyanide-edges'."
+      "Constructor for `cyanide-edges'."
       (let ((id (cl-gensym)))
         (let ((edge-obj (cyanide-edges id :id id)))
           (cyanide-set-edges edge-obj edge-list)
@@ -654,7 +663,26 @@
       `(,(cyanide-get-edge edges :left)
         ,(cyanide-get-edge edges :top)
         ,(cyanide-get-edge edges :right)
-        ,(cyanide-get-edge edges :bottom)))) :global t)
+        ,(cyanide-get-edge edges :bottom)))
+
+    ; "CyanIDE object to encapsulate emacs frames."
+    (defclass cyanide-frame ()
+      ((id    :initarg :id
+              :initform nil
+              :type symbol)
+       (frame :initarg :frame
+              :type frame)))
+
+    (defun cyanide-frame-builder (frame)
+      "Constructor for `cyanide-frame'."
+      (let ((id (cl-gensym)))
+        (cyanide-frame id :id id :frame frame)))
+
+    (defmethod cyanide-get-frame ((frame cyanide-frame))
+      (oref frame :frame))
+
+    (defmethod cyanide-set-frame ((frame cyanide-frame) value)
+      (oset frame :frame value))) :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode
   (lambda () (cyanide-mode 1)))
