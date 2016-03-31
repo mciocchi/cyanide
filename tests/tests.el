@@ -1,6 +1,7 @@
 (defvar tests '(cyanide-case-sensitive-test
               ; fail-test
-                cyanide-edges-test)
+                cyanide-edges-test
+                cyanide-frame-test)
   "All new tests need to be mapped here.")
 
 ;; check if test suite reports failiures correctly.
@@ -84,6 +85,18 @@
         (print (concat "cyanide-edges-test [FAILED]: "
                        "set value != get value."))
         nil)))) ; else return nil
+
+(defun cyanide-frame-test ()
+  "Test constructor, getters, and setters for cyanide-frame."
+  (let ((frame (cyanide-frame-builder (selected-frame))))
+    (cyanide-set-frame frame (selected-frame))
+    (if (eq (selected-frame) (cyanide-get-frame frame))
+        (progn
+          (print "cyanide-frame-test [PASSED]")
+          t)     ; return t if passed.
+      (progn
+        (print "cyanide-frame-test [FAILED]")
+        nil)))) ; else return nil.
 
 (defun run-tests ()
   (let ((results (mapcar 'funcall
