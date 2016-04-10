@@ -47,7 +47,6 @@
     ;; The find-lisp package is distributed with emacs, but needs to be included
     ;; explicitly like this to make its functions available in userland.
     (require 'find-lisp)
-    (require 'cyanide-buffer-excursion)
     (require 'ag)
 
     (defvar cyanide-projects (make-hash-table :test 'equal)
