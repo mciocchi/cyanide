@@ -61,11 +61,11 @@
                    :type list)))
 
      (cl-defmethod cyanide-add-treenode ((nodes cyanide-treenode-collection)
-     					node)
+                                        node)
        (object-add-to-list nodes :treenodes node))
 
      (cl-defmethod cyanide-remove-treenode ((nodes cyanide-treenode-collection)
-     					   node)
+                                           node)
        (object-remove-from-list nodes :treenodes node))
 
     (defvar cyanide-treenodes (cyanide-treenode-collection )
