@@ -81,6 +81,12 @@
     (defvar cyanide-verbose nil
       "non-nil if cyanide should use verbose logging.")
 
+    (defvar cyanide-find-dired-exclude-vc
+      "-not -path \"*\.svn*\" -not -path \"*\.git*\" "
+      "Exclude version control dot directories from
+       cyanide-find-dired. If this is set to an empty
+       string, CyanIDE will not exclude vc directories.")
+
     (defun cyanide-find-file-project-tree (proj-tree)
       "Load a project directory tree using dtable dispatch table.
        If length of proj-tree branch is 1, find-file, if 2,
@@ -425,6 +431,7 @@
                                    "'*"
                                    string
                                    "*' "
+                                   cyanide-find-dired-exclude-vc
                                    "-type f ")))
         (error (concat "cyanide-current-project is nil. " ; else
                        "Cannot invoke cyanide-find-dired "
