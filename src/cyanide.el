@@ -44,7 +44,6 @@
 
     (defvar cyanide-views (make-hash-table :test 'equal)
       "this collection holds all cyanide-view objects.")
-    (require 'cyanide-views)
     ;; The find-lisp package is distributed with emacs, but needs to be included
     ;; explicitly like this to make its functions available in userland.
     (require 'find-lisp)
@@ -56,12 +55,20 @@
 
     (defvar cyanide-window-local-variables (make-hash-table :test 'equal))
 
-    (defclass cyanide-treenode-collection ()
-      ((treenodes :initarg :treenodes
-                  :initform '()
-                  :type list)))
+     (defclass cyanide-treenode-collection ()
+       ((treenodes :initarg :treenodes
+                   :initform '()
+                   :type list)))
 
-    (defvar cyanide-treenodes (cyanide-treenode-collection (cl-gensym))
+     (cl-defmethod cyanide-add-treenode ((nodes cyanide-treenode-collection)
+     					node)
+       (object-add-to-list nodes :treenodes node))
+
+     (cl-defmethod cyanide-remove-treenode ((nodes cyanide-treenode-collection)
+     					   node)
+       (object-remove-from-list nodes :treenodes node))
+
+    (defvar cyanide-treenodes (cyanide-treenode-collection )
       "This collection holds all cyanide-treenode objects.")
 
     (defvar cyanide-current-view nil
@@ -96,7 +103,23 @@
         (mapcar worker proj-tree)
         nil))
 
-    (defmethod cyanide-load-project ((proj cyanide-project))
+    (defclass cyanide-project ()
+      ((display-name :initarg :display-name
+                     :initform ""
+                     :type string
+                     :documentation "Display name for a cyanide-project")
+       (default-view :initarg :default-view
+         :type symbol
+         :documentation "Default view at startup for a cyanide-project.")
+       (proj-root :initarg :proj-root
+                  :initform ""
+                  :type string
+                  :documentation "Project root.")
+       (load-hook :initarg :load-hook
+                  :type list
+                  :documentation "init-hook called at project load-time.")))
+
+    (cl-defmethod cyanide-load-project ((proj cyanide-project))
       "Load a cyanide-project"
       ;; Override these hooks to avoid repeatedly running
       ;; occur in cyanide-panel for every new buffer.
@@ -189,21 +212,21 @@
             (setq ag-reuse-buffers ag-reuse-buffers-orig))
         nil))
 
-    (defclass cyanide-project ()
-      ((display-name :initarg :display-name
-                     :initform ""
-                     :type string
-                     :documentation "Display name for a cyanide-project")
-       (default-view :initarg :default-view
-         :type symbol
-         :documentation "Default view at startup for a cyanide-project.")
-       (proj-root :initarg :proj-root
-                  :initform ""
-                  :type string
-                  :documentation "Project root.")
-       (load-hook :initarg :load-hook
-                  :type list
-                  :documentation "init-hook called at project load-time.")))
+    ;; (defclass cyanide-project ()
+    ;;   ((display-name :initarg :display-name
+    ;;                  :initform ""
+    ;;                  :type string
+    ;;                  :documentation "Display name for a cyanide-project")
+    ;;    (default-view :initarg :default-view
+    ;;      :type symbol
+    ;;      :documentation "Default view at startup for a cyanide-project.")
+    ;;    (proj-root :initarg :proj-root
+    ;;               :initform ""
+    ;;               :type string
+    ;;               :documentation "Project root.")
+    ;;    (load-hook :initarg :load-hook
+    ;;               :type list
+    ;;               :documentation "init-hook called at project load-time.")))
 
     (defclass cyanide-view ()
       ;; Display name for user interface, separate from impementation.
@@ -222,12 +245,14 @@
                 :documentation "Disable this cyanide-view."))
       "Definition of a cyanide-view configuration.")
 
+    (require 'cyanide-views)
+
     ;; Get quoted function from cyanide-view and execute.
-    (defmethod cyanide-call-enable ((view cyanide-view))
+    (cl-defmethod cyanide-call-enable ((view cyanide-view))
       "Enable a cyanide-view."
       (funcall (oref view enable)))
 
-    (defmethod cyanide-call-disable ((view cyanide-view))
+    (cl-defmethod cyanide-call-disable ((view cyanide-view))
       "Disable a cyanide-view."
       (funcall (oref view disable)))
 
@@ -454,16 +479,16 @@
                    "Object to encapsulate window edge dimensions.
                     see `window-edges' for more information.")))
 
-    (defmethod cyanide-set-super-tree ((node cyanide-treenode)
-                                       super-tree)
+    (cl-defmethod cyanide-set-super-tree ((node cyanide-treenode)
+					  super-tree)
       (oset node :super-tree super-tree))
 
-    (defmethod cyanide-set-position ((node cyanide-treenode)
-                                     position)
+    (cl-defmethod cyanide-set-position ((node cyanide-treenode)
+					position)
       (oset node :position position))
 
-    (defmethod cyanide-set-frame ((node cyanide-treenode)
-                                  frame)
+    (cl-defmethod cyanide-set-frame ((node cyanide-treenode)
+				     frame)
       (oset node :frame frame))
 
     ; if no super-tree, node is a root.
@@ -499,7 +524,7 @@
     (defun cyanide-parse-window (tree pos super-tree)
       (cyanide-window-builder window pos super-tree))
 
-    ; CyanIDE object to encapsulate emacs windows.
+    ; CyanIDE class to encapsulate emacs windows.
     (defclass cyanide-window (cyanide-treenode)
       ((window-number :initarg :window-number
                       :initform 0
@@ -527,7 +552,6 @@
                                              ,edge-bottom))))
           (let ((frame (cyanide-frame-builder (window-frame window))))
             (let ((win (cyanide-window
-                        window-number
                         :window window
                         :id id
                         :position pos
@@ -539,7 +563,7 @@
               (cyanide-add-sub-treenode super-tree win)
               (cyanide-set-super-tree win super-tree))))))
 
-    ; CyanIDE object to encapsulate emacs window-tree.
+    ; CyanIDE class to encapsulate emacs window-tree.
     (defclass cyanide-tree (cyanide-treenode)
       ((sub-treenodes :initarg :sub-treenodes
                       :initform []
@@ -549,12 +573,12 @@
        (split-direction :initarg :split-direction
                         :type boolean)))
 
-    (defmethod cyanide-add-sub-treenode ((super-tree cyanide-tree)
+    (cl-defmethod cyanide-add-sub-treenode ((super-tree cyanide-tree)
                                          sub-treenode)
       (cyanide-add-treenode (oref super-tree :sub-treenodes)
                             sub-treenode))
 
-    (defmethod cyanide-remove-sub-treenode ((super-tree cyanide-tree)
+    (cl-defmethod cyanide-remove-sub-treenode ((super-tree cyanide-tree)
                                             sub-treenode)
       (cyanide-remove-treenode (oref super-tree :sub-treenodes)
                                sub-treenode))
@@ -565,7 +589,7 @@
     (defun cyanide-tree-builder (tree pos super-tree)
       "Constructor for `cyanide-tree'. "
       (let ((id (cl-gensym)))
-        (let ((tree-obj (cyanide-tree id :id id)))
+        (let ((tree-obj (cyanide-tree :id id)))
           (cyanide-set-frame tree-obj frame) ; TO DO
           (cyanide-set-position tree-obj pos)
           (cyanide-parse-treenodes tree pos tree-obj))))
@@ -593,15 +617,7 @@
            ,(selected-window)))
        (window-list)))
 
-    (defmethod cyanide-add-treenode ((nodes cyanide-treenode-collection)
-                                     node)
-      (object-add-to-list nodes :treenodes node))
-
-    (defmethod cyanide-remove-treenode ((nodes cyanide-treenode-collection)
-                                        node)
-      (object-remove-from-list nodes :treenodes node))
-
-    ; "CyanIDE object to encapsulate window-edges."
+    ; "CyanIDE class to encapsulate window-edges."
     (defclass cyanide-edges ()
       ((id     :initarg :id
                :initform nil
@@ -622,13 +638,13 @@
     (defun cyanide-edge-builder (edge-list)
       "Constructor for `cyanide-edges'."
       (let ((id (cl-gensym)))
-        (let ((edge-obj (cyanide-edges id :id id)))
+        (let ((edge-obj (cyanide-edges :id id)))
           (cyanide-set-edges edge-obj edge-list)
           edge-obj))) ; return edge-obj
 
-    (defmethod cyanide-set-edge ((edges cyanide-edges)
-                                 edge-name
-                                 value)
+    (cl-defmethod cyanide-set-edge ((edges cyanide-edges)
+				    edge-name
+				    value)
       "Set the value of a `cyanide-window' edge by name.
        Valid names are :left :top :right or :bottom."
       (progn
@@ -638,8 +654,8 @@
           (error "Window dimensions cannot be negative"))
         (eval `(oset edges ,edge-name value))))
 
-    (defmethod cyanide-get-edge ((edges cyanide-edges)
-                                 edge-name)
+    (cl-defmethod cyanide-get-edge ((edges cyanide-edges)
+				    edge-name)
       "Get the value of a `cyanide-window' edge by name.
        Valid names are :left :top :right or :bottom."
       (progn
@@ -647,7 +663,7 @@
           (error (concat "Invalid edge name: " (format "%s" edge-name))))
         (eval `(oref edges ,edge-name))))
 
-    (defmethod cyanide-set-edges ((edges cyanide-edges) new-edge-list)
+    (cl-defmethod cyanide-set-edges ((edges cyanide-edges) new-edge-list)
       "Set multiple `cyanide-window' edge values at the same
        time. This can be used to easily parse
        `window-edges'."
@@ -657,7 +673,7 @@
         (cyanide-set-edge edges :right (car (cddr new-edge-list)))
         (cyanide-set-edge edges :bottom (car (last new-edge-list)))))
 
-    (defmethod cyanide-get-edges ((edges cyanide-edges))
+    (cl-defmethod cyanide-get-edges ((edges cyanide-edges))
       "Get the value of all `cyanide-window' edges in a
        structure identical to `window-edges'."
       `(,(cyanide-get-edge edges :left)
@@ -665,7 +681,7 @@
         ,(cyanide-get-edge edges :right)
         ,(cyanide-get-edge edges :bottom)))
 
-    ; "CyanIDE object to encapsulate emacs frames."
+    ; "CyanIDE class to encapsulate emacs frames."
     (defclass cyanide-frame ()
       ((id    :initarg :id
               :initform nil
@@ -676,12 +692,12 @@
     (defun cyanide-frame-builder (frame)
       "Constructor for `cyanide-frame'."
       (let ((id (cl-gensym)))
-        (cyanide-frame id :id id :frame frame)))
+        (cyanide-frame :id id :frame frame)))
 
-    (defmethod cyanide-get-frame ((frame cyanide-frame))
+    (cl-defmethod cyanide-get-frame ((frame cyanide-frame))
       (oref frame :frame))
 
-    (defmethod cyanide-set-frame ((frame cyanide-frame) value)
+    (cl-defmethod cyanide-set-frame ((frame cyanide-frame) value)
       (oset frame :frame value))) :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode

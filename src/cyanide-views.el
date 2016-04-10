@@ -14,7 +14,7 @@
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
 (puthash 'cyanide-default-view
-         (cyanide-view "cyanide-default-view"
+         (cyanide-view
                        :display-name "cyanide-default-view"
                        :enable (lambda nil
                                  (progn
@@ -54,7 +54,7 @@
          cyanide-views)
 
 (puthash 'cyanide-elisp-view
-         (cyanide-view "cyanide-elisp-view"
+         (cyanide-view
                        :display-name "cyanide-elisp-view"
                        :enable (lambda nil
                                  (progn
