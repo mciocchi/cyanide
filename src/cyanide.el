@@ -212,22 +212,6 @@
             (setq ag-reuse-buffers ag-reuse-buffers-orig))
         nil))
 
-    ;; (defclass cyanide-project ()
-    ;;   ((display-name :initarg :display-name
-    ;;                  :initform ""
-    ;;                  :type string
-    ;;                  :documentation "Display name for a cyanide-project")
-    ;;    (default-view :initarg :default-view
-    ;;      :type symbol
-    ;;      :documentation "Default view at startup for a cyanide-project.")
-    ;;    (proj-root :initarg :proj-root
-    ;;               :initform ""
-    ;;               :type string
-    ;;               :documentation "Project root.")
-    ;;    (load-hook :initarg :load-hook
-    ;;               :type list
-    ;;               :documentation "init-hook called at project load-time.")))
-
     (defclass cyanide-view ()
       ;; Display name for user interface, separate from impementation.
       ((display-name :initarg :display-name
