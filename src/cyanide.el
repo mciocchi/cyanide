@@ -87,27 +87,6 @@
        cyanide-find-dired. If this is set to an empty
        string, CyanIDE will not exclude vc directories.")
 
-    (defun cyanide-find-file-project-tree (proj-tree)
-      "Load a project directory tree using dtable dispatch table.
-       If length of proj-tree branch is 1, find-file, if 2,
-       find-file-subtree, else, nil."
-      ;; I may be guilty of being a bit too dynamic here,
-      ;; but the alternative to a dynamically-generated
-      ;; dispatch table is parsing via a nest of
-      ;; if-statements, which is worse.
-      (let ((worker
-             (lambda (branch)
-               (let ((dtable
-                      `((1 . (find-file ,(car branch)))
-                        (2 . (cyanide-find-file-subtree
-                              ,(car branch)
-                              ,(car (cdr branch)))))))
-                 (eval
-                  (cdr
-                   (assq (length branch) dtable)))))))
-        (mapcar worker proj-tree)
-        nil))
-
     (defclass cyanide-project ()
       ((display-name :initarg :display-name
                      :initform ""
@@ -154,11 +133,6 @@
                                                    project-names nil 1)
                                   projects
                                   cyanide-projects))))))
-
-    (defun cyanide-find-file-subtree (dir regex)
-      "Open every file in an arbitrary subdirectory tree."
-      (interactive "DDir: \nMregex: ")
-      (mapc 'find-file (find-lisp-find-files dir regex)))
 
     (defun cyanide-windows-dedicated (bool &optional minibuf all-frames)
       "Toggle window dedication for all windows
@@ -470,15 +444,15 @@
                     see `window-edges' for more information.")))
 
     (cl-defmethod cyanide-set-super-tree ((node cyanide-treenode)
-					  super-tree)
+                                          super-tree)
       (oset node :super-tree super-tree))
 
     (cl-defmethod cyanide-set-position ((node cyanide-treenode)
-					position)
+                                        position)
       (oset node :position position))
 
     (cl-defmethod cyanide-set-frame ((node cyanide-treenode)
-				     frame)
+                                     frame)
       (oset node :frame frame))
 
     ; if no super-tree, node is a root.
@@ -633,8 +607,8 @@
           edge-obj))) ; return edge-obj
 
     (cl-defmethod cyanide-set-edge ((edges cyanide-edges)
-				    edge-name
-				    value)
+                                    edge-name
+                                    value)
       "Set the value of a `cyanide-window' edge by name.
        Valid names are :left :top :right or :bottom."
       (progn
@@ -645,7 +619,7 @@
         (eval `(oset edges ,edge-name value))))
 
     (cl-defmethod cyanide-get-edge ((edges cyanide-edges)
-				    edge-name)
+                                    edge-name)
       "Get the value of a `cyanide-window' edge by name.
        Valid names are :left :top :right or :bottom."
       (progn
