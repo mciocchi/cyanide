@@ -54,6 +54,11 @@
 
     (defvar cyanide-window-local-variables (make-hash-table :test 'equal))
 
+    ;; TO DO:
+    ;; see cyanide-get-sub-treenodes for details
+    ;; shouldn't treenode-collection be subsumed into treenode itself?
+    ;; maybe not- you might end up with an extra treenode of nodes inside each
+    ;; treenode to represent its sub-treenodes. What?
      (defclass cyanide-treenode-collection ()
        ((treenodes :initarg :treenodes
                    :initform '()
@@ -66,6 +71,9 @@
      (cl-defmethod cyanide-remove-treenode ((nodes cyanide-treenode-collection)
                                            node)
        (object-remove-from-list nodes :treenodes node))
+
+     (cl-defmethod cyanide-get-treenodes ((nodes cyanide-treenode-collection))
+       (oref nodes :treenodes))
 
     (defvar cyanide-treenodes (cyanide-treenode-collection )
       "This collection holds all cyanide-treenode objects.")
@@ -447,6 +455,9 @@
                                           super-tree)
       (oset node :super-tree super-tree))
 
+    (cl-defmethod cyanide-get-super-tree ((node cyanide-treenode))
+      (oref node :super-tree))
+
     (cl-defmethod cyanide-set-position ((node cyanide-treenode)
                                         position)
       (oset node :position position))
@@ -547,16 +558,30 @@
       (cyanide-remove-treenode (oref super-tree :sub-treenodes)
                                sub-treenode))
 
+    (cl-defmethod cyanide-set-sub-treenodes ((tree cyanide-tree)
+                                             (sub-treenodes
+                                              cyanide-treenode-collection))
+      (oset tree :sub-treenodes sub-treenodes))
+
+; TO DO    (cl-defmethod cyanide-get-sub-treenodes ((tree cyanide-tree))
+; TO DO      (cyanide-get-treenodes (oref tree :sub-treenodes)))
+;          should return list instead of object.
+    (cl-defmethod cyanide-get-sub-treenodes ((tree cyanide-tree))
+      (oref tree :sub-treenodes))
+
     ; TO DO:
     ;       construct tree-obj without sub-treenodes
     ;       handle root nodes
-    (defun cyanide-tree-builder (tree pos super-tree)
+    (defun cyanide-tree-builder (tree pos super-tree frame)
       "Constructor for `cyanide-tree'. "
       (let ((id (cl-gensym)))
         (let ((tree-obj (cyanide-tree :id id)))
-          (cyanide-set-frame tree-obj frame) ; TO DO
+          (cyanide-set-frame tree-obj frame)
           (cyanide-set-position tree-obj pos)
-          (cyanide-parse-treenodes tree pos tree-obj))))
+          (cyanide-set-sub-treenodes tree-obj (cyanide-treenode-collection))
+          ;; TO DO - temporary
+          ;;          (cyanide-parse-treenodes tree pos tree-obj)
+          tree-obj))) ; return tree-obj
 
     (defun cyanide-window-number (&optional win)
       "Derive window number by casting window to string, parsing
