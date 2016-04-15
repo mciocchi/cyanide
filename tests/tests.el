@@ -1,8 +1,7 @@
 (defvar legacy-tests '(cyanide-case-sensitive-test
                        ; fail-test
                        cyanide-edges-test
-                       cyanide-frame-test
-                       cyanide-sub-tree-test)
+                       cyanide-frame-test)
   "All new tests need to be mapped here.")
 
 (defun cyanide-test-executor (tests)
@@ -65,7 +64,7 @@
                     nil)))
       (cyanide-add-sub-treenode root-obj sub-obj)
       (cyanide-set-super-tree sub-obj root-obj)
-                                        ; return true only if all tests do.
+      ; return true only if all tests do.
       (eval (cons 'and (cyanide-test-executor `((cyanide-tree-test
                                                  ,root-obj
                                                  cyanide-true-func
@@ -74,7 +73,39 @@
                                                 (cyanide-get-sub-treenodes-test
                                                  ,root-obj
                                                  cyanide-true-func
+                                                 cyanide-false-func)
+
+                                                (cyanide-super-treenode-test
+                                                 ,sub-obj
+                                                 cyanide-true-func
+                                                 cyanide-false-func)
+
+                                                (cyanide-super-treenode-test-2
+                                                 '(,sub-obj ,root-obj)
+                                                 cyanide-true-func
+                                                 cyanide-false-func)
+
+                                                (cyanide-sub-treenode-test
+                                                 '(,sub-obj ,root-obj)
+                                                 cyanide-true-func
                                                  cyanide-false-func))))))))
+
+(defun cyanide-super-treenode-test (tree-obj)
+  (eq (eieio-object-class (cyanide-get-super-tree tree-obj))
+      'cyanide-tree))
+
+(defun cyanide-super-treenode-test-2 (args)
+  "args: '(,sub-obj ,root-obj)"
+  (progn (eq
+                 (cyanide-get-super-tree (car (car (cdr args))))
+                 (car (cdr (car (cdr args)))))))
+
+(defun cyanide-sub-treenode-test (args)
+  "args: '(,sub-obj ,root-obj)"
+  (progn (eq
+                 (car (car (cdr args)))
+                 (car (cyanide-get-sub-treenodes
+                       (car (cdr (car (cdr args)))))))))
 
 (setq tests
       `((proto-test-func
@@ -180,50 +211,6 @@
       (progn
         (print "cyanide-frame-test [FAILED]")
         nil)))) ; else return nil.
-
-(defun cyanide-root-test (root-obj)
-  (let ((result
-         (and
-          (listp
-           (cyanide-get-sub-treenodes root-obj))
-          (eq 'cyanide-tree
-              (eieio-object-class root-obj))
-          (equal []
-                 (cyanide-get-super-tree root-obj)))))
-    result))
-
-(defun cyanide-sub-tree-test ()
-  (let ((root-obj (cyanide-tree-builder
-                   (window-tree)
-                   (abs (random))
-                   (cyanide-frame-builder (selected-frame))
-                   nil)))
-    (let ((sub-tree-obj (cyanide-tree-builder
-                         (window-tree)
-                         (abs (random))
-                         (cyanide-frame-builder (selected-frame))
-                         nil)))
-      (cyanide-set-super-tree sub-tree-obj root-obj)
-      (cyanide-add-sub-treenode root-obj sub-tree-obj)
-      (let ((result
-             (and
-              (listp
-               (cyanide-get-sub-treenodes root-obj))
-              (listp
-               (cyanide-get-sub-treenodes sub-tree-obj))
-              (eq 'cyanide-tree
-                  (eieio-object-class root-obj))
-              (eq 'cyanide-tree
-                  (eieio-object-class
-                   sub-tree-obj))
-              (eq root-obj
-                  (cyanide-get-super-tree sub-tree-obj))
-              (eq []
-                  (cyanide-get-super-tree root-obj)))))
-        (if result
-            (print "cyanide-sub-tree-test [PASSED]")
-          (print "cyanide-sub-tree-test [FAILED]"))
-        result))))
 
 (defun run-tests ()
   (let ((results (mapcar 'funcall
