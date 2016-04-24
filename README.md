@@ -14,6 +14,11 @@ configuration.
 
 * install instructions:
 
+** install dependencies:
+
+ag.el https://github.com/Wilfred/ag.el
+Note- ag.el can also be installed from melpa.org via package.el
+
 <code>
 
 cd ~/.emacs.d/
@@ -36,7 +41,7 @@ default-view, etc. as the need arises.
 
 (puthash 'dot-emacs
 
-         (cyanide-project "dot-emacs"
+         (cyanide-project
          
                           :display-name "dot-emacs"
                           
@@ -46,7 +51,7 @@ default-view, etc. as the need arises.
                           
                           :load-hook '()
                           
-                          :proj-root "/home/user/.emacs.d/"
+                          :proj-root "/home/user/.emacs.d/")
 
          cyanide-projects)
 </code>
@@ -79,7 +84,3 @@ back.
 Still looking into the feasibility/sustainability of this in the long-term.
 
 ** IN PROGRESS "subview" abstractions to simplify and clean up views
-
-** DONE bug while selecting region in one buffer that is open in two windows
-
-Solved in latest release!

@@ -476,6 +476,7 @@
     (defun cyanide-parse-treenode (node pos &optional super-tree)
       "Convert individual nodes of emacs `window-tree' into
        object-oriented constructs for CyanIDE."
+      ; TO DO: need to pass frame into these constructors also.
       (let ((token (cyanide-tokenize-window-treenode node)))
         (if (eq 'split-direction token)
             (cyanide-parse-split-direction node pos super-tree) ; TO DO
@@ -484,7 +485,7 @@
             (if (eq 'window token)
                 (cyanide-parse-window node pos super-tree)      ; TO DO
               (if (eq 'tree token)
-                  (cyanide-parse-tree node pos super-tree)      ; TO DO
+                  (cyanide-parse-tree node pos super-tree)   ; TO DO mostly done
                 (error "cyanide-parse-treenode: unrecognized token")))))))
 
     ; call cyanide-tree-builder
