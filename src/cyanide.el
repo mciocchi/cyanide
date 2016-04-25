@@ -22,12 +22,12 @@
       (define-key map (kbd "C-c c a") 'cyanide-ag-search)
       (define-key map (kbd "C-c c f") 'cyanide-find-dired)) map))
 
-(defun cyanide-generate-task (tsk)
+(defun cyanide-vectorize-task (tsk)
   (eval `(vector ,(oref tsk :display-name)
                  ,(oref tsk :func))))
 
-(defun cyanide-generate-task-list (tsk-list)
-  (cons "Tasks" (mapcar 'cyanide-generate-task tsk-list)))
+(defun cyanide-vectorize-task-list (tsk-list)
+  (cons "Tasks" (mapcar 'cyanide-vectorize-task tsk-list)))
 
 ; TO DO. Prompt with completion showing executable tasks.
 (defun cyanide-task-prompt ()
