@@ -16,8 +16,10 @@ configuration.
 
 ** install dependencies:
 
-ag.el https://github.com/Wilfred/ag.el
-Note- ag.el can also be installed from melpa.org via package.el
+- emacs 25 or higher
+
+- ag.el https://github.com/Wilfred/ag.el
+  Note- ag.el can also be installed from melpa.org via package.el
 
 <code>
 
