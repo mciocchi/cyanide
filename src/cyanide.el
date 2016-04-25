@@ -22,8 +22,42 @@
       (define-key map (kbd "C-c c a") 'cyanide-ag-search)
       (define-key map (kbd "C-c c f") 'cyanide-find-dired)) map))
 
+(defun cyanide-generate-task (tsk)
+  (eval `(vector ,(oref tsk :display-name)
+                 ,(oref tsk :func))))
+
+(defun cyanide-generate-task-list (tsk-list)
+  (cons "Tasks" (mapcar 'cyanide-generate-task tsk-list)))
+
+; TO DO. Prompt with completion showing executable tasks.
+(defun cyanide-task-prompt ()
+  ())
+
+    (defclass cyanide-task ()
+      ((display-name
+        :initarg :display-name
+        :type string
+        :initform ""
+        :custom string
+        :documentation
+        "Name shown in Cyanide Tasks sub-menu.")
+       (func :initarg :func
+             :type function
+             :custom function
+             :documentation
+             "Function that runs elisp or an external shell
+              command.")
+       (sub-menu-name :initarg :sub-menu-name
+                      :type string
+                      :initform ""
+                      :custom string
+                      :documentation
+                      "Optional grouping for similar tasks
+                       to appear in the same sub-menu of the
+                       task bar.")))
+
 (easy-menu-define cyanide-menu cyanide-mode-map "CyanIDE"
-  '("CyanIDE"
+  `("CyanIDE"
     ["Load Project"
      cyanide-load-project-prompt t]
     ["cyanide-ag-search Project"
@@ -105,7 +139,16 @@
                   :documentation "Project root.")
        (load-hook :initarg :load-hook
                   :type list
-                  :documentation "init-hook called at project load-time.")))
+                  :documentation "hook called at project load-time.")
+       (teardown-hook :initarg :teardown-hook
+                      :type list
+                      :documentation "hook called at project teardown.")
+       (task-list :initarg :task-list
+                  :type list
+                  :documentation
+                  "External jobs that can be launched to do
+                   work on the environment of a
+                   cyanide-project.")))
 
     (cl-defmethod cyanide-load-project ((proj cyanide-project))
       "Load a cyanide-project"
