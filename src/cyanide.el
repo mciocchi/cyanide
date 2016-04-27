@@ -22,18 +22,22 @@
       (define-key map (kbd "C-c c a") 'cyanide-ag-search)
       (define-key map (kbd "C-c c f") 'cyanide-find-dired)) map))
 
-(defun cyanide-vectorize-task (tsk)
-  (eval `(vector ,(oref tsk :display-name)
-                 ,(oref tsk :func))))
+;; (defun cyanide-vectorize-task (tsk)
+;;   (eval `(vector ,(oref tsk :display-name)
+;;                  ,(oref tsk :func))))
 
-(defun cyanide-vectorize-task-list (tsk-list)
-  (cons "Tasks" (mapcar 'cyanide-vectorize-task tsk-list)))
+(cl-defmethod cyanide-menu-item-vectorize ((item cyanide-menu-item))
+  (eval `(vector ,(oref item :display-name)
+                 ,(oref item :func))))
+
+(defun cyanide-menu-item-list-vectorize (list)
+  (cons "Tasks" (mapcar 'cyanide-menu-item-vectorize item)))
 
 ; TO DO. Prompt with completion showing executable tasks.
-(defun cyanide-task-prompt ()
+(defun cyanide-menu-item-prompt ()
   ())
 
-    (defclass cyanide-task ()
+(defclass cyanide-menu-item ()
       ((display-name
         :initarg :display-name
         :type string
@@ -55,6 +59,29 @@
                       "Optional grouping for similar tasks
                        to appear in the same sub-menu of the
                        task bar.")))
+
+;; (defclass cyanide-task ()
+;;       ((display-name
+;;         :initarg :display-name
+;;         :type string
+;;         :initform ""
+;;         :custom string
+;;         :documentation
+;;         "Name shown in Cyanide Tasks sub-menu.")
+;;        (func :initarg :func
+;;              :type function
+;;              :custom function
+;;              :documentation
+;;              "Function that runs elisp or an external shell
+;;               command.")
+;;        (sub-menu-name :initarg :sub-menu-name
+;;                       :type string
+;;                       :initform ""
+;;                       :custom string
+;;                       :documentation
+;;                       "Optional grouping for similar tasks
+;;                        to appear in the same sub-menu of the
+;;                        task bar.")))
 
 (easy-menu-define cyanide-menu cyanide-mode-map "CyanIDE"
   `("CyanIDE"
