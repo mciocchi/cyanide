@@ -50,7 +50,7 @@
                  ,(oref item :func))))
 
 (defun cyanide-menu-item-list-vectorize (list)
-  (cons "Tasks" (mapcar 'cyanide-menu-item-vectorize item)))
+  (cons "Tasks" (mapcar 'cyanide-menu-item-vectorize list)))
 
 ; TO DO. Prompt with completion showing executable tasks.
 (defun cyanide-menu-item-prompt ()
