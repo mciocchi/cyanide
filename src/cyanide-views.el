@@ -54,7 +54,7 @@
                                      cyanide-mode-map
                                      "CyanIDE"
                                      `("CyanIDE"
-                                       ,(cyanide-vectorize-task-list
+                                       ,(cyanide-menu-item-list-vectorize
                                          (oref (gethash
                                                 cyanide-current-project
                                                 cyanide-projects) :task-list))
@@ -114,7 +114,7 @@
                                      cyanide-mode-map
                                      "CyanIDE"
                                      `("CyanIDE"
-                                       ,(cyanide-vectorize-task-list
+                                       ,(cyanide-menu-item-list-vectorize
                                          (oref (gethash
                                                 cyanide-current-project
                                                 cyanide-projects) :task-list))
