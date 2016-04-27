@@ -22,21 +22,6 @@
       (define-key map (kbd "C-c c a") 'cyanide-ag-search)
       (define-key map (kbd "C-c c f") 'cyanide-find-dired)) map))
 
-;; (defun cyanide-vectorize-task (tsk)
-;;   (eval `(vector ,(oref tsk :display-name)
-;;                  ,(oref tsk :func))))
-
-(cl-defmethod cyanide-menu-item-vectorize ((item cyanide-menu-item))
-  (eval `(vector ,(oref item :display-name)
-                 ,(oref item :func))))
-
-(defun cyanide-menu-item-list-vectorize (list)
-  (cons "Tasks" (mapcar 'cyanide-menu-item-vectorize item)))
-
-; TO DO. Prompt with completion showing executable tasks.
-(defun cyanide-menu-item-prompt ()
-  ())
-
 (defclass cyanide-menu-item ()
       ((display-name
         :initarg :display-name
@@ -59,6 +44,17 @@
                       "Optional grouping for similar tasks
                        to appear in the same sub-menu of the
                        task bar.")))
+
+(cl-defmethod cyanide-menu-item-vectorize ((item cyanide-menu-item))
+  (eval `(vector ,(oref item :display-name)
+                 ,(oref item :func))))
+
+(defun cyanide-menu-item-list-vectorize (list)
+  (cons "Tasks" (mapcar 'cyanide-menu-item-vectorize item)))
+
+; TO DO. Prompt with completion showing executable tasks.
+(defun cyanide-menu-item-prompt ()
+  ())
 
 ;; (defclass cyanide-task ()
 ;;       ((display-name
