@@ -23,63 +23,57 @@
       (define-key map (kbd "C-c c f") 'cyanide-find-dired)) map))
 
 (defclass cyanide-menu-item ()
-      ((display-name
-        :initarg :display-name
-        :type string
-        :initform ""
-        :custom string
-        :documentation
-        "Name shown in Cyanide Tasks sub-menu.")
-       (func :initarg :func
-             :type function
-             :custom function
-             :documentation
-             "Function that runs elisp or an external shell
-              command.")
-       (sub-menu-name :initarg :sub-menu-name
-                      :type string
-                      :initform ""
-                      :custom string
-                      :documentation
-                      "Optional grouping for similar tasks
-                       to appear in the same sub-menu of the
-                       task bar.")))
+  ((display-name :initarg :display-name
+                 :type string
+                 :initform "")))
 
-(cl-defmethod cyanide-menu-item-vectorize ((item cyanide-menu-item))
-  (eval `(vector ,(oref item :display-name)
-                 ,(oref item :func))))
+(defclass cyanide-menu (cyanide-menu-item)
+  ((members :initarg :members
+            :type list
+            :initform ())))
 
-(defun cyanide-menu-item-list-vectorize (list)
-  (cons "Tasks" (mapcar 'cyanide-menu-item-vectorize list)))
+(defclass cyanide-menu-function (cyanide-menu-item)
+  ((func :initarg :func
+         :type function)))
+
+;; vectorize:
+;; cast one string/function pair to a vector.
+;; example output:
+;; ["mvn clean" (lambda () (print "Executing mvn clean."))]
+(cl-defmethod cyanide-vectorize ((menu-function cyanide-menu-function))
+  (eval `(vector ,(oref menu-function :display-name)
+                 ,(oref menu-function :func))))
+
+;; vectorize:
+;; if it's a menu-function, invoke vectorize on one item.
+;; if it's a menu, invoke vectorize on all members, including sub-menus
+;; example output:
+;; ("CyanIDE Test Menu"
+;;  ["mvn clean"
+;;   (lambda nil
+;;     (interactive)
+;;     (print "executing mvn clean"))]
+;;  ["mvn package"
+;;   (lambda nil
+;;     (interactive)
+;;     (print "executing mvn package"))])
+(cl-defmethod cyanide-vectorize ((menu cyanide-menu))
+  (cons (oref menu :display-name)
+        (mapcar 'cyanide-vectorize (oref menu :members))))
+
+(defmethod cyanide-menu-render ((menu cyanide-menu)
+                                quoted-menu-symbol
+                                menu-mode-map)
+  (eval `(easy-menu-define menu-symbol menu-mode-map ,(oref menu :display-name)
+           (quote ,(cons (oref menu :display-name)
+                         (mapcar 'cyanide-vectorize
+                                 (oref menu :members)))))))
 
 ; TO DO. Prompt with completion showing executable tasks.
 (defun cyanide-menu-item-prompt ()
   ())
 
-;; (defclass cyanide-task ()
-;;       ((display-name
-;;         :initarg :display-name
-;;         :type string
-;;         :initform ""
-;;         :custom string
-;;         :documentation
-;;         "Name shown in Cyanide Tasks sub-menu.")
-;;        (func :initarg :func
-;;              :type function
-;;              :custom function
-;;              :documentation
-;;              "Function that runs elisp or an external shell
-;;               command.")
-;;        (sub-menu-name :initarg :sub-menu-name
-;;                       :type string
-;;                       :initform ""
-;;                       :custom string
-;;                       :documentation
-;;                       "Optional grouping for similar tasks
-;;                        to appear in the same sub-menu of the
-;;                        task bar.")))
-
-(easy-menu-define cyanide-menu cyanide-mode-map "CyanIDE"
+(easy-menu-define cyanide-menu-impl cyanide-mode-map "CyanIDE"
   `("CyanIDE"
     ["Load Project"
      cyanide-load-project-prompt t]

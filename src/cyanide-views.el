@@ -49,25 +49,26 @@
                                    (set-window-dedicated-p
                                     (get-buffer-window (current-buffer)) 1)
                                    (other-window 1)
-                                   (easy-menu-define
-                                     cyanide-menu
-                                     cyanide-mode-map
-                                     "CyanIDE"
-                                     `("CyanIDE"
-                                       ,(cyanide-menu-item-list-vectorize
-                                         (oref (gethash
-                                                cyanide-current-project
-                                                cyanide-projects) :task-list))
-                                       ["Load Project"
-                                        cyanide-load-project-prompt t]
-                                       ["cyanide-ag-search Project"
-                                        cyanide-ag-search t]
-                                       ["Find in Project"
-                                        cyanide-find-dired t]
-                                       ["Enable View"
-                                        cyanide-enable-view-prompt t]
-                                       ["Disable Current View"
-                                        cyanide-disable-current-view t]))))
+                                   ;; (easy-menu-define
+                                   ;;   cyanide-menu
+                                   ;;   cyanide-mode-map
+                                   ;;   "CyanIDE"
+                                   ;;   `("CyanIDE"
+                                   ;;     ,(cyanide-menu-item-list-vectorize
+                                   ;;       (oref (gethash
+                                   ;;              cyanide-current-project
+                                   ;;              cyanide-projects) :task-list))
+                                   ;;     ["Load Project"
+                                   ;;      cyanide-load-project-prompt t]
+                                   ;;     ["cyanide-ag-search Project"
+                                   ;;      cyanide-ag-search t]
+                                   ;;     ["Find in Project"
+                                   ;;      cyanide-find-dired t]
+                                   ;;     ["Enable View"
+                                   ;;      cyanide-enable-view-prompt t]
+                                   ;;     ["Disable Current View"
+                                   ;;      cyanide-disable-current-view t]))
+                                   ))
                        :disable 'cyanide-default-disabler)
          ;; Every cyanide-view object is stored in this hashtable.
          cyanide-views)
@@ -109,25 +110,26 @@
                                     (get-buffer-window (current-buffer)) 1)
                                    (ielm)
                                    (other-window 2)
-                                   (easy-menu-define
-                                     cyanide-menu
-                                     cyanide-mode-map
-                                     "CyanIDE"
-                                     `("CyanIDE"
-                                       ,(cyanide-menu-item-list-vectorize
-                                         (oref (gethash
-                                                cyanide-current-project
-                                                cyanide-projects) :task-list))
-                                       ["Load Project"
-                                        cyanide-load-project-prompt t]
-                                       ["cyanide-ag-search Project"
-                                        cyanide-ag-search t]
-                                       ["Find in Project"
-                                        cyanide-find-dired t]
-                                       ["Enable View"
-                                        cyanide-enable-view-prompt t]
-                                       ["Disable Current View"
-                                        cyanide-disable-current-view t]))))
+                                   ;; (easy-menu-define
+                                   ;;   cyanide-menu
+                                   ;;   cyanide-mode-map
+                                   ;;   "CyanIDE"
+                                   ;;   `("CyanIDE"
+                                   ;;     ,(cyanide-menu-item-list-vectorize
+                                   ;;       (oref (gethash
+                                   ;;              cyanide-current-project
+                                   ;;              cyanide-projects) :task-list))
+                                   ;;     ["Load Project"
+                                   ;;      cyanide-load-project-prompt t]
+                                   ;;     ["cyanide-ag-search Project"
+                                   ;;      cyanide-ag-search t]
+                                   ;;     ["Find in Project"
+                                   ;;      cyanide-find-dired t]
+                                   ;;     ["Enable View"
+                                   ;;      cyanide-enable-view-prompt t]
+                                   ;;     ["Disable Current View"
+                                   ;;      cyanide-disable-current-view t]))
+                                   ))
                        :disable 'cyanide-default-disabler)
          cyanide-views)
 

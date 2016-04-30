@@ -107,6 +107,30 @@
                  (car (cyanide-get-sub-treenodes
                        (car (cdr (car (cdr args)))))))))
 
+(setq cyanide-menu-function-obj-1
+      (cyanide-menu-function
+       :func (lambda () (interactive) (print "executing mvn package"))
+       :display-name "mvn package"))
+
+(setq cyanide-menu-function-obj-2
+      (cyanide-menu-function
+       :func (lambda () (interactive) (print "executing mvn clean"))
+       :display-name "mvn clean"))
+
+(setq cyanide-menu-obj
+      (cyanide-menu :display-name "CyanIDE Test Menu"
+                    :members `(,cyanide-menu-function-obj-1
+                               ,cyanide-menu-function-obj-2)))
+
+(defun cyanide-menu-function-test (menu-function-obj)
+  (eq 'cyanide-menu-function
+      (eieio-object-class menu-function-obj)))
+
+;; Note: check menu bar to make sure this renders in a visually appealing way.
+(defun cyanide-menu-test (menu-obj)
+  (cyanide-menu-render menu-obj 'cyanide-test-menu cyanide-mode-map)
+  (eq 'cyanide-menu (eieio-object-class menu-obj)))
+
 (setq tests
       `((proto-test-func
          ,(proto-test-class :number 1)
@@ -116,13 +140,17 @@
         (cyanide-tree-tests
          nil
          cyanide-true-func
-         cyanide-false-func)))
+         cyanide-false-func)
 
-;; check if test suite reports failiures correctly.
-;; (defun fail-test ()
-;;   (progn
-;;     (print "fail-test [FAILED]")
-;;     nil))
+        (cyanide-menu-function-test
+         ,cyanide-menu-function-obj-1
+         cyanide-true-func
+         cyanide-false-func)
+
+        (cyanide-menu-test
+         ,cyanide-menu-obj
+         cyanide-true-func
+         cyanide-false-func)))
 
 (defun cyanide-case-sensitive-test ()
   (cyanide-case-sensitive-test-1 'cyanide-case-sensitive))
