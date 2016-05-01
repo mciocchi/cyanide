@@ -36,6 +36,30 @@
   ((func :initarg :func
          :type function)))
 
+(defvar cyanide-default-menu-items
+  (let ((search
+         (cyanide-menu
+          :display-name "Search"))
+        (views
+         (cyanide-menu
+          :display-name "Views"))
+        (load-project
+         (cyanide-menu
+          :display-name "Load Project"))
+        (find-in-project
+         (cyanide-menu-function
+          :display-name "Find in Project"
+          :func (lambda () (interactive) (call-interactively
+                                          'cyanide-find-dired))))
+        (cyanide-ag-search
+         (cyanide-menu-function
+          :display-name "Silver Search Project"
+          :func (lambda () (interactive) (call-interactively
+                                          'cyanide-ag-search)))))
+    (oset search :members `(,find-in-project
+                            ,cyanide-ag-search))
+    `(,search ,views ,load-project)))
+
 ;; vectorize:
 ;; cast one string/function pair to a vector.
 ;; example output:
@@ -73,18 +97,23 @@
 (defun cyanide-menu-item-prompt ()
   ())
 
-(easy-menu-define cyanide-menu-impl cyanide-mode-map "CyanIDE"
-  `("CyanIDE"
-    ["Load Project"
-     cyanide-load-project-prompt t]
-    ["cyanide-ag-search Project"
-     cyanide-ag-search t]
-    ["Find in Project"
-     cyanide-find-dired t]
-    ["Enable View"
-     cyanide-enable-view-prompt t]
-    ["Disable Current View"
-     cyanide-disable-current-view t]))
+(cyanide-menu-render (cyanide-menu :display-name "CyanIDE"
+                                   :members cyanide-default-menu-items)
+                     'cyanide-menu-impl cyanide-mode-map)
+
+;; to do
+;; (easy-menu-define cyanide-menu-impl cyanide-mode-map "CyanIDE"
+;;   `("CyanIDE"
+;;     ["Load Project"
+;;      cyanide-load-project-prompt t]
+;;     ["cyanide-ag-search Project"
+;;      cyanide-ag-search t]
+;;     ["Find in Project"
+;;      cyanide-find-dired t]
+;;     ["Enable View"
+;;      cyanide-enable-view-prompt t]
+;;     ["Disable Current View"
+;;      cyanide-disable-current-view t]))
 
 (define-minor-mode cyanide-mode
   "CyanIDE's Yet Another Non-IDE"  ; docstring
