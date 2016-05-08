@@ -22,6 +22,49 @@
       (define-key map (kbd "C-c c a") 'cyanide-ag-search)
       (define-key map (kbd "C-c c f") 'cyanide-find-dired)) map))
 
+(defun cyanide-missing-arg-error (arg)
+  (error (concat "Required argument"
+                 " "
+                 (format "%s" arg)
+                 " "
+                 "missing from"
+                 " "
+                 (format "%s" kwargs))))
+
+(defun cyanide-arg-required (arg kwargs)
+  (when (not (memq arg kwargs)) (cyanide-missing-arg-error arg)))
+
+(defun cyanide-kwargobj-builder (class
+                                          kwargs
+                                          &optional
+                                          required-kwargs
+                                          lst)
+  "Check arbitrary KWARGS and `cyanide-missing-arg-error' if
+   there exist any REQUIRED-KWARGS that are not present.
+   Construct object of class CLASS with KWARGS and
+   `add-to-list' LST if it is present."
+  (progn
+    (when required-kwargs
+      (mapcar
+       (lambda (required-kwarg) (cyanide-arg-required required-kwarg kwargs))
+       required-kwargs))
+    (let ((obj (eval (cons class kwargs))))
+      (when lst
+        (add-to-list lst obj))
+      obj)))
+
+(defun cyanide-project-builder (kwargs)
+  (cyanide-kwargobj-builder 'cyanide-project
+                                     kwargs
+                                     '(:id :default-view :proj-root)
+                                     'cyanide-project-collection))
+
+(defun cyanide-view-builder (kwargs)
+  (cyanide-kwargobj-builder 'cyanide-view
+                                     kwargs
+                                     '(:display-name :id :enable :disable)
+                                     'cyanide-view-collection))
+
 (defclass cyanide-menu-item ()
   ((display-name :initarg :display-name
                  :type string
@@ -59,6 +102,12 @@
     (oset search :members `(,find-in-project
                             ,cyanide-ag-search))
     `(,search ,views ,load-project)))
+
+(defvar cyanide-view-collection '()
+  "cyanide-views are all stored in this list.")
+
+(defvar cyanide-project-collection '()
+  "cyanide-projects are all stored in this list.")
 
 ;; vectorize:
 ;; cast one string/function pair to a vector.
@@ -172,45 +221,49 @@
        string, CyanIDE will not exclude vc directories.")
 
     (defclass cyanide-project ()
-      ((display-name :initarg :display-name
-                     :initform ""
-                     :type string
-                     :documentation "Display name for a cyanide-project")
-       (default-view :initarg :default-view
-         :type symbol
-         :documentation "Default view at startup for a cyanide-project.")
-       (proj-root :initarg :proj-root
-                  :initform ""
-                  :type string
-                  :documentation "Project root.")
-       (load-hook :initarg :load-hook
-                  :type list
-                  :documentation "hook called at project load-time.")
+      ((id            :initarg :id
+                      :initform nil
+                      :type symbol)
+       (display-name  :initarg :display-name
+                      :initform ""
+                      :type string
+                      :documentation
+                      "Display name for a cyanide-project")
+       (default-view  :initarg :default-view
+                      :type symbol
+                      :documentation
+                      "Default view at startup for a cyanide-project.")
+       (proj-root     :initarg :proj-root
+                      :initform ""
+                      :type string
+                      :documentation
+                      "Project root.")
+       (load-hook     :initarg :load-hook
+                      :type list
+                      :documentation
+                      "hook called at project load-time.")
        (teardown-hook :initarg :teardown-hook
                       :type list
-                      :documentation "hook called at project teardown.")
-       (task-list :initarg :task-list
-                  :type list
-                  :documentation
-                  "External jobs that can be launched to do
-                   work on the environment of a
-                   cyanide-project.")))
+                      :documentation
+                      "hook called at project teardown.")
+       (task-list     :initarg :task-list
+                      :type list
+                      :documentation
+                      "External jobs that can be launched to do
+                       work on the environment of a
+                       cyanide-project.")))
 
     (cl-defmethod cyanide-load-project ((proj cyanide-project))
       "Load a cyanide-project"
-      ;; Override these hooks to avoid repeatedly running
-      ;; occur in cyanide-panel for every new buffer.
-      (let ((window-configuration-change-hook nil)
-            (bookmark-after-jump-hook nil)
-            (occur-mode-find-occurrence-hook nil)
-            (load-hook (oref proj load-hook))
-            (default-view (gethash (oref proj default-view) cyanide-views))
-            (sym (cdr (assoc (oref proj display-name)
-                             (cyanide-hash-by-display-name cyanide-projects)))))
+      (let ((load-hook (oref proj load-hook))
+            (default-view (cyanide-get-one-by-slot (oref proj default-view)
+                                                   cyanide-view-collection
+                                                   ":id"
+                                                   'eq))
+            (sym (oref proj :id)))
         (if cyanide-current-view (cyanide-disable-current-view))
         (when load-hook
-          (mapcar
-           'funcall load-hook))
+          (cyanide-hook-executor load-hook))
         (setq cyanide-current-project sym)
         (funcall (oref default-view enable))
         nil))
@@ -219,13 +272,16 @@
       "Prompt the user for a project to load, take user input,
        and then load it."
       (interactive
-       (let ((projects (cyanide-hash-by-display-name cyanide-projects)))
-         (let ((project-names (mapcar 'car projects)))
-           (cyanide-load-project (cyanide-get-by-display-name
-                                  (completing-read "Load project: "
-                                                   project-names nil 1)
-                                  projects
-                                  cyanide-projects))))))
+       (let ((project-names (mapcar
+                             (lambda (x)
+                               (oref x :display-name))
+                             cyanide-project-collection)))
+         (cyanide-load-project
+          (cyanide-get-one-by-slot
+           (completing-read "Load project: " project-names nil 1)
+           cyanide-project-collection
+           ":display-name"
+           'equal)))))
 
     (defun cyanide-windows-dedicated (bool &optional minibuf all-frames)
       "Toggle window dedication for all windows
@@ -265,7 +321,9 @@
       "Disable current cyanide-view"
       (interactive
        (cyanide-call-disable
-        (gethash cyanide-current-view cyanide-views))))
+        (cyanide-get-one-by-slot cyanide-current-view
+                                 'cyanide-view-collection
+                                 ":id"))))
 
     (defun cyanide-default-disabler ()
       (progn
@@ -286,19 +344,22 @@
 
     (defclass cyanide-view ()
       ;; Display name for user interface, separate from impementation.
-      ((display-name :initarg :display-name
+      ((id           :initarg :id
+                     :initform nil
+                     :type symbol)
+       (display-name :initarg :display-name
                      :initform ""
                      :type string
                      :custom string
                      :documentation "Display name for a cyanide-view.")
        ;; UI setup
-       (enable :initarg :enable
-               :type function
-               :documentation "Enable this cyanide-view.")
+       (enable       :initarg :enable
+                     :type function
+                     :documentation "Enable this cyanide-view.")
        ;; Teardown
-       (disable :initarg :disable
-                :type symbol
-                :documentation "Disable this cyanide-view."))
+       (disable      :initarg :disable
+                     :type symbol
+                     :documentation "Disable this cyanide-view."))
       "Definition of a cyanide-view configuration.")
 
     (require 'cyanide-views)
@@ -329,13 +390,16 @@
     (defun cyanide-enable-view-prompt ()
       "Prompt user to enable a cyanide-view, and then enable it."
       (interactive
-       (let ((views (cyanide-hash-by-display-name cyanide-views)))
-         (let ((names (mapcar 'car views)))
-           (cyanide-call-enable
-            (cyanide-get-by-display-name
-             (completing-read "Enable view: " names nil 1)
-             views
-             cyanide-views))))))
+       (let ((view-names (mapcar
+                          (lambda (x)
+                            (oref x :display-name))
+                          cyanide-view-collection)))
+         (cyanide-call-enable
+          (cyanide-get-one-by-slot
+           (completing-read "Enable view: " view-names nil 1)
+           cyanide-view-collection
+           ":display-name"
+           'equal)))))
 
     (defun cyanide-multi-occur-all-buffers (str)
       "Generic search for arbitrary string across all buffers."
@@ -466,8 +530,11 @@
       (if cyanide-current-project
           (let ((directory
                  (oref
-                  (gethash cyanide-current-project
-                           cyanide-projects) proj-root)))
+                  (cyanide-get-one-by-slot cyanide-current-project
+                                           cyanide-project-collection
+                                           ":id"
+                                           'eq)
+                  proj-root)))
             (ag/search string directory))
         (error (concat "cyanide-current-project is nil. " ; else
                        "Cannot invoke cyanide-ag-search "
@@ -487,8 +554,11 @@
       (if cyanide-current-project
           (let ((directory
                  (oref
-                  (gethash cyanide-current-project
-                           cyanide-projects) proj-root))
+                  (cyanide-get-one-by-slot cyanide-current-project
+                                           cyanide-project-collection
+                                           ":id"
+                                           'eq)
+                  proj-root))
                 (find-case-sensitive-arg
                  (if (cyanide-case-sensitive string) "" "i")))
             (find-dired directory (concat
@@ -769,7 +839,44 @@
       (oref frame :frame))
 
     (cl-defmethod cyanide-set-frame ((frame cyanide-frame) value)
-      (oset frame :frame value))) :global t)
+      (oset frame :frame value))
+
+    (defun cyanide-get-by-slot (sym lst slot)
+      (let ((slt (intern slot)))
+        (cyanide-filter
+              (mapcar (lambda (obj) (when (equal sym (eval `(oref obj ,slt)))
+                                      obj)) lst))))
+
+    (defun cyanide-get-one-by-slot (sym
+                                    lst
+                                    stringified-slot
+                                    equality-func)
+      "Get one obj from LST where SYM matches with
+       EQUALITY-FUNC the value stored in STRINGIFIED-SLOT
+       with equality-func. Optimized lookup: return the
+       first relevant result from the list and stop looking."
+      (let ((obj nil)
+            (i nil)
+            (l lst)
+            (slot (intern stringified-slot)))
+        (while (and (eq nil obj)
+                     l)
+          (setq i (pop l))
+          (when (funcall equality-func (eval `(oref i ,slot)) sym)
+            (setq obj i)))
+        obj))
+
+    (defun cyanide-filter (lst)
+      (delq nil lst))
+
+    (defun cyanide-hook-executor (hooks)
+      (let ((f (lambda (func)
+                 (progn
+                   (message (concat "cyanide-hook-executor calling"
+                                    " "
+                                    (format "%s" func)))
+                   (funcall func)))))
+        (mapcar f hooks)))) :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode
   (lambda () (cyanide-mode 1)))
