@@ -23,13 +23,14 @@
                          'cyanide-default-view)
                    ;; Tear down any other windows first.
                    (delete-other-windows)
-                   (setq frame-title-format
-                         (oref
-                          (cyanide-get-one-by-slot cyanide-current-project
-                                                   cyanide-project-collection
-                                                   ":id"
-                                                   'eq)
-                          display-name))
+                   (when cyanide-current-project
+                     (setq frame-title-format
+                           (oref
+                            (cyanide-get-one-by-slot cyanide-current-project
+                                                     cyanide-project-collection
+                                                     ":id"
+                                                     'eq)
+                            display-name)))
                    ;; Prevent annoying emacs habit of splitting
                    ;; windows without prompting from the user.
                    ;; Remember original values so that they can
@@ -63,13 +64,14 @@
                    (setq cyanide-current-view
                          'cyanide-elisp-view)
                    (delete-other-windows)
-                   (setq frame-title-format
-                         (oref
-                          (cyanide-get-one-by-slot cyanide-current-project
-                                                   cyanide-project-collection
-                                                   ":id"
-                                                   'eq)
-                          display-name))
+                   (when cyanide-current-project
+                     (setq frame-title-format
+                           (oref
+                            (cyanide-get-one-by-slot cyanide-current-project
+                                                     cyanide-project-collection
+                                                     ":id"
+                                                     'eq)
+                            display-name)))
                    (setq split-height-threshold-orig
                          split-height-threshold)
                    (setq split-width-threshold-orig
