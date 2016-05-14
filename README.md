@@ -29,7 +29,7 @@ git clone https://github.com/mciocchi/cyanide.git
 
 </code>
 
-In .emacs or .emacs.d/init.el add the following. Adjust proj-root, display-name,
+In .emacs or .emacs.d/init.el add the following. Adjust project-root, display-name,
 
 default-view, etc. as the need arises.
 
@@ -53,7 +53,7 @@ default-view, etc. as the need arises.
                           
                           :load-hook '()
                           
-                          :proj-root "/home/user/.emacs.d/")
+                          :project-root "/home/user/.emacs.d/")
 
          cyanide-projects)
 </code>
