@@ -373,10 +373,15 @@
     (defun cyanide-disable-current-view ()
       "Disable current cyanide-view"
       (interactive
-       (cyanide-call-disable
-        (cyanide-get-one-by-slot cyanide-current-view
-                                 'cyanide-view-collection
-                                 ":id"))))
+       (progn
+         (when (not cyanide-current-view)
+           (error (concat "Cannot disable cyanide-current-view "
+                          "if cyanide-current-view is nil")))
+         (cyanide-call-disable
+          (cyanide-get-one-by-slot cyanide-current-view
+                                   cyanide-view-collection
+                                   ":id"
+                                   'eq)))))
 
     (defun cyanide-default-disabler ()
       (progn
