@@ -29,12 +29,7 @@
   :keymap cyanide-mode-map         ; keymap
   (progn                           ; body
 
-    (defvar cyanide-views (make-hash-table :test 'equal)
-      "this collection holds all cyanide-view objects.")
     (require 'ag)
-
-    (defvar cyanide-projects (make-hash-table :test 'equal)
-      "This collection holds all cyanide-project objects.")
 
     (defvar cyanide-window-local-variables (make-hash-table :test 'equal))
 
@@ -58,14 +53,23 @@
        cyanide-find-dired. If this is set to an empty
        string, CyanIDE will not exclude vc directories.")
 
+    (defvar cyanide-view-collection '()
+      "cyanide-views are all stored in this list.")
+
+    (defvar cyanide-project-collection '()
+      "cyanide-projects are all stored in this list.")
+
+    (defvar cyanide-menu-item-collection '()
+      "cyanide-menu-items are stored in this list.")
+
     (defun cyanide-missing-arg-error (arg)
-  (error (concat "Required argument"
-                 " "
-                 (format "%s" arg)
-                 " "
-                 "missing from"
-                 " "
-                 (format "%s" kwargs))))
+      (error (concat "Required argument"
+                     " "
+                     (format "%s" arg)
+                     " "
+                     "missing from"
+                     " "
+                     (format "%s" kwargs))))
 
     (defun cyanide-arg-required (arg kwargs)
       (when (not (memq arg kwargs)) (cyanide-missing-arg-error arg)))
@@ -170,15 +174,6 @@
                                 ,cyanide-ag-search))
         `(,search ,views ,load-project)))
 
-    (defvar cyanide-view-collection '()
-      "cyanide-views are all stored in this list.")
-
-    (defvar cyanide-project-collection '()
-      "cyanide-projects are all stored in this list.")
-
-    (defvar cyanide-menu-item-collection '()
-      "cyanide-menu-items are stored in this list.")
-
     ;; vectorize:
     ;; cast one string/function pair to a vector.
     ;; example output:
@@ -204,15 +199,17 @@
       (cons (oref menu :display-name)
             (mapcar 'cyanide-vectorize (oref menu :members))))
 
-    (defmethod cyanide-menu-render ((menu cyanide-menu)
-                                    quoted-menu-symbol
-                                    menu-mode-map)
-      (eval `(easy-menu-define menu-symbol menu-mode-map ,(oref menu :display-name)
-               (quote ,(cons (oref menu :display-name)
-                             (mapcar 'cyanide-vectorize
-                                     (oref menu :members)))))))
+    (cl-defmethod cyanide-menu-render ((menu cyanide-menu)
+                                       quoted-menu-symbol
+                                       menu-mode-map)
+      (eval `(easy-menu-define menu-symbol
+                               menu-mode-map
+                               ,(oref menu :display-name)
+                               (quote ,(cons (oref menu :display-name)
+                                             (mapcar 'cyanide-vectorize
+                                                     (oref menu :members)))))))
 
-                                        ; TO DO. Prompt with completion showing executable tasks.
+    ; TO DO. Prompt with completion showing executable tasks.
     (defun cyanide-menu-item-prompt ()
       ())
 
