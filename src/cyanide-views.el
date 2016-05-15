@@ -21,8 +21,6 @@
                  (progn
                    (setq cyanide-current-view
                          'cyanide-default-view)
-                   ;; Tear down any other windows first.
-                   (delete-other-windows)
                    (when cyanide-current-project
                      (setq frame-title-format
                            (oref
@@ -63,7 +61,6 @@
                  (progn
                    (setq cyanide-current-view
                          'cyanide-elisp-view)
-                   (delete-other-windows)
                    (when cyanide-current-project
                      (setq frame-title-format
                            (oref
