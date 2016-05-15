@@ -22,158 +22,6 @@
       (define-key map (kbd "C-c c a") 'cyanide-ag-search)
       (define-key map (kbd "C-c c f") 'cyanide-find-dired)) map))
 
-(defun cyanide-missing-arg-error (arg)
-  (error (concat "Required argument"
-                 " "
-                 (format "%s" arg)
-                 " "
-                 "missing from"
-                 " "
-                 (format "%s" kwargs))))
-
-(defun cyanide-arg-required (arg kwargs)
-  (when (not (memq arg kwargs)) (cyanide-missing-arg-error arg)))
-
-(defun cyanide-kwargobj-builder (class
-                                 kwargs
-                                 &optional
-                                 required-kwargs
-                                 lst)
-  "Check arbitrary KWARGS and `cyanide-missing-arg-error' if
-   there exist any REQUIRED-KWARGS that are not present.
-   Construct object of class CLASS with KWARGS and
-   `add-to-list' LST if it is present."
-  (progn
-    (when required-kwargs
-      (mapcar
-       (lambda (required-kwarg) (cyanide-arg-required required-kwarg kwargs))
-       required-kwargs))
-    (let ((obj (eval (cons class kwargs))))
-      (when lst
-        (add-to-list lst obj))
-      obj)))
-
-(defun cyanide-project-builder (kwargs)
-  (cyanide-kwargobj-builder 'cyanide-project
-                                     kwargs
-                                     '(:id
-                                       :display-name
-                                       :default-view
-                                       :project-root)
-                                     'cyanide-project-collection))
-
-(defun cyanide-view-builder (kwargs)
-  (cyanide-kwargobj-builder 'cyanide-view
-                                     kwargs
-                                     '(:id
-                                       :display-name
-                                       :enable
-                                       :disable)
-                                     'cyanide-view-collection))
-
-(defclass cyanide-menu-item ()
-  ((id           :initarg :id
-                 :type symbol
-                 :initform nil)
-   (display-name :initarg :display-name
-                 :type string
-                 :initform "")))
-
-(defclass cyanide-menu (cyanide-menu-item)
-  ((members :initarg :members
-            :type list
-            :initform '())))
-
-(defclass cyanide-menu-function (cyanide-menu-item)
-  ((func :initarg :func
-         :type function)))
-
-(defun cyanide-menu-builder (kwargs)
-  (cyanide-kwargobj-builder 'cyanide-menu
-                            kwargs
-                            '(:id :display-name)
-                            'cyanide-menu-item-collection))
-
-(defun cyanide-menu-function-builder (kwargs)
-  (cyanide-kwargobj-builder 'cyanide-menu-function
-                            kwargs
-                            '(:id :display-name :func)
-                            'cyanide-menu-item-collection))
-
-(defvar cyanide-default-menu-items
-  (let ((search
-         (cyanide-menu
-          :display-name "Search"))
-        (views
-         (cyanide-menu
-          :display-name "Views"))
-        (load-project
-         (cyanide-menu
-          :display-name "Load Project"))
-        (find-in-project
-         (cyanide-menu-function
-          :display-name "Find in Project"
-          :func (lambda () (interactive) (call-interactively
-                                          'cyanide-find-dired))))
-        (cyanide-ag-search
-         (cyanide-menu-function
-          :display-name "Silver Search Project"
-          :func (lambda () (interactive) (call-interactively
-                                          'cyanide-ag-search)))))
-    (oset search :members `(,find-in-project
-                            ,cyanide-ag-search))
-    `(,search ,views ,load-project)))
-
-(defvar cyanide-view-collection '()
-  "cyanide-views are all stored in this list.")
-
-(defvar cyanide-project-collection '()
-  "cyanide-projects are all stored in this list.")
-
-(defvar cyanide-menu-item-collection '()
-  "cyanide-menu-items are stored in this list.")
-
-;; vectorize:
-;; cast one string/function pair to a vector.
-;; example output:
-;; ["mvn clean" (lambda () (print "Executing mvn clean."))]
-(cl-defmethod cyanide-vectorize ((menu-function cyanide-menu-function))
-  (eval `(vector ,(oref menu-function :display-name)
-                 ,(oref menu-function :func))))
-
-;; vectorize:
-;; if it's a menu-function, invoke vectorize on one item.
-;; if it's a menu, invoke vectorize on all members, including sub-menus
-;; example output:
-;; ("CyanIDE Test Menu"
-;;  ["mvn clean"
-;;   (lambda nil
-;;     (interactive)
-;;     (print "executing mvn clean"))]
-;;  ["mvn package"
-;;   (lambda nil
-;;     (interactive)
-;;     (print "executing mvn package"))])
-(cl-defmethod cyanide-vectorize ((menu cyanide-menu))
-  (cons (oref menu :display-name)
-        (mapcar 'cyanide-vectorize (oref menu :members))))
-
-(defmethod cyanide-menu-render ((menu cyanide-menu)
-                                quoted-menu-symbol
-                                menu-mode-map)
-  (eval `(easy-menu-define menu-symbol menu-mode-map ,(oref menu :display-name)
-           (quote ,(cons (oref menu :display-name)
-                         (mapcar 'cyanide-vectorize
-                                 (oref menu :members)))))))
-
-; TO DO. Prompt with completion showing executable tasks.
-(defun cyanide-menu-item-prompt ()
-  ())
-
-(cyanide-menu-render (cyanide-menu :display-name "CyanIDE"
-                                   :members cyanide-default-menu-items)
-                     'cyanide-menu-impl cyanide-mode-map)
-
 (define-minor-mode cyanide-mode
   "CyanIDE's Yet Another Non-IDE"  ; docstring
   nil                              ; init-value
@@ -209,6 +57,168 @@
       "Exclude version control dot directories from
        cyanide-find-dired. If this is set to an empty
        string, CyanIDE will not exclude vc directories.")
+
+    (defun cyanide-missing-arg-error (arg)
+  (error (concat "Required argument"
+                 " "
+                 (format "%s" arg)
+                 " "
+                 "missing from"
+                 " "
+                 (format "%s" kwargs))))
+
+    (defun cyanide-arg-required (arg kwargs)
+      (when (not (memq arg kwargs)) (cyanide-missing-arg-error arg)))
+
+    (defun cyanide-kwargobj-builder (class
+                                     kwargs
+                                     &optional
+                                     required-kwargs
+                                     lst)
+      "Check arbitrary KWARGS and `cyanide-missing-arg-error' if
+       there exist any REQUIRED-KWARGS that are not present.
+       Construct object of class CLASS with KWARGS and
+       `add-to-list' LST if it is present."
+      (progn
+        (when required-kwargs
+          (mapcar
+           (lambda (required-kwarg) (cyanide-arg-required required-kwarg kwargs))
+           required-kwargs))
+        (let ((obj (eval (cons class kwargs))))
+          (when lst
+            (add-to-list lst obj))
+          obj)))
+
+    (defun cyanide-project-builder (kwargs)
+      "Constructor for `cyanide-project'."
+      (cyanide-kwargobj-builder 'cyanide-project
+                                kwargs
+                                '(:id
+                                  :display-name
+                                  :default-view
+                                  :project-root)
+                                'cyanide-project-collection))
+
+    (defun cyanide-view-builder (kwargs)
+      "Constructor for `cyanide-view'"
+      (cyanide-kwargobj-builder 'cyanide-view
+                                kwargs
+                                '(:id
+                                  :display-name
+                                  :enable
+                                  :disable)
+                                'cyanide-view-collection))
+
+    (defclass cyanide-menu-item ()
+      ((id           :initarg :id
+                     :type symbol
+                     :initform nil)
+       (display-name :initarg :display-name
+                     :type string
+                     :initform ""))
+      "Abstract class that provides functionality common
+       to both `cyanide-menu' and `cyanide-menu-function'.")
+
+    (defclass cyanide-menu (cyanide-menu-item)
+      ((members :initarg :members
+                :type list
+                :initform '()))
+      "Class that represents  a menu-panel and contains
+       members which inherit from `cyanide-menu-item'.")
+
+    (defclass cyanide-menu-function (cyanide-menu-item)
+      ((func :initarg :func
+             :type function))
+      "Class that represents functions stored in a
+       `cyanide-menu'.")
+
+    (defun cyanide-menu-builder (kwargs)
+      "Constructor for `cyanide-menu'."
+      (cyanide-kwargobj-builder 'cyanide-menu
+                                kwargs
+                                '(:id :display-name)
+                                'cyanide-menu-item-collection))
+
+    (defun cyanide-menu-function-builder (kwargs)
+      "Constructor for `cyanide-menu-function'."
+      (cyanide-kwargobj-builder 'cyanide-menu-function
+                                kwargs
+                                '(:id :display-name :func)
+                                'cyanide-menu-item-collection))
+
+    (defvar cyanide-default-menu-items
+      (let ((search
+             (cyanide-menu
+              :display-name "Search"))
+            (views
+             (cyanide-menu
+              :display-name "Views"))
+            (load-project
+             (cyanide-menu
+              :display-name "Load Project"))
+            (find-in-project
+             (cyanide-menu-function
+              :display-name "Find in Project"
+              :func (lambda () (interactive) (call-interactively
+                                              'cyanide-find-dired))))
+            (cyanide-ag-search
+             (cyanide-menu-function
+              :display-name "Silver Search Project"
+              :func (lambda () (interactive) (call-interactively
+                                              'cyanide-ag-search)))))
+        (oset search :members `(,find-in-project
+                                ,cyanide-ag-search))
+        `(,search ,views ,load-project)))
+
+    (defvar cyanide-view-collection '()
+      "cyanide-views are all stored in this list.")
+
+    (defvar cyanide-project-collection '()
+      "cyanide-projects are all stored in this list.")
+
+    (defvar cyanide-menu-item-collection '()
+      "cyanide-menu-items are stored in this list.")
+
+    ;; vectorize:
+    ;; cast one string/function pair to a vector.
+    ;; example output:
+    ;; ["mvn clean" (lambda () (print "Executing mvn clean."))]
+    (cl-defmethod cyanide-vectorize ((menu-function cyanide-menu-function))
+      (eval `(vector ,(oref menu-function :display-name)
+                     ,(oref menu-function :func))))
+
+    ;; vectorize:
+    ;; if it's a menu-function, invoke vectorize on one item.
+    ;; if it's a menu, invoke vectorize on all members, including sub-menus
+    ;; example output:
+    ;; ("CyanIDE Test Menu"
+    ;;  ["mvn clean"
+    ;;   (lambda nil
+    ;;     (interactive)
+    ;;     (print "executing mvn clean"))]
+    ;;  ["mvn package"
+    ;;   (lambda nil
+    ;;     (interactive)
+    ;;     (print "executing mvn package"))])
+    (cl-defmethod cyanide-vectorize ((menu cyanide-menu))
+      (cons (oref menu :display-name)
+            (mapcar 'cyanide-vectorize (oref menu :members))))
+
+    (defmethod cyanide-menu-render ((menu cyanide-menu)
+                                    quoted-menu-symbol
+                                    menu-mode-map)
+      (eval `(easy-menu-define menu-symbol menu-mode-map ,(oref menu :display-name)
+               (quote ,(cons (oref menu :display-name)
+                             (mapcar 'cyanide-vectorize
+                                     (oref menu :members)))))))
+
+                                        ; TO DO. Prompt with completion showing executable tasks.
+    (defun cyanide-menu-item-prompt ()
+      ())
+
+    (cyanide-menu-render (cyanide-menu :display-name "CyanIDE"
+                                       :members cyanide-default-menu-items)
+                         'cyanide-menu-impl cyanide-mode-map)
 
     (defclass cyanide-project ()
       ((id            :initarg :id
