@@ -247,5 +247,3 @@
         "all tests passed."
       "some tests failed!")
     (cyanide-test-executor tests)))
-
-(run-tests)
