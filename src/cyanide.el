@@ -190,23 +190,6 @@
 
     (defvar cyanide-window-local-variables (make-hash-table :test 'equal))
 
-    ;; this was just dumb. does not offer any advantages vs. a simple list.
-     ;; (defclass cyanide-treenode-collection ()
-     ;;   ((treenodes :initarg :treenodes
-     ;;               :initform '()
-     ;;               :type list)))
-
-     ;; (cl-defmethod cyanide-add-treenode ((nodes cyanide-treenode-collection)
-     ;;                                    node)
-     ;;   (object-add-to-list nodes :treenodes node))
-
-     ;; (cl-defmethod cyanide-remove-treenode ((nodes cyanide-treenode-collection)
-     ;;                                       node)
-     ;;   (object-remove-from-list nodes :treenodes node))
-
-     ;; (cl-defmethod cyanide-get-treenodes ((nodes cyanide-treenode-collection))
-     ;;   (oref nodes :treenodes))
-
     (defvar cyanide-treenodes '()
       "This collection holds all cyanide-treenode objects.")
 
@@ -349,8 +332,8 @@
                      (if (not (eq emacs-lock-mode lock-arg))
                          (if (not lock-arg)
                              (call-interactively 'emacs-lock-mode)
-                           (emacs-lock-mode lock-arg)))) ;; else
-                   nil)))) ;; else
+                           (emacs-lock-mode lock-arg)))) ; else
+                   nil))))                               ; else
         (walk-windows f minibuf all-frames)))
 
     (defun cyanide-disable-current-view ()
@@ -384,7 +367,6 @@
         nil))
 
     (defclass cyanide-view ()
-      ;; Display name for user interface, separate from impementation.
       ((id           :initarg :id
                      :initform nil
                      :type symbol)
@@ -533,19 +515,6 @@
            #'ag-mode
            `(lambda (mode-name) ,(ag/buffer-name string "merp" regexp))))))
 
-    (defun cyanide-hash-by-display-name (hash)
-      "Take in a hash, associate display names to keys
-       for speedy lookup in UI."
-      (let ((x '()))
-        (maphash (lambda (key val)
-                   (push `(,(oref val display-name) . ,key) x))
-                 hash) x))
-
-    (defun cyanide-get-by-display-name (display-name display-names hash)
-      "Get from hash by display-name."
-      (let ((sym (cdr (assoc display-name display-names))))
-        (gethash sym hash)))
-
     (defun cyanide-tokenize-window-treenode (node)
       (if (windowp node)
           'window
@@ -661,7 +630,7 @@
                                      frame)
       (oset node :frame frame))
 
-    ; if no super-tree, node is a root.
+    ;; if no super-tree, node is a root.
     (defun cyanide-parse-treenodes (nodes pos &optional super-tree)
       "Convert entire emacs `window-tree' into
        object-oriented constructs for CyanIDE."
@@ -675,7 +644,7 @@
     (defun cyanide-parse-treenode (node pos &optional super-tree)
       "Convert individual nodes of emacs `window-tree' into
        object-oriented constructs for CyanIDE."
-      ; TO DO: need to pass frame into these constructors also.
+      ;; TO DO: need to pass frame into these constructors also.
       (let ((token (cyanide-tokenize-window-treenode node)))
         (if (eq 'split-direction token)
             (cyanide-parse-split-direction node pos super-tree) ; TO DO
@@ -687,15 +656,12 @@
                   (cyanide-parse-tree node pos super-tree)   ; TO DO mostly done
                 (error "cyanide-parse-treenode: unrecognized token")))))))
 
-    ; call cyanide-tree-builder
-    ; build sub-treenodes            TO DO
     (defun cyanide-parse-tree (tree pos frame super-tree)
       (cyanide-tree-builder tree pos frame super-tree))
 
     (defun cyanide-parse-window (tree pos super-tree)
       (cyanide-window-builder window pos super-tree))
 
-    ; CyanIDE class to encapsulate emacs windows.
     (defclass cyanide-window (cyanide-treenode)
       ((window-number :initarg :window-number
                       :initform 0
@@ -705,7 +671,8 @@
                  :documentation "")
        (buffer   :initarg :buffer
                  :type buffer
-                 :documentation "")))
+                 :documentation ""))
+      "CyanIDE class to encapsulate emacs windows.")
 
     (defun cyanide-window-builder (window pos super-tree)
       "Constructor for `cyanide-window'."
@@ -734,7 +701,6 @@
               (cyanide-add-sub-treenode super-tree win)
               (cyanide-set-super-tree win super-tree))))))
 
-    ; CyanIDE class to encapsulate emacs window-tree.
     (defclass cyanide-tree (cyanide-treenode)
       ((sub-treenodes :initarg :sub-treenodes
                       :initform '()
@@ -742,7 +708,8 @@
                       :documentation
                       "Collection containing sub-treenodes of this node.")
        (split-direction :initarg :split-direction
-                        :type boolean)))
+                        :type boolean))
+      "CyanIDE class to encapsulate emacs window-tree.")
 
     (cl-defmethod cyanide-add-sub-treenode ((super-tree cyanide-tree)
                                             sub-treenode)
@@ -756,15 +723,15 @@
                                              (sub-treenodes list))
       (oset tree :sub-treenodes sub-treenodes))
 
-; TO DO    (cl-defmethod cyanide-get-sub-treenodes ((tree cyanide-tree))
-; TO DO      (cyanide-get-sub-treenodes tree)
-;          should return list instead of object.
+    ;; TO DO    (cl-defmethod cyanide-get-sub-treenodes ((tree cyanide-tree))
+    ;; TO DO      (cyanide-get-sub-treenodes tree)
+    ;;          should return list instead of object.
     (cl-defmethod cyanide-get-sub-treenodes ((tree cyanide-tree))
       (oref tree :sub-treenodes))
 
-    ; TO DO:
-    ;       construct tree-obj without sub-treenodes
-    ;       handle root nodes
+    ;; TO DO:
+    ;;       construct tree-obj without sub-treenodes
+    ;;       handle root nodes
     (defun cyanide-tree-builder (tree pos frame-obj &optional super-tree)
       "Constructor for `cyanide-tree'. "
       (let ((id (cl-gensym)))
@@ -776,8 +743,7 @@
           tree-obj))) ; return tree-obj
 
     (defun cyanide-window-number (&optional win)
-      "Derive window number by casting window to string, parsing
-       it out, and casting to integer."
+      "Return window number of an emacs window type."
       (let ((window-configuration-change-hook nil)
             (original-win (selected-window))
             (f (lambda (wn)
@@ -792,13 +758,14 @@
           (funcall f (selected-window)))))          ; else use selected window
 
     (defun cyanide-window-list ()
+      "Return an alist of (window-number . window) for each
+       window in the current frame."
       (mapcar
        (lambda (w)
          `(,(cyanide-window-number w)
            ,(selected-window)))
        (window-list)))
 
-    ; "CyanIDE class to encapsulate window-edges."
     (defclass cyanide-edges ()
       ((id     :initarg :id
                :initform nil
@@ -814,7 +781,8 @@
                :type integer)
        (bottom :initarg :bottom
                :initform -1
-               :type integer)))
+               :type integer))
+      "CyanIDE class to encapsulate window-edges.")
 
     (defun cyanide-edge-builder (edge-list)
       "Constructor for `cyanide-edges'."
@@ -862,13 +830,13 @@
         ,(cyanide-get-edge edges :right)
         ,(cyanide-get-edge edges :bottom)))
 
-    ; "CyanIDE class to encapsulate emacs frames."
     (defclass cyanide-frame ()
       ((id    :initarg :id
               :initform nil
               :type symbol)
        (frame :initarg :frame
-              :type frame)))
+              :type frame))
+      "CyanIDE class to encapsulate emacs frames.")
 
     (defun cyanide-frame-builder (frame)
       "Constructor for `cyanide-frame'."
