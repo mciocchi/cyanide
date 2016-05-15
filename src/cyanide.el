@@ -174,20 +174,6 @@
                                    :members cyanide-default-menu-items)
                      'cyanide-menu-impl cyanide-mode-map)
 
-;; to do
-;; (easy-menu-define cyanide-menu-impl cyanide-mode-map "CyanIDE"
-;;   `("CyanIDE"
-;;     ["Load Project"
-;;      cyanide-load-project-prompt t]
-;;     ["cyanide-ag-search Project"
-;;      cyanide-ag-search t]
-;;     ["Find in Project"
-;;      cyanide-find-dired t]
-;;     ["Enable View"
-;;      cyanide-enable-view-prompt t]
-;;     ["Disable Current View"
-;;      cyanide-disable-current-view t]))
-
 (define-minor-mode cyanide-mode
   "CyanIDE's Yet Another Non-IDE"  ; docstring
   nil                              ; init-value
@@ -197,9 +183,6 @@
 
     (defvar cyanide-views (make-hash-table :test 'equal)
       "this collection holds all cyanide-view objects.")
-    ;; The find-lisp package is distributed with emacs, but needs to be included
-    ;; explicitly like this to make its functions available in userland.
-    (require 'find-lisp)
     (require 'ag)
 
     (defvar cyanide-projects (make-hash-table :test 'equal)
