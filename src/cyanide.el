@@ -132,7 +132,7 @@
 
     (defclass cyanide-menu-function (cyanide-menu-item)
       ((func :initarg :func
-             :type function))
+             :type nil))
       "Class that represents functions stored in a
        `cyanide-menu'.")
 
@@ -149,6 +149,19 @@
                                 kwargs
                                 '(:id :display-name :func)
                                 'cyanide-menu-item-collection))
+
+    (cyanide-menu-builder '(:id 'search
+                            :display-name "Search"
+                            :members '(silver-search-project
+                                       find-in-project)))
+
+    (cyanide-menu-function-builder '(:id 'silver-search-project
+                                     :display-name "Silver Search Project"
+                                     :func 'cyanide-ag-search))
+
+    (cyanide-menu-function-builder '(:id 'find-in-project
+                                     :display-name "Find in Project"
+                                     :func 'cyanide-find-dired))
 
     (defvar cyanide-default-menu-items
       (let ((search
@@ -195,9 +208,11 @@
     ;;   (lambda nil
     ;;     (interactive)
     ;;     (print "executing mvn package"))])
+    ;; (cl-defmethod cyanide-vectorize ((menu cyanide-menu))
+    ;;   (cons (oref menu :display-name)
+    ;;         (mapcar 'cyanide-vectorize (oref menu :members))))
     (cl-defmethod cyanide-vectorize ((menu cyanide-menu))
-      (cons (oref menu :display-name)
-            (mapcar 'cyanide-vectorize (oref menu :members))))
+      (vector (oref menu :display-name) `(quote ,(oref menu :func))))
 
     (cl-defmethod cyanide-menu-render ((menu cyanide-menu)
                                        quoted-menu-symbol
@@ -213,9 +228,9 @@
     (defun cyanide-menu-item-prompt ()
       ())
 
-    (cyanide-menu-render (cyanide-menu :display-name "CyanIDE"
-                                       :members cyanide-default-menu-items)
-                         'cyanide-menu-impl cyanide-mode-map)
+; debug   (cyanide-menu-render (cyanide-menu :display-name "CyanIDE"
+; debug                                       :members cyanide-default-menu-items)
+; debug                         'cyanide-menu-impl cyanide-mode-map)
 
     (defclass cyanide-project ()
       ((id            :initarg :id
@@ -920,7 +935,24 @@
                                   (cyanide-return-if-true equality-func
                                                           sym
                                                           (eval `(oref x ,slot))
-                                                          x)) l))))) :global t)
+                                                          x)) l))))
+
+    ;; It annoyed me that cyanide-get-many-by-slot was not optimized for this
+    ;; specific case, so now we have another kind of get. This will be
+    ;; generalized for use in other places soon. Should be close to optimal, but
+    ;; I am willing to accept patches with profiling data showing that they are
+    ;; faster than this.
+    (cl-defmethod cyanide-get-menu-members ((menu cyanide-menu))
+      (let ((members (oref menu :members))
+            (lst cyanide-menu-item-collection)
+            (itm nil)
+            (retval '()))
+        (while (and members lst)
+          (setq itm (pop lst))
+          (when (memq (oref itm :id) members)
+            (progn (push itm retval)
+                   (delq (oref itm :id) members))))
+        retval))) :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode
   (lambda () (cyanide-mode 1)))
