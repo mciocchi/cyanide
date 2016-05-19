@@ -156,12 +156,18 @@
                                        find-in-project)))
 
     (cyanide-menu-function-builder '(:id 'silver-search-project
-                                     :display-name "Silver Search Project"
-                                     :func 'cyanide-ag-search))
+                                         :display-name "Silver Search Project"
+                                         :func (lambda ()
+                                                 (interactive)
+                                                 (call-interactively
+                                                  'cyanide-ag-search))))
 
     (cyanide-menu-function-builder '(:id 'find-in-project
-                                     :display-name "Find in Project"
-                                     :func 'cyanide-find-dired))
+                                         :display-name "Find in Project"
+                                         :func (lambda ()
+                                                 (interactive)
+                                                 (call-interactively
+                                                  'cyanide-find-dired))))
 
     (defvar cyanide-default-menu-items
       (let ((search
@@ -192,8 +198,8 @@
     ;; example output:
     ;; ["mvn clean" (lambda () (print "Executing mvn clean."))]
     (cl-defmethod cyanide-vectorize ((menu-function cyanide-menu-function))
-      (eval `(vector ,(oref menu-function :display-name)
-                     ,(oref menu-function :func))))
+      (vector (oref menu-function :display-name)
+              (oref menu-function :func)))
 
     ;; vectorize:
     ;; if it's a menu-function, invoke vectorize on one item.
@@ -208,21 +214,17 @@
     ;;   (lambda nil
     ;;     (interactive)
     ;;     (print "executing mvn package"))])
-    ;; (cl-defmethod cyanide-vectorize ((menu cyanide-menu))
-    ;;   (cons (oref menu :display-name)
-    ;;         (mapcar 'cyanide-vectorize (oref menu :members))))
     (cl-defmethod cyanide-vectorize ((menu cyanide-menu))
-      (vector (oref menu :display-name) `(quote ,(oref menu :func))))
+      (cons (oref menu :display-name)
+            (mapcar 'cyanide-vectorize (cyanide-get-menu-members menu))))
 
     (cl-defmethod cyanide-menu-render ((menu cyanide-menu)
                                        quoted-menu-symbol
                                        menu-mode-map)
-      (eval `(easy-menu-define menu-symbol
-                               menu-mode-map
-                               ,(oref menu :display-name)
-                               (quote ,(cons (oref menu :display-name)
-                                             (mapcar 'cyanide-vectorize
-                                                     (oref menu :members)))))))
+      (easy-menu-define quoted-menu-symbol
+                        menu-mode-map
+                        (oref menu :display-name)
+                        (cyanide-vectorize menu)))
 
     ; TO DO. Prompt with completion showing executable tasks.
     (defun cyanide-menu-item-prompt ()
@@ -937,13 +939,12 @@
                                                           (eval `(oref x ,slot))
                                                           x)) l))))
 
-    ;; It annoyed me that cyanide-get-many-by-slot was not optimized for this
-    ;; specific case, so now we have another kind of get. This will be
-    ;; generalized for use in other places soon. Should be close to optimal, but
-    ;; I am willing to accept patches with profiling data showing that they are
-    ;; faster than this.
+    ;; Not faster than a hashtable, but still pretty fast... and might prove
+    ;; faster in best-case. copy-tree is required below because otherwise delq
+    ;; will destructively operate on members as a referent, rather than as a
+    ;; value.
     (cl-defmethod cyanide-get-menu-members ((menu cyanide-menu))
-      (let ((members (oref menu :members))
+      (let ((members (copy-tree (oref menu :members)))
             (lst cyanide-menu-item-collection)
             (itm nil)
             (retval '()))
