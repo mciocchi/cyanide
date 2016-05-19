@@ -156,18 +156,18 @@
                                        find-in-project)))
 
     (cyanide-menu-function-builder '(:id 'silver-search-project
-                                         :display-name "Silver Search Project"
-                                         :func (lambda ()
-                                                 (interactive)
-                                                 (call-interactively
-                                                  'cyanide-ag-search))))
+                                     :display-name "Silver Search Project"
+                                     :func (lambda ()
+                                             (interactive)
+                                             (call-interactively
+                                              'cyanide-ag-search))))
 
     (cyanide-menu-function-builder '(:id 'find-in-project
-                                         :display-name "Find in Project"
-                                         :func (lambda ()
-                                                 (interactive)
-                                                 (call-interactively
-                                                  'cyanide-find-dired))))
+                                     :display-name "Find in Project"
+                                     :func (lambda ()
+                                             (interactive)
+                                             (call-interactively
+                                              'cyanide-find-dired))))
 
     (defvar cyanide-default-menu-items
       (let ((search
@@ -219,9 +219,10 @@
             (mapcar 'cyanide-vectorize (cyanide-get-menu-members menu))))
 
     (cl-defmethod cyanide-menu-render ((menu cyanide-menu)
-                                       quoted-menu-symbol
+                                       menu-symbol
                                        menu-mode-map)
-      (easy-menu-define quoted-menu-symbol
+      "Render a CyanIDE menu object to the menu bar"
+      (easy-menu-define menu-symbol
                         menu-mode-map
                         (oref menu :display-name)
                         (cyanide-vectorize menu)))
@@ -229,10 +230,6 @@
     ; TO DO. Prompt with completion showing executable tasks.
     (defun cyanide-menu-item-prompt ()
       ())
-
-; debug   (cyanide-menu-render (cyanide-menu :display-name "CyanIDE"
-; debug                                       :members cyanide-default-menu-items)
-; debug                         'cyanide-menu-impl cyanide-mode-map)
 
     (defclass cyanide-project ()
       ((id            :initarg :id
