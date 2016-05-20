@@ -150,10 +150,21 @@
                                 '(:id :display-name :func)
                                 'cyanide-menu-item-collection))
 
-    (cyanide-menu-builder '(:id 'search
-                            :display-name "Search"
-                            :members '(silver-search-project
-                                       find-in-project)))
+    (cyanide-menu-builder '(:id 'cyanide-default-menu
+                            :display-name "CyanIDE"
+                            :members '(tasks
+                                       load-project
+                                       silver-search-project
+                                       find-in-project
+                                       enable-view
+                                       disable-current-view)))
+
+    (cyanide-menu-function-builder '(:id 'load-project
+                                     :display-name "Load a Project"
+                                     :func (lambda ()
+                                             (interactive)
+                                             (call-interactively
+                                              'cyanide-load-project-prompt))))
 
     (cyanide-menu-function-builder '(:id 'silver-search-project
                                      :display-name "Silver Search Project"
@@ -169,29 +180,19 @@
                                              (call-interactively
                                               'cyanide-find-dired))))
 
-    (defvar cyanide-default-menu-items
-      (let ((search
-             (cyanide-menu
-              :display-name "Search"))
-            (views
-             (cyanide-menu
-              :display-name "Views"))
-            (load-project
-             (cyanide-menu
-              :display-name "Load Project"))
-            (find-in-project
-             (cyanide-menu-function
-              :display-name "Find in Project"
-              :func (lambda () (interactive) (call-interactively
-                                              'cyanide-find-dired))))
-            (cyanide-ag-search
-             (cyanide-menu-function
-              :display-name "Silver Search Project"
-              :func (lambda () (interactive) (call-interactively
-                                              'cyanide-ag-search)))))
-        (oset search :members `(,find-in-project
-                                ,cyanide-ag-search))
-        `(,search ,views ,load-project)))
+    (cyanide-menu-function-builder '(:id 'enable-view
+                                     :display-name "Enable a View"
+                                     :func (lambda ()
+                                             (interactive)
+                                             (call-interactively
+                                              'cyanide-enable-view-prompt))))
+
+    (cyanide-menu-function-builder '(:id 'disable-current-view
+                                     :display-name "Disable Current View"
+                                     :func (lambda ()
+                                             (interactive)
+                                             (call-interactively
+                                              'cyanide-disable-current-view))))
 
     ;; vectorize:
     ;; cast one string/function pair to a vector.
@@ -950,7 +951,14 @@
           (when (memq (oref itm :id) members)
             (progn (push itm retval)
                    (delq (oref itm :id) members))))
-        retval))) :global t)
+        retval))
+
+    (cyanide-menu-render (cyanide-get-one-by-slot 'cyanide-default-menu
+                                                   cyanide-menu-item-collection
+                                                   ":id"
+                                                  'eq)
+                         'cyanide-default-menu
+                          cyanide-mode-map)) :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode
   (lambda () (cyanide-mode 1)))
