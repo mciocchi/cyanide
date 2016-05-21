@@ -877,24 +877,24 @@
     (cl-defmethod cyanide-set-frame ((frame cyanide-frame) value)
       (oset frame :frame value))
 
-    (defun cyanide-get-one-by-slot (sym
-                                    lst
-                                    stringified-slot
-                                    equality-func)
-      "Return one obj from LST where SYM matches with
-       EQUALITY-FUNC the value stored in STRINGIFIED-SLOT.
-       Optimized lookup: return the first relevant result
-        from the list and stop looking."
-      (let ((obj nil)
-            (i nil)
-            (l lst)
-            (slot (intern stringified-slot)))
-        (while (and (eq nil obj)
-                     l)
-          (setq i (pop l))
-          (when (funcall equality-func (eval `(oref i ,slot)) sym)
-            (setq obj i)))
-        obj))
+    ;; Constant time lookup.
+    (cl-defgeneric cyanide-get-one-by-slot (key
+                                            coll)
+      "Get one object from hashtable COLL by KEY."
+      (gethash key coll))
+
+    ;; This can be used to get via any key, but doesn't have the advantage of
+    ;; constant lookup.
+    (cl-defgeneric cyanide-get-one-by-slot (key
+                                            coll
+                                            (stringified-slot string)
+                                            (equality-func symbol))
+      (cl-block map-iteration
+        (maphash
+         (lambda (unused-key val)
+           (let ((slot-value (eval `(oref val ,(intern stringified-slot)))))
+             (when (funcall equality-func key slot-value)
+               (cl-return-from map-iteration val)))) coll)))
 
     (defun cyanide-filter (lst)
       "Return LST with nil values removed."
