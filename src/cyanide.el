@@ -953,7 +953,31 @@
                    (delq (oref itm :id) members))))
         retval))
 
-    (cyanide-menu-render (cyanide-get-one-by-slot 'cyanide-default-menu
+    (defun render-tasks ()
+      (let ((members (mapcar (lambda (x)
+                               (oref x :id))
+                             (cyanide-get-menu-members
+                              (cyanide-get-one-by-slot 'cyanide-default-menu
+                                                       cyanide-menu-item-collection
+                                                       ":id"
+                                                       'eq)))))
+        (let ((menu (cyanide-menu-builder '(:id 'tasks
+                                            :display-name "Tasks"
+                                            :members members))))
+          menu)))
+
+    (defun cyanide-generate-tasks-menu ()
+      (let ((members (oref (cyanide-get-one-by-slot cyanide-current-project
+                                                    cyanide-project-collection
+                                                    ":id"
+                                                    'eq)
+                           :tasks)))
+        (let ((menu (cyanide-menu-builder '(:id 'tasks
+                                            :display-name "Tasks"
+                                            :members members))))
+          menu)))
+
+       (cyanide-menu-render (cyanide-get-one-by-slot 'cyanide-default-menu
                                                    cyanide-menu-item-collection
                                                    ":id"
                                                   'eq)

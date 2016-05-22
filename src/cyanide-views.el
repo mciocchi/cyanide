@@ -93,6 +93,22 @@
                    (set-window-dedicated-p
                     (get-buffer-window (current-buffer)) 1)
                    (ielm)
-                   (other-window 2)))))
+                   (other-window 2)
+                   (cyanide-generate-tasks-menu)
+                   (cyanide-menu-builder '(:id 'cyanide-default-menu-with-tasks
+                                           :display-name "CyanIDE"
+                                           :members '(tasks
+                                                      load-project
+                                                      silver-search-project
+                                                      find-in-project
+                                                      enable-view
+                                                      disable-current-view)))
+                   (cyanide-menu-render
+                    (cyanide-get-one-by-slot 'cyanide-default-menu-with-tasks
+                                             cyanide-menu-item-collection
+                                             ":id"
+                                             'eq)
+                    'cyanide-default-menu-with-tasks
+                    cyanide-mode-map)))))
 
 (provide 'cyanide-views)
