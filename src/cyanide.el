@@ -152,8 +152,7 @@
 
     (cyanide-menu-builder '(:id 'cyanide-default-menu
                             :display-name "CyanIDE"
-                            :members '(tasks
-                                       load-project
+                            :members '(load-project
                                        silver-search-project
                                        find-in-project
                                        enable-view
@@ -392,6 +391,7 @@
             (setq ag-reuse-window ag-reuse-window-orig))
         (if ag-reuse-buffers-orig
             (setq ag-reuse-buffers ag-reuse-buffers-orig))
+        (cyanide-delete-menu-object 'tasks)
         nil))
 
     (defclass cyanide-view ()
@@ -953,36 +953,75 @@
                    (delq (oref itm :id) members))))
         retval))
 
-    (defun render-tasks ()
-      (let ((members (mapcar (lambda (x)
-                               (oref x :id))
-                             (cyanide-get-menu-members
-                              (cyanide-get-one-by-slot 'cyanide-default-menu
-                                                       cyanide-menu-item-collection
-                                                       ":id"
-                                                       'eq)))))
-        (let ((menu (cyanide-menu-builder '(:id 'tasks
-                                            :display-name "Tasks"
-                                            :members members))))
-          menu)))
+    (defun cyanide-delete-menu-object (menu-id)
+      (let ((old-menu (cyanide-get-one-by-slot menu-id
+                                               cyanide-menu-item-collection
+                                               ":id"
+                                               'eq)))
+        (when old-menu
+            (setq cyanide-menu-item-collection
+                  (delq old-menu cyanide-menu-item-collection)))))
 
-    (defun cyanide-generate-tasks-menu ()
-      (let ((members (oref (cyanide-get-one-by-slot cyanide-current-project
-                                                    cyanide-project-collection
-                                                    ":id"
-                                                    'eq)
-                           :tasks)))
-        (let ((menu (cyanide-menu-builder '(:id 'tasks
-                                            :display-name "Tasks"
-                                            :members members))))
-          menu)))
+    (defun cyanide-tasks-menu-builder (project-id)
+      (let ((project (cyanide-get-one-by-slot project-id
+                                              cyanide-project-collection
+                                              ":id"
+                                              'eq)))
+        (when (not project) (error (concat "cyanide-tasks-menu-builder"
+                                           " "
+                                           "could not find project"
+                                           " "
+                                           (format "%s" project-id))))
+        (let ((members (oref project
+                             :tasks)))
+          (cyanide-delete-menu-object 'tasks)
+          (let ((menu (cyanide-menu-builder '(:id 'tasks
+                                                  :display-name "Tasks"
+                                                  :members members))))
+            menu))))
 
-       (cyanide-menu-render (cyanide-get-one-by-slot 'cyanide-default-menu
-                                                   cyanide-menu-item-collection
-                                                   ":id"
-                                                  'eq)
-                         'cyanide-default-menu
-                          cyanide-mode-map)) :global t)
+    (defun cyanide-render-menu-with-tasks (project-id
+                                           menu-id)
+      (let ((menu (cyanide-get-one-by-slot menu-id
+                                           cyanide-menu-item-collection
+                                           ":id"
+                                           'eq)))
+        (cyanide-tasks-menu-builder project-id)
+        (cyanide-menu-render menu
+                             menu-id
+                             cyanide-mode-map)))
+
+    (defun cyanide-execute-task-prompt ()
+      "Prompt the user for a task to execute, take user input,
+       and then load it."
+      (interactive
+       (let ((task-names (mapcar
+                             (lambda (x)
+                               (oref x :display-name))
+                             cyanide-project-collection)))
+         (cyanide-prompt 'cyanide-load-project
+                         "Load project: "
+                         project-names
+                         cyanide-project-collection
+                         ":display-name"
+                         'equal
+                         nil
+                         1))))
+
+    ;; This causes a bug in easy-menu somehow. Easy-menu cannot be destroyed,
+    ;; only overwritten, but somehow if menu is rendered at cyanide minor-mode
+    ;; activation time, cyanide-mode appears to "reactivate" which causes a
+    ;; re-render after clicking on an easy-menu item, which causes CyanIDE menu
+    ;; to revert back to initial state without tasks and other submenus that
+    ;; were dynamically created by cyanide-views. This is an open bug that is
+    ;; pending further investigation.
+    ;; (cyanide-menu-render (cyanide-get-one-by-slot 'cyanide-default-menu
+    ;;                                                  cyanide-menu-item-collection
+    ;;                                                  ":id"
+    ;;                                                  'eq)
+    ;;                         'cyanide-default-menu
+    ;;                         cyanide-mode-map)
+       ) :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode
   (lambda () (cyanide-mode 1)))

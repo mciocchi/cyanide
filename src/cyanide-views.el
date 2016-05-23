@@ -13,6 +13,15 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
+(cyanide-menu-builder '(:id 'cyanide-default-menu-with-tasks
+                        :display-name "CyanIDE"
+                        :members '(tasks
+                                   load-project
+                                   silver-search-project
+                                   find-in-project
+                                   enable-view
+                                   disable-current-view)))
+
 (cyanide-view-builder
  '(:id 'cyanide-default-view
        :display-name "cyanide-default-view"
@@ -94,21 +103,15 @@
                     (get-buffer-window (current-buffer)) 1)
                    (ielm)
                    (other-window 2)
-                   (cyanide-generate-tasks-menu)
-                   (cyanide-menu-builder '(:id 'cyanide-default-menu-with-tasks
-                                           :display-name "CyanIDE"
-                                           :members '(tasks
-                                                      load-project
-                                                      silver-search-project
-                                                      find-in-project
-                                                      enable-view
-                                                      disable-current-view)))
-                   (cyanide-menu-render
-                    (cyanide-get-one-by-slot 'cyanide-default-menu-with-tasks
-                                             cyanide-menu-item-collection
-                                             ":id"
-                                             'eq)
-                    'cyanide-default-menu-with-tasks
-                    cyanide-mode-map)))))
+                   (if cyanide-current-project
+                       (cyanide-render-menu-with-tasks cyanide-current-project
+                                                       'cyanide-default-menu-with-tasks)
+                     (cyanide-menu-render (cyanide-get-one-by-slot 'cyanide-default-menu
+                                                                   cyanide-menu-item-collection
+                                                                   ":id"
+                                                                   'eq)
+                                          'cyanide-default-menu
+                                          cyanide-mode-map))
+                   ))))
 
 (provide 'cyanide-views)
