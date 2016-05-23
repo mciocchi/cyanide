@@ -942,6 +942,8 @@
     ;; will destructively operate on members as a referent, rather than as a
     ;; value.
     (cl-defmethod cyanide-get-menu-members ((menu cyanide-menu))
+      "Return `cyanide-menu-item' objects from
+       `cyanide-menu' MENU."
       (let ((members (copy-tree (oref menu :members)))
             (lst cyanide-menu-item-collection)
             (itm nil)
@@ -954,6 +956,7 @@
         retval))
 
     (defun cyanide-delete-menu-object (menu-id)
+      "Delete a menu from `cyanide-menu-item-collection'."
       (let ((old-menu (cyanide-get-one-by-slot menu-id
                                                cyanide-menu-item-collection
                                                ":id"
@@ -963,6 +966,7 @@
                   (delq old-menu cyanide-menu-item-collection)))))
 
     (defun cyanide-tasks-menu-builder (project-id)
+      "Build tasks menu object for a `cyanide-project'."
       (let ((project (cyanide-get-one-by-slot project-id
                                               cyanide-project-collection
                                               ":id"
@@ -976,12 +980,15 @@
                              :tasks)))
           (cyanide-delete-menu-object 'tasks)
           (let ((menu (cyanide-menu-builder '(:id 'tasks
-                                                  :display-name "Tasks"
-                                                  :members members))))
+                                              :display-name "Tasks"
+                                              :members members))))
             menu))))
 
     (defun cyanide-render-menu-with-tasks (project-id
                                            menu-id)
+      "Dynamically generate tasks sub-menu for a
+       `cyanide-project' and render it in context with its
+       super-menu."
       (let ((menu (cyanide-get-one-by-slot menu-id
                                            cyanide-menu-item-collection
                                            ":id"
