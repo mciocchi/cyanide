@@ -991,36 +991,17 @@
                              menu-id
                              cyanide-mode-map)))
 
-    (defun cyanide-execute-task-prompt ()
-      "Prompt the user for a task to execute, take user input,
-       and then load it."
-      (interactive
-       (let ((task-names (mapcar
-                             (lambda (x)
-                               (oref x :display-name))
-                             cyanide-project-collection)))
-         (cyanide-prompt 'cyanide-load-project
-                         "Load project: "
-                         project-names
-                         cyanide-project-collection
-                         ":display-name"
-                         'equal
-                         nil
-                         1))))
-
-    ;; This causes a bug in easy-menu somehow. Easy-menu cannot be destroyed,
-    ;; only overwritten, but somehow if menu is rendered at cyanide minor-mode
-    ;; activation time, cyanide-mode appears to "reactivate" which causes a
-    ;; re-render after clicking on an easy-menu item, which causes CyanIDE menu
-    ;; to revert back to initial state without tasks and other submenus that
-    ;; were dynamically created by cyanide-views. This is an open bug that is
-    ;; pending further investigation.
-    ;; (cyanide-menu-render (cyanide-get-one-by-slot 'cyanide-default-menu
-    ;;                                                  cyanide-menu-item-collection
-    ;;                                                  ":id"
-    ;;                                                  'eq)
-    ;;                         'cyanide-default-menu
-    ;;                         cyanide-mode-map)
+    ;; Does checking whether a cyanide-current-project is initialized cover all
+    ;; cases here? This seems to fix the problem with cyanide minor mode
+    ;; activating and rendering menu a second time when an easy-menu item is
+    ;; clicked, but definitely needs more testing and investigation.
+    (when (not (or cyanide-mode cyanide-current-project))
+      (cyanide-menu-render (cyanide-get-one-by-slot 'cyanide-default-menu
+                                                    cyanide-menu-item-collection
+                                                    ":id"
+                                                    'eq)
+                           'cyanide-default-menu
+                           cyanide-mode-map))
        ) :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode
