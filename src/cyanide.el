@@ -19,6 +19,7 @@
       (define-key map (kbd "C-c c l") 'cyanide-load-project-prompt)
       (define-key map (kbd "C-c c d") 'cyanide-disable-current-view)
       (define-key map (kbd "C-c c v") 'cyanide-enable-view-prompt)
+      (define-key map (kbd "C-c c t") 'cyanide-task-prompt)
       (define-key map (kbd "C-c c a") 'cyanide-ag-search)
       (define-key map (kbd "C-c c f") 'cyanide-find-dired)) map))
 
@@ -227,9 +228,25 @@
                         (oref menu :display-name)
                         (cyanide-vectorize menu)))
 
-    ; TO DO. Prompt with completion showing executable tasks.
-    (defun cyanide-menu-item-prompt ()
-      ())
+    (defun cyanide-task-prompt ()
+      "Prompt user for task to execute and execute it."
+      (interactive
+       (let ((menu (cyanide-get-one-by-slot 'tasks
+                                            cyanide-menu-item-collection
+                                            ":id"
+                                            'eq)))
+         (let ((tasks-collection (cyanide-unroll-all-menu-functions 'tasks)))
+           (let ((task-names
+                  (cyanide-list-display-names
+                   tasks-collection)))
+             (cyanide-prompt (lambda (x) (funcall (oref x :func)))
+                             "Tasks: "
+                             task-names
+                             tasks-collection
+                             ":display-name"
+                             'equal
+                             nil
+                             1))))))
 
     (defclass cyanide-project ()
       ((id            :initarg :id
@@ -299,17 +316,17 @@
        INHERIT-INPUT-METHOD args see `completing-read'."
       (progn
         (funcall prompt-func (cyanide-get-one-by-slot (completing-read
-                                                     prompt-str
-                                                     prompt-names
-                                                     predicate
-                                                     require-match
-                                                     initial-input
-                                                     hist
-                                                     def
-                                                     inherit-input-method)
-                                                    collection
-                                                    stringified-slot
-                                                    equality-func))
+                                                       prompt-str
+                                                       prompt-names
+                                                       predicate
+                                                       require-match
+                                                       initial-input
+                                                       hist
+                                                       def
+                                                       inherit-input-method)
+                                                       collection
+                                                       stringified-slot
+                                                       equality-func))
         nil))
 
     (defun cyanide-load-project-prompt ()
@@ -998,6 +1015,26 @@
                              menu-id
                              cyanide-mode-map)))
 
+    (defun cyanide-unroll-all-menu-functions (menu-id)
+      "Recursively unroll all menu functions into a list."
+      (let ((menu (cyanide-get-one-by-slot menu-id
+                                           cyanide-menu-item-collection
+                                           ":id"
+                                           'eq))
+            (lst '())
+            (g (lambda (y) (mapcar f (cyanide-get-menu-members y))))
+            (f (lambda (x) (if (eq (eieio-object-class x)
+                                   'cyanide-menu-function)
+                               (push x lst)
+                             (if (eq (eieio-object-class x)
+                                     'cyanide-menu)
+                                 (funcall g x)
+                             (error (concat "cyanide-unroll-all-menu-items "
+                                            "cannot parse "
+                                            (format "%s" x)))))))) ; else
+        (funcall g menu)
+        lst)) ; return lst
+
     ;; Does checking whether a cyanide-current-project is initialized cover all
     ;; cases here? This seems to fix the problem with cyanide minor mode
     ;; activating and rendering menu a second time when an easy-menu item is
@@ -1008,8 +1045,7 @@
                                                     ":id"
                                                     'eq)
                            'cyanide-default-menu
-                           cyanide-mode-map))
-       ) :global t)
+                           cyanide-mode-map))) :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode
   (lambda () (cyanide-mode 1)))
