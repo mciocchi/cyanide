@@ -115,112 +115,121 @@
    :teardown-hook '()
    ; scripts to automate repetitive bits of work I keep having to do by hand
    :tasks '(systemd-nspawn
-	    maven
-	    do-something
-	    do-something-else)))
+            maven
+            do-something
+            do-something-else)))
 
 ; I want to use maven with this project. There are a lot of maven tasks I use,
 ; so I should declare this as a separate sub-menu using cyanide-menu-builder.
 (cyanide-menu-builder '(:id 'maven
-			:display-name "Maven"
-			:members '(mvn-validate
-				   mvn-compile
-				   mvn-test
-				   mvn-package
-				   mvn-verify
-				   mvn-install
-				   mvn-deploy)))
+                        :display-name "Maven"
+                        :members '(mvn-validate
+                                   mvn-compile
+                                   mvn-test
+                                   mvn-package
+                                   mvn-verify
+                                   mvn-install
+                                   mvn-deploy)))
 
 ; echo to act as a placeholder for a real shell command, just to test
 (cyanide-task-builder '(:id 'mvn-validate
-			:display-name "Validate"
-			:func (lambda () (interactive)
-				(async-shell-command
-				 (concat "echo \"mvn validate\"")))))
+                        :display-name "Validate"
+                        :func (lambda () (interactive)
+                                (async-shell-command
+                                 (concat "echo \"mvn validate\"")))))
 
 (cyanide-task-builder '(:id 'mvn-compile
-			:display-name "Compile"
-			:func (lambda () (interactive)
-				(async-shell-command
-				 (concat "echo \"mvn compile\"")))))
+                        :display-name "Compile"
+                        :func (lambda () (interactive)
+                                (async-shell-command
+                                 (concat "echo \"mvn compile\"")))))
 
 (cyanide-task-builder '(:id 'mvn-test
-			:display-name "Test"
-			:func (lambda () (interactive)
-				(async-shell-command
-				 (concat "echo \"mvn test\"")))))
+                        :display-name "Test"
+                        :func (lambda () (interactive)
+                                (async-shell-command
+                                 (concat "echo \"mvn test\"")))))
 
 (cyanide-task-builder '(:id 'mvn-package
-			:display-name "Package"
-			:func (lambda () (interactive)
-				(async-shell-command
-				 (concat "echo \"mvn package\"")))))
+                        :display-name "Package"
+                        :func (lambda () (interactive)
+                                (async-shell-command
+                                 (concat "echo \"mvn package\"")))))
 
 (cyanide-task-builder '(:id 'mvn-verify
-			:display-name "Verify"
-			:func (lambda () (interactive)
-				(async-shell-command
-				 (concat "echo \"mvn verify\"")))))
+                        :display-name "Verify"
+                        :func (lambda () (interactive)
+                                (async-shell-command
+                                 (concat "echo \"mvn verify\"")))))
 
 (cyanide-task-builder '(:id 'mvn-install
-			:display-name "Install"
-			:func (lambda () (interactive)
-				(async-shell-command
-				 (concat "echo \"mvn install\"")))))
+                        :display-name "Install"
+                        :func (lambda () (interactive)
+                                (async-shell-command
+                                 (concat "echo \"mvn install\"")))))
 
 (cyanide-task-builder '(:id 'mvn-deploy
-			:display-name "Deploy"
-			:func (lambda () (interactive)
-				(async-shell-command
-				 (concat "echo \"mvn deploy\"")))))
+                        :display-name "Deploy"
+                        :func (lambda () (interactive)
+                                (async-shell-command
+                                 (concat "echo \"mvn deploy\"")))))
 
 ; I want to deploy my project inside a controlled environment for testing. This
 ; just requires me to map a few init scripts here.
 (cyanide-menu-builder '(:id 'systemd-nspawn
-			:display-name "Systemd Nspawn"
-			:members '(jail-start
-				   jail-stop)))
+                        :display-name "Systemd Nspawn"
+                        :members '(jail-start
+                                   jail-stop)))
 
 (cyanide-task-builder '(:id 'jail-start
-			:display-name "Start Test Project Dev Environment"
-			:func (lambda () (interactive)
-				(async-shell-command
-				 (concat "/home/"
-					 "user/"
-					 "projects/"
-					 "cyanide/"
-					 "working-copy/"
-					 "wip/"
-					 "jail-test-project-start.sh")))))
+                        :display-name "Start Test Project Dev Environment"
+                        :func (lambda () (interactive)
+                                (async-shell-command
+                                 (concat "/home/"
+                                         "user/"
+                                         "projects/"
+                                         "cyanide/"
+                                         "working-copy/"
+                                         "wip/"
+                                         "jail-test-project-start.sh")))))
 
 (cyanide-task-builder '(:id 'jail-stop
-			:display-name "Stop Test Project Dev Environment"
-			:func (lambda () (interactive)
-				(async-shell-command
-				 (concat "/home/"
-					 "user/"
-					 "projects/"
-					 "cyanide/"
-					 "working-copy/"
-					 "wip/"
-					 "jail-test-project-stop.sh")))))
+                        :display-name "Stop Test Project Dev Environment"
+                        :func (lambda () (interactive)
+                                (async-shell-command
+                                 (concat "/home/"
+                                         "user/"
+                                         "projects/"
+                                         "cyanide/"
+                                         "working-copy/"
+                                         "wip/"
+                                         "jail-test-project-stop.sh")))))
 
 ; I want to declare some other miscellaneous tasks that don't belong in either
 ; of the menus I declared above
 (cyanide-task-builder '(:id 'do-something
-			:display-name "Do Something"
-			:func (lambda () (interactive)
-				(async-shell-command
+                        :display-name "Do Something"
+                        :func (lambda () (interactive)
+                                (async-shell-command
                                         "echo \"Doing something!\""))))
 
 (cyanide-task-builder '(:id 'do-something-else
-			:display-name "Do Something Else"
-			:func (lambda () (interactive)
-				(async-shell-command
+                        :display-name "Do Something Else"
+                        :func (lambda () (interactive)
+                                (async-shell-command
                                         "echo \"Doing something else!\""))))
 ```
 
-    Use the example above to map other projects into cyanide.
+    Use the example above to map other projects into cyanide. Tasks, Views, and
+    Projects are dynamically pulled into emacs at load time like this:
+
+    ![Load Project](https://i.imgur.com/TYNtCyf.png "Load Project")
+
+    ![Load Project Prompt](https://i.imgur.com/hxq7ufn.png "Load Project Prompt")
+
+    ![Tasks Menu](https://i.imgur.com/mY5QUWh.png "Tasks Menu")
+
+    ![Tasks Prompt](https://i.imgur.com/thYUaBO.png "Tasks Prompt")
 
   * Views
 
@@ -291,3 +300,28 @@
     These should be self-explanatory, but if you wish you may refer to the
     inline documentation exposed through the emacs help interface "C-h c" for
     more information.
+
+  * Thanks
+
+    There are a number of projects without which CyanIDE would not have been
+    possible. Of course I must extend a special thanks to the emacs team at
+    [gnu.org](https://www.gnu.org) for their continued hard work on emacs and
+    their tireless dedication to keeping software free.
+
+    I would also like to thank [Geoff Greer](https://github.com/ggreer) for
+    developing the blindingly-fast Silver Searcher, without which CyanIDE search
+    would have been greatly hampered. Towards that end, I would also like to
+    thank [Wilfred Hughes](https://github.com/Wilfred) for his work on ag.el,
+    which allowed me to seamlessly interface CyanIDE with it.
+
+    I would also like to thank [Alex Kesling](https://github.com/akesling) for
+    providing invaluable advice regarding some development decisions I had to
+    make, and also, along with [Rachael Hobbs](https://github.com/rahobbs) and
+    [Christopher Fox](https://github.com/cdfox) offering me consolation and
+    delicious cocktails whenever the bugs started coming out of the woodwork and
+    I was feeling overwhelmed. In the same vein, last but definitely not least,
+    I would like to thank [Gregory Maglio](https://github.com/gmaglio) for his
+    constant encouragement and- separately but simultaneously- along with
+    [Roman Khmelichek](https://github.com/rkhmelichek) and
+    [Jack Man](https://github.com/jdotman), tolerating my obsessive rambling
+    about functional programming constructs for more than a year!
