@@ -1029,13 +1029,6 @@
                              menu-id
                              cyanide-mode-map)))
 
-    (defun cyanide-class-implements (class obj)
-      "Test whether an object implements a class."
-      (or (memq (eieio-object-class (car cyanide-menu-item-collection))
-                (eieio-class-children 'cyanide-menu))
-          (eq 'cyanide-menu
-              (eieio-object-class (car cyanide-menu-item-collection)))))
-
     (defun cyanide-unroll-all-menu-functions (menu-id)
       "Recursively unroll all menu functions into a list."
       (let ((menu (cyanide-get-one-by-slot menu-id
@@ -1044,11 +1037,11 @@
                                            'eq))
             (lst '())
             (g (lambda (y) (mapcar f (cyanide-get-menu-members y))))
-            (f (lambda (x) (if (cyanide-class-implements 'cyanide-menu-function
-                                                         x)
+            (f (lambda (x) (if (child-of-class-p (eieio-object-class x)
+                                                 'cyanide-menu-function)
                                (push x lst)
-                             (if (cyanide-class-implements 'cyanide-menu
-                                                           x)
+                             (if (child-of-class-p (eieio-object-class x)
+                                                   'cyanide-menu)
                                  (funcall g x)
                                (error (concat "cyanide-unroll-all-menu-items "
                                               "cannot parse "
