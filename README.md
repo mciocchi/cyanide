@@ -20,7 +20,11 @@
   CyanIDE is a global minor mode that provides an extensible development
   environment which runs on top of emacs. It provides functionality for
   project-aware searching and browsing of java, perl, python, clojure, ruby,
-  javascript, and emacs-lisp code.
+  javascript, and emacs-lisp code. I have taken pains to make CyanIDE fast and
+  easy to use. It boasts a near-instant load time, and thanks to integration
+  with [The Silver Searcher](https://github.com/ggreer/the_silver_searcher),
+  search times are also nearly instant, even in projects with thousands of
+  files.
 
   I decided to write CyanIDE because I was looking for an emacs mode to do the
   same thing, but could not find one with sensible defaults that was easy to
@@ -82,9 +86,9 @@
     by closing them over with a GUI, obscuring what it is doing. Rather, just
     like emacs itself, being 100% Free and Open Source software, CyanIDE "opens
     up" project internals and makes the code freely available to the developer
-    in human-readable form, rather than machine-generated XML. Like emacs
-    itself, CyanIDE project structure abstractions can be gradually peeled away
-    like the layers of an onion, in order to expose or even replace core
+    in an ergonomic human-readable form, rather than machine-generated XML. Like
+    emacs itself, CyanIDE project structure abstractions can be gradually peeled
+    away like the layers of an onion, in order to expose or even replace core
     functionality.
 
     Below is an example of a typical CyanIDE project structure. Note that it is
