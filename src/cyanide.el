@@ -797,7 +797,7 @@
         (let ((tree-obj (cyanide-tree :id id)))
           (cyanide-set-frame tree-obj frame-obj)
           (cyanide-set-position tree-obj pos)
-          ;; TO DO - temporary
+          ;; TO DO
           ;;          (cyanide-parse-treenodes tree pos tree-obj)
           tree-obj))) ; return tree-obj
 
