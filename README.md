@@ -219,17 +219,16 @@ along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
                                 (async-shell-command
                                         "echo \"Doing something else!\""))))
 ```
-
     Use the example above to map other projects into cyanide. Tasks, Views, and
     Projects are dynamically pulled into emacs at load time like this:
 
-    ![Load Project](https://i.imgur.com/TYNtCyf.png "Load Project")
+![Load Project](https://i.imgur.com/TYNtCyf.png "Load Project")
 
-    ![Load Project Prompt](https://i.imgur.com/hxq7ufn.png "Load Project Prompt")
+![Load Project Prompt](https://i.imgur.com/hxq7ufn.png "Load Project Prompt")
 
-    ![Tasks Menu](https://i.imgur.com/mY5QUWh.png "Tasks Menu")
+![Tasks Menu](https://i.imgur.com/mY5QUWh.png "Tasks Menu")
 
-    ![Tasks Prompt](https://i.imgur.com/thYUaBO.png "Tasks Prompt")
+![Tasks Prompt](https://i.imgur.com/thYUaBO.png "Tasks Prompt")
 
   * Views
 
