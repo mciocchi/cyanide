@@ -1053,7 +1053,11 @@
                                (error (concat "cyanide-unroll-all-menu-items "
                                               "cannot parse "
                                               (format "%s" x)))))))) ; else
-        (funcall g menu)
+        (if menu
+            (funcall g menu)
+          (error (concat "cyanide-unroll-all-menu-functions "
+                         "no such menu: "
+                         (format "%s" menu-id))))
         lst)) ; return lst
 
     ;; Does checking whether a cyanide-current-project is initialized cover all
