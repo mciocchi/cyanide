@@ -254,7 +254,7 @@
                   (cyanide-list-display-names
                    tasks-collection)))
              (cyanide-prompt (lambda (x) (funcall (oref x :func)))
-                             "Tasks: "
+                             "Tasks (tab for completion): "
                              task-names
                              tasks-collection
                              ":display-name"
@@ -352,7 +352,7 @@
                                (oref x :display-name))
                              cyanide-project-collection)))
          (cyanide-prompt 'cyanide-load-project
-                         "Load project: "
+                         "Load project (tab for completion): "
                          project-names
                          cyanide-project-collection
                          ":display-name"
@@ -474,7 +474,7 @@
       (interactive
        (let ((view-names (cyanide-list-display-names cyanide-view-collection)))
          (cyanide-prompt 'cyanide-call-enable
-                         "Enable view: "
+                         "Enable view (tab for completion): "
                          view-names
                          cyanide-view-collection
                          ":display-name"
