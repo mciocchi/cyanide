@@ -85,10 +85,10 @@ along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
     unless you tell it to do so. CyanIDE does not attempt to simplify problems
     by closing them over with a GUI, obscuring what it is doing. Rather, just
     like emacs itself, being 100% Free and Open Source software, CyanIDE "opens
-    up" project internals and makes the code freely available to the developer
-    in an ergonomic human-readable form, rather than machine-generated XML. Like
-    emacs itself, CyanIDE project structure abstractions can be gradually peeled
-    away like the layers of an onion, in order to expose or even replace core
+    up" project internals and makes them freely available to the developer in an
+    ergonomic human-readable form, rather than machine-generated XML. Like emacs
+    itself, CyanIDE project structure abstractions can be gradually peeled away
+    like the layers of an onion, in order to expose or even replace core
     functionality.
 
     Below is an example of a typical CyanIDE project structure. Note that it is
