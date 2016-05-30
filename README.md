@@ -1,88 +1,289 @@
 # cyanide (CyanIDE's Yet Another Non-IDE)
+#
+# This file is part of CyanIDE.
+#
+# CyanIDE is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# CyanIDE is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
-* about
+* About
 
-CyanIDE is a global minor mode that provides an extensible development
-environment which runs on top of emacs. It provides functionality for
-project-aware searching and browsing of java, perl, python, clojure, ruby,
-javascript, and emacs-lisp code.
+  CyanIDE is a global minor mode that provides an extensible development
+  environment which runs on top of emacs. It provides functionality for
+  project-aware searching and browsing of java, perl, python, clojure, ruby,
+  javascript, and emacs-lisp code.
 
-I decided to write CyanIDE because I was looking for an emacs mode to do the
-same thing, but could not find one with sensible defaults that was easy to
-configure and extend. CyanIDE will run out of the box with almost no
-configuration.
+  I decided to write CyanIDE because I was looking for an emacs mode to do the
+  same thing, but could not find one with sensible defaults that was easy to
+  configure and extend. CyanIDE will run out of the box with almost no
+  configuration.
 
-* install instructions:
+* Installation Instructions:
 
-** install dependencies:
+  * Dependencies:
 
-- emacs 25 or higher
+    * emacs 25 or higher
 
-- ag.el https://github.com/Wilfred/ag.el
-  Note- ag.el can also be installed from melpa.org via package.el
+      Check whether this package is available from your linux distribution. If
+      not, you will need to follow the
+      [instructions](https://savannah.gnu.org/projects/emacs) to download the
+      source code of an official emacs 25 daily build. Instructions regarding
+      how to compile from source are located in the README of that project.
 
-<code>
+    * [ag.el](https://github.com/Wilfred/ag.el)
+      The emacs frontend for The Silver Searcher. Refer to
+      [ag.el.readthedocs.io](https://agel.readthedocs.io/en/latest/installation.html)
+      for the installation instructions of that project.
 
-cd ~/.emacs.d/
+  * CyanIDE Install
 
-git clone https://github.com/mciocchi/cyanide.git
+    ```bash
+    cd ~/.emacs.d/
 
-</code>
+    git clone https://github.com/mciocchi/cyanide.git
+    ```
 
-In .emacs or .emacs.d/init.el add the following. Adjust project-root, display-name,
+* Configuration
 
-default-view, etc. as the need arises.
+  * Project Structure
 
-<code>
+    CyanIDE is different from other IDEs because projects are mapped in a simple
+    declarative syntax that is actually a domain specific language composed of
+    emacs lisp functions. CyanIDE does not require users to have any knowledge
+    of emacs lisp, but its core API is designed to be quickly and easily
+    extended by advanced users to declare new project structures to suit their
+    needs.
 
-(require 'eieio)
+    CyanIDE provides an advantage to developers by mapping configuration
+    manually in this manner. Some IDEs generate project structure XML
+    "automagically" by manipulating icons. Mapping project structure icons in
+    this manner may initially appear to be simple and "user friendly," but in
+    actuality, it can serve to obscure what the IDE is actually doing.
 
+    Worse than that, when the time comes to "export" project structure XML from
+    a traditional IDE, perhaps to port to a new machine, or to share with a
+    colleague, it never seems to work 100% correctly. At this point, users of
+    traditional IDEs usually must resort to painstakingly recording a laundry
+    list of GUI operations in order to restore their environment back to its
+    original working state.
+
+    CyanIDE takes a radically different approach to this problem. CyanIDE does
+    not attempt to do anything "automagically." CyanIDE does not do anything
+    unless you tell it to do so. CyanIDE does not attempt to simplify problems
+    by closing them over with a GUI, obscuring what it is doing. Rather, just
+    like emacs itself, being 100% Free and Open Source software, CyanIDE "opens
+    up" project internals and makes the code freely available to the developer
+    in human-readable form, rather than machine-generated XML. Like emacs
+    itself, CyanIDE project structure abstractions can be gradually peeled away
+    like the layers of an onion, in order to expose or even replace core
+    functionality.
+
+    Below is an example of a typical CyanIDE project structure. Note that it is
+    not strictly necessary to map any projects at all in order to use CyanIDE,
+    but many of the features of CyanIDE require a project to be loaded.
+
+```elisp
+; we cannot enable CyanIDE unless we tell emacs to import it
 (require 'cyanide)
 
-(cyanide-mode 1)
+; we need to make cyanide scope and classes available before declaring anything
+(setq-default cyanide-mode t)
 
-(puthash 'dot-emacs
+; make a test project with some tasks
+(cyanide-project-builder
+ '(:id 'test-project
+   :display-name "Test Project"
+   ; I want to "pop" into my default preferred view when this project is loaded
+   :default-view 'cyanide-elisp-view
+   :project-root "/home/user/test-project"
+   ; functions to call at load time
+   :load-hook '()
+   ; functions to call at project teardown time (not implemented yet)
+   :teardown-hook '()
+   ; scripts to automate repetitive bits of work I keep having to do by hand
+   :tasks '(systemd-nspawn
+	    maven
+	    do-something
+	    do-something-else)))
 
-         (cyanide-project
-         
-                          :display-name "dot-emacs"
-                          
-                          ;; Use cyanide-default-view for other languages,
-                          ;; or write your own view.
-                          :default-view 'cyanide-elisp-view
-                          
-                          :load-hook '()
-                          
-                          :project-root "/home/user/.emacs.d/")
+; I want to use maven with this project. There are a lot of maven tasks I use,
+; so I should declare this as a separate sub-menu using cyanide-menu-builder.
+(cyanide-menu-builder '(:id 'maven
+			:display-name "Maven"
+			:members '(mvn-validate
+				   mvn-compile
+				   mvn-test
+				   mvn-package
+				   mvn-verify
+				   mvn-install
+				   mvn-deploy)))
 
-         cyanide-projects)
-</code>
+; echo to act as a placeholder for a real shell command, just to test
+(cyanide-task-builder '(:id 'mvn-validate
+			:display-name "Validate"
+			:func (lambda () (interactive)
+				(async-shell-command
+				 (concat "echo \"mvn validate\"")))))
 
-Follow the example above to map other projects into cyanide.
+(cyanide-task-builder '(:id 'mvn-compile
+			:display-name "Compile"
+			:func (lambda () (interactive)
+				(async-shell-command
+				 (concat "echo \"mvn compile\"")))))
 
-* views and projects
+(cyanide-task-builder '(:id 'mvn-test
+			:display-name "Test"
+			:func (lambda () (interactive)
+				(async-shell-command
+				 (concat "echo \"mvn test\"")))))
 
-CyanIDE is roughly based upon a model-view-controller design. cyanide.el
-controls bootstrap logic and high-level functions. cyanide-views.el defines view
-objects that manage setup and teardown of different buffer and window
-arrangements. Projects are modeled by the user in their .emacs, just like in the
-example above.
+(cyanide-task-builder '(:id 'mvn-package
+			:display-name "Package"
+			:func (lambda () (interactive)
+				(async-shell-command
+				 (concat "echo \"mvn package\"")))))
 
-Currently, only cyanide-elisp-view and cyanide-default-view are available, but
-cyanide-default-view provides decent searching and code-browsing support for the
-languages listed above.
+(cyanide-task-builder '(:id 'mvn-verify
+			:display-name "Verify"
+			:func (lambda () (interactive)
+				(async-shell-command
+				 (concat "echo \"mvn verify\"")))))
 
-The philosophy of CyanIDE is to be as extensible as possible while also
-providing sane defaults that work "out of the box" with minimal configuration.
-It should be relatively easy for users to define new views for various needs if
-they copy those that already exist in cyanide-views.el. I would be very
-grateful to anyone who writes these or can help with any bugs and contribute
-back.
+(cyanide-task-builder '(:id 'mvn-install
+			:display-name "Install"
+			:func (lambda () (interactive)
+				(async-shell-command
+				 (concat "echo \"mvn install\"")))))
 
-* to do/known issues
+(cyanide-task-builder '(:id 'mvn-deploy
+			:display-name "Deploy"
+			:func (lambda () (interactive)
+				(async-shell-command
+				 (concat "echo \"mvn deploy\"")))))
 
-** IN PROGRESS object-oriented abstraction layer for buffer/window management
+; I want to deploy my project inside a controlled environment for testing. This
+; just requires me to map a few init scripts here.
+(cyanide-menu-builder '(:id 'systemd-nspawn
+			:display-name "Systemd Nspawn"
+			:members '(jail-start
+				   jail-stop)))
 
-Still looking into the feasibility/sustainability of this in the long-term.
+(cyanide-task-builder '(:id 'jail-start
+			:display-name "Start Test Project Dev Environment"
+			:func (lambda () (interactive)
+				(async-shell-command
+				 (concat "/home/"
+					 "user/"
+					 "projects/"
+					 "cyanide/"
+					 "working-copy/"
+					 "wip/"
+					 "jail-test-project-start.sh")))))
 
-** IN PROGRESS "subview" abstractions to simplify and clean up views
+(cyanide-task-builder '(:id 'jail-stop
+			:display-name "Stop Test Project Dev Environment"
+			:func (lambda () (interactive)
+				(async-shell-command
+				 (concat "/home/"
+					 "user/"
+					 "projects/"
+					 "cyanide/"
+					 "working-copy/"
+					 "wip/"
+					 "jail-test-project-stop.sh")))))
+
+; I want to declare some other miscellaneous tasks that don't belong in either
+; of the menus I declared above
+(cyanide-task-builder '(:id 'do-something
+			:display-name "Do Something"
+			:func (lambda () (interactive)
+				(async-shell-command
+                                        "echo \"Doing something!\""))))
+
+(cyanide-task-builder '(:id 'do-something-else
+			:display-name "Do Something Else"
+			:func (lambda () (interactive)
+				(async-shell-command
+                                        "echo \"Doing something else!\""))))
+```
+
+    Use the example above to map other projects into cyanide.
+
+  * Views
+
+    CyanIDE is roughly based upon a model-view-controller design. Projects are
+    modeled by the user in their init.el, just like in the example
+    above. cyanide.el controls bootstrap logic and high-level functions. Views
+    are objects that manage setup and teardown of different buffer and window
+    arrangements.
+
+    Currently, only cyanide-elisp-view and cyanide-default-view are available,
+    but cyanide-default-view provides decent code searching and browsing support
+    for the languages listed above.
+
+    If users prefer a certain window and buffer arrangement for a specific
+    project, they need only define it and map it to the :default-view of their
+    project structure. :default-view does not limit a project to that view,
+    however. Users may pop into and out of views at any time. If a user prefers
+    a certain view whenever executing a given task, such as starting a debugger
+    or executing a diff, views can even be enabled from inside a cyanide-task.
+
+    It should also be noted that views are additive: enabling one will set
+    cyanide-current-view to the value of its :id, but will not necessarily
+    disable the previous view unless users explicitly configure it to do so. By
+    implication, this property of views allows them to "stack up" and delegate
+    responsibility.
+
+    For instance: in a simple setup, a view might enable two subviews, one for
+    window A, and one for window B. Alternately, multiple buffers in a single
+    window can be "nested" like Russian dolls.
+
+    The sky is the limit with views, but users are advised to keep it simple, as
+    interactions can happen when enabling multiple views at the same time that
+    were not explicitly designed to work together. In the upcoming release of
+    CyanIDE, the cyanide-current-view global variable will be replaced by a
+    linked list that better represents the "stacking" behavior of views.
+
+    Users that have written views, tasks, and other extensions that they find
+    particularly useful are encouraged to submit them for potential inclusion in
+    CyanIDE.
+
+  * Tasks
+
+    Tasks represent units of work manually executed by CyanIDE users. The views
+    bundled with CyanIDE by default render tasks in the CyanIDE menu in the
+    menubar, but this behavior is entirely view-specific and may not be
+    available in third-party views.
+
+    Tasks are constructed with a :func property which can store any emacs lisp
+    lambda including async-shell-command, which allows CyanIDE users to compile
+    and deploy their code using whatever build tool they prefer.
+
+  * Keybindings
+
+    cyanide-mode-map provides the following keybindings out of the box, which
+    may be altered or overridden just like any other emacs mode-map. Functions
+    in CyanIDE appended with "-prompt" invoke a generic cyanide-prompt function
+    under the hood that provides tab completion by default.
+
+    ```
+    "C-c c l" cyanide-load-project-prompt
+    "C-c c d" cyanide-disable-current-view
+    "C-c c v" cyanide-enable-view-prompt
+    "C-c c t" cyanide-task-prompt
+    "C-c c a" cyanide-ag-search
+    "C-c c f" cyanide-find-dired
+    ```
+
+    These should be self-explanatory, but if you wish you may refer to the
+    inline documentation exposed through the emacs help interface "C-h c" for
+    more information.
