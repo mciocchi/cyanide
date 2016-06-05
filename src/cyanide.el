@@ -249,18 +249,22 @@
                                             cyanide-menu-item-collection
                                             ":id"
                                             'eq)))
-         (let ((tasks-collection (cyanide-unroll-all-menu-functions 'tasks)))
-           (let ((task-names
-                  (cyanide-list-display-names
-                   tasks-collection)))
-             (cyanide-prompt (lambda (x) (funcall (oref x :func)))
-                             "Tasks (tab for completion): "
-                             task-names
-                             tasks-collection
-                             ":display-name"
-                             'equal
-                             nil
-                             1))))))
+         (if menu
+             (let ((tasks-collection
+                    (cyanide-unroll-all-menu-functions 'tasks)))
+               (let ((task-names
+                      (cyanide-list-display-names
+                       tasks-collection)))
+                 (cyanide-prompt (lambda (x) (funcall (oref x :func)))
+                                 "Tasks (tab for completion): "
+                                 task-names
+                                 tasks-collection
+                                 ":display-name"
+                                 'equal
+                                 nil
+                                 1)))
+           (message "No tasks menu defined.") ; else
+           nil))))
 
     (defclass cyanide-project ()
       ((id            :initarg :id
@@ -1023,11 +1027,16 @@
       (let ((menu (cyanide-get-one-by-slot menu-id
                                            cyanide-menu-item-collection
                                            ":id"
-                                           'eq)))
-        (cyanide-tasks-menu-builder project-id)
-        (cyanide-menu-render menu
-                             menu-id
-                             cyanide-mode-map)))
+                                           'eq))
+            (project (cyanide-get-one-by-slot cyanide-current-project
+                                              cyanide-project-collection
+                                              ":id"
+                                              'eq)))
+        (when (cyanide-slot-boundp project :tasks)
+          (cyanide-tasks-menu-builder project-id)
+          (cyanide-menu-render menu
+                               menu-id
+                               cyanide-mode-map))))
 
     (defun cyanide-unroll-all-menu-functions (menu-id)
       "Recursively unroll all menu functions into a list."
@@ -1052,6 +1061,18 @@
                          "no such menu: "
                          (format "%s" menu-id))))
         lst)) ; return lst
+
+    ;; Certainly there must be a less stupid way of doing this? The interpreter
+    ;; (and slot-boundp, by extension) does not allow quoted colon-prefixed
+    ;; slots like ':foo. To circumvent this, we need our own slot-boundp that
+    ;; forcibly dequotes the slot before evaluating the expression, but this
+    ;; requires some indirection here.
+    (defmacro cyanide-slot-boundp (obj slt)
+      "Return t if slot SLT is bound, else return nil."
+      `(funcall (lambda ()
+                  (condition-case nil
+                      (when (oref ,obj ,slt) t)
+                    (error nil)))))
 
     ;; It is not enough to check whether cyanide-mode is initialized. At certain
     ;; points in the stack, for instance, right when starting a
