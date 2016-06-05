@@ -20,9 +20,11 @@
     (require 'cyanide-globals)
     (require 'cyanide-kwarg-utils)
     (require 'cyanide-project)
+    (require 'cyanide-view)
     (require 'cyanide-menu)
     (require 'cyanide-menu-function)
     (require 'cyanide-task)
+    (require 'cyanide-views)
 
     (cyanide-menu-builder '(:id 'cyanide-default-menu
                                 :display-name "CyanIDE"
@@ -66,33 +68,6 @@
                                                  (interactive)
                                                  (call-interactively
                                                   'cyanide-disable-current-view))))
-
-    (defun cyanide-task-prompt ()
-      "Prompt user for task to execute and execute it."
-      (interactive
-       (let ((menu (cyanide-get-one-by-slot 'tasks
-                                            cyanide-menu-item-collection
-                                            ":id"
-                                            'eq)))
-         (if menu
-             (let ((tasks-collection
-                    (cyanide-unroll-all-menu-functions 'tasks)))
-               (let ((task-names
-                      (cyanide-list-display-names
-                       tasks-collection)))
-                 (cyanide-prompt (lambda (x) (call-interactively
-                                              (oref x :func)))
-                                 "Tasks (tab for completion): "
-                                 task-names
-                                 tasks-collection
-                                 ":display-name"
-                                 'equal
-                                 nil
-                                 1)))
-           (message "No tasks menu defined.") ; else
-           nil))))
-
-    (require 'cyanide-views)
 
     ;; This won't work if there are two buffers with the same name open.
     ;; Need to include window and maybe frame to prevent this.

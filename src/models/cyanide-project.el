@@ -1,6 +1,6 @@
 (require 'cyanide-globals)
 (require 'cyanide-kwarg-utils)
-(require 'cyanide-view) ; to do
+;;(require 'cyanide-view)
 (require 'cyanide-prompt)
 
 (defun cyanide-project-builder (kwargs)
@@ -23,9 +23,9 @@
                   :documentation
                   "Display name for a cyanide-project")
    (default-view  :initarg :default-view
-     :type symbol
-     :documentation
-     "Default view at startup for a cyanide-project.")
+                  :type symbol
+                  :documentation
+                  "Default view at startup for a cyanide-project.")
    (project-root  :initarg :project-root
                   :initform ""
                   :type string
@@ -43,7 +43,7 @@
               :type list
               :documentation
               "Jobs that can be launched to do
-                   work on a cyanide-project.")))
+               work on a cyanide-project.")))
 
 (cl-defmethod cyanide-load-project ((proj cyanide-project))
   "Load a cyanide-project"
