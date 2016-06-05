@@ -255,7 +255,8 @@
                (let ((task-names
                       (cyanide-list-display-names
                        tasks-collection)))
-                 (cyanide-prompt (lambda (x) (funcall (oref x :func)))
+                 (cyanide-prompt (lambda (x) (call-interactively
+                                              (oref x :func)))
                                  "Tasks (tab for completion): "
                                  task-names
                                  tasks-collection
