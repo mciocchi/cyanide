@@ -16,7 +16,19 @@
 (defun cyanide-main ()
   (progn
 
-    (require 'cyanide-toolkit)
+    (require 'cyanide-globals)
+    (require 'cyanide-kwarg-utils)
+    (require 'cyanide-project)
+    (require 'cyanide-view)
+    (require 'cyanide-menu)
+    (require 'cyanide-menu-function)
+    (require 'cyanide-task)
+    (require 'cyanide-views)
+    (require 'cyanide-ag-search)
+    (require 'cyanide-find-dired)
+    (require 'cyanide-get-many-by-slot)
+    (require 'cyanide-misc-utils)
+    (require 'cyanide-menu-utils)
 
     (cyanide-menu-builder '(:id 'cyanide-default-menu
                                 :display-name "CyanIDE"
