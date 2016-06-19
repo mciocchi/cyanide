@@ -14,13 +14,14 @@
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
 (cyanide-view-builder
- '(:id 'cyanide-default-view
-   :display-name "cyanide-default-view"
+ '(:id 'cyanide-minimal-view
+   :display-name "cyanide-minimal-view"
    :disable 'cyanide-default-disabler
    :enable (lambda nil
              (progn
-               (setq cyanide-current-view
-                     'cyanide-default-view)
+               (when cyanide-current-view
+                 (call-interactively 'cyanide-disable-current-view))
+               (push 'cyanide-minimal-view cyanide-view-stack)
                (when cyanide-current-project
                  (setq frame-title-format
                        (oref
@@ -39,19 +40,11 @@
                      split-width-threshold)
                (setq split-height-threshold 80)
                (setq split-width-threshold 9999)
-               ;; Set up new window geometry.
-               (split-window-vertically
-                (* (/ (window-total-height) 10) 9))
                ;; ag search configuration
                (setq ag-reuse-window-orig ag-reuse-window)
                (setq ag-reuse-buffers-orig ag-reuse-buffers)
                (setq ag-reuse-window t)
                (setq ag-reuse-buffers t)
-               (other-window 1)
-               (switch-to-buffer "*Occur*")
-               (set-window-dedicated-p
-                (get-buffer-window (current-buffer)) 1)
-               (other-window 1)
                (if cyanide-current-project
                    (cyanide-render-menu-with-tasks cyanide-current-project
                                                    'cyanide-default-menu-with-tasks)
@@ -62,4 +55,4 @@
                                       'cyanide-default-menu
                                       cyanide-mode-map))))))
 
-(provide 'cyanide-default-view)
+(provide 'cyanide-minimal-view)

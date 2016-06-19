@@ -61,18 +61,28 @@
                work on a cyanide-project.")))
 
 (cl-defmethod cyanide-load-project ((proj cyanide-project))
-  "Load a cyanide-project"
+  "Load a cyanide-project:
+
+   1) if there is a previous project loaded, tear it down.
+   2) set `cyanide-current-project'
+   3) if `cyanide-current-project' has a load-hook, execute it.
+   4) if `cyanide-current-project' has a default-view, enable it"
   (let ((load-hook (oref proj load-hook))
         (default-view (cyanide-get-one-by-slot (oref proj default-view)
                                                cyanide-view-collection
                                                ":id"
                                                'eq))
-        (sym (oref proj :id)))
-    (if cyanide-current-view (cyanide-disable-current-view))
+        (sym (oref proj :id))
+        (previous-proj (cyanide-get-one-by-slot cyanide-current-project
+                                                cyanide-project-collection
+                                                ":id"
+                                                'eq)))
+    (when previous-proj (cyanide-hook-executor
+                         (oref previous-proj :teardown-hook)))
+    (setq cyanide-current-project sym)
     (when load-hook
       (cyanide-hook-executor load-hook))
-    (setq cyanide-current-project sym)
-    (funcall (oref default-view enable))
+    (when default-view (funcall (oref default-view :enable)))
     nil))
 
 (defun cyanide-load-project-prompt ()

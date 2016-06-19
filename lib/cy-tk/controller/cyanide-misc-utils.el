@@ -14,18 +14,18 @@
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
 (defun cyanide-filter (lst)
-      "Return LST with nil values removed."
-      (delq nil lst))
+  "Return LST with nil values removed."
+  (delq nil lst))
 
 (defun cyanide-return-if-true (test sym1 sym2 retval)
   "Apply TEST to sym1 and sym2 and return RETVAL if TEST
-       returns true. Else return nil."
+   returns true. Else return nil."
   (when (funcall test sym1 sym2)
     retval))
 
 (defun cyanide-hook-executor (hooks)
   "Execute hook functions in HOOKS with some extra
-       logging."
+   logging."
   (let ((f (lambda (func)
              (progn
                (message (concat "cyanide-hook-executor calling"
@@ -36,7 +36,7 @@
 
 (defun cyanide-list-display-names (lst)
   "Return a list of :display-name slots from an
-       arbitrary LST of objects."
+   arbitrary LST of objects."
   (mapcar
    (lambda (x)
      (oref x :display-name))

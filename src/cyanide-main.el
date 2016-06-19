@@ -26,6 +26,7 @@
     (require 'cyanide-default-menu-with-tasks)
     (require 'cyanide-default-view)
     (require 'cyanide-elisp-view)
+    (require 'cyanide-minimal-view)
     (require 'cyanide-ag-search)
     (require 'cyanide-find-dired)
     (require 'cyanide-get-many-by-slot)

@@ -31,7 +31,7 @@
                  :documentation "Enable this cyanide-view.")
    ;; Teardown
    (disable      :initarg :disable
-                 :type symbol
+                 :type function
                  :documentation "Disable this cyanide-view."))
   "Definition of a cyanide-view configuration.")
 
