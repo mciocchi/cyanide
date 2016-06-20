@@ -102,7 +102,9 @@ along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 ;; we need to make cyanide scope and classes available before declaring anything
 (setq-default cyanide-mode t)
 
-;; make a test project with some tasks
+;; Make a test project with some tasks. This is the bare minimum of what you
+;; need. It is possible to run cyanide-minor-mode without any projects defined,
+;; albeit somewhat pointless.
 (cyanide-project-builder
  '(:id 'test-project
    :display-name "Test Project"
@@ -115,11 +117,14 @@ along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
    ; teardown hook will prevent multiple views from activating at the same time
    ; when switching between projects.
    :teardown-hook '(cyanide-disable-current-view-if-exists)
-   ; scripts to automate repetitive bits of work I keep having to do by hand
+   ; scripts to automate repetitive bits of work I keep having to do by
+   ; hand. These are convenient to have, but not required.
    :tasks '(systemd-nspawn
             maven
             do-something
             do-something-else)))
+
+;; Everything after this point is optional.
 
 ;; I want to use maven with this project. There are a lot of maven tasks I use,
 ;; so I should declare this as a separate sub-menu using cyanide-menu-builder.

@@ -1,3 +1,15 @@
+;;; cyanide.el --- CyanIDE's Yet Another Non-IDE
+;;
+;; Copyright (C) 2015-2016 Matt Ciocchi <mciocchi@gmail.com>
+;;
+;; Author: Matt Ciocchi <mciocchi@gmail.com>
+;; Created: 06 September 2015
+;; Version: 4.0
+;; Package-Requires: ((ag "0.47"))
+;; Keywords: project, window, buffer
+;;
+;;; License:
+;;
 ;; This file is part of CyanIDE.
 ;;
 ;; CyanIDE is free software: you can redistribute it and/or modify
@@ -12,7 +24,17 @@
 ;;
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
-
+;;
+;;; Commentary:
+;;
+;; CyanIDE stands for CyanIDE's Yet Another Non-IDE. It provides project-aware
+;; configuration, instant search, an object-oriented API, and dozens of helper
+;; functions in one convenient toolkit.
+;;
+;; For screenshots and installation instructions, refer to the README, or
+;; read it online at https://github.com/mciocchi/cyanide
+;;
+;;; Code:
 (require 'cyanide-main)
 
 (defvar cyanide-mode-map
@@ -38,3 +60,4 @@
 (global-cyanide-mode 1)
 
 (provide 'cyanide)
+;;; cyanide.el ends here
