@@ -96,13 +96,13 @@ along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
     but many of the features of CyanIDE require a project to be loaded.
 
 ```elisp
-; we cannot enable CyanIDE unless we tell emacs to import it
+;; we cannot enable CyanIDE unless we tell emacs to import it
 (require 'cyanide)
 
-; we need to make cyanide scope and classes available before declaring anything
+;; we need to make cyanide scope and classes available before declaring anything
 (setq-default cyanide-mode t)
 
-; make a test project with some tasks
+;; make a test project with some tasks
 (cyanide-project-builder
  '(:id 'test-project
    :display-name "Test Project"
@@ -111,16 +111,18 @@ along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
    :project-root "/home/user/test-project"
    ; functions to call at load time
    :load-hook '()
-   ; functions to call at project teardown time (not implemented yet)
-   :teardown-hook '()
+   ; List of functions to call at project teardown time. Using this generic
+   ; teardown hook will prevent multiple views from activating at the same time
+   ; when switching between projects.
+   :teardown-hook '(cyanide-disable-current-view-if-exists)
    ; scripts to automate repetitive bits of work I keep having to do by hand
    :tasks '(systemd-nspawn
             maven
             do-something
             do-something-else)))
 
-; I want to use maven with this project. There are a lot of maven tasks I use,
-; so I should declare this as a separate sub-menu using cyanide-menu-builder.
+;; I want to use maven with this project. There are a lot of maven tasks I use,
+;; so I should declare this as a separate sub-menu using cyanide-menu-builder.
 (cyanide-menu-builder '(:id 'maven
                         :display-name "Maven"
                         :members '(mvn-validate
@@ -131,7 +133,7 @@ along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
                                    mvn-install
                                    mvn-deploy)))
 
-; echo to act as a placeholder for a real shell command, just to test
+;; echo to act as a placeholder for a real shell command, just to test
 (cyanide-task-builder '(:id 'mvn-validate
                         :display-name "Validate"
                         :func (lambda () (interactive)
@@ -174,8 +176,8 @@ along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
                                 (async-shell-command
                                  (concat "echo \"mvn deploy\"")))))
 
-; I want to deploy my project inside a controlled environment for testing. This
-; just requires me to map a few init scripts here.
+;; I want to deploy my project inside a controlled environment for testing. This
+;; just requires me to map a few init scripts here.
 (cyanide-menu-builder '(:id 'systemd-nspawn
                         :display-name "Systemd Nspawn"
                         :members '(jail-start
@@ -205,8 +207,8 @@ along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
                                          "wip/"
                                          "jail-test-project-stop.sh")))))
 
-; I want to declare some other miscellaneous tasks that don't belong in either
-; of the menus I declared above
+;; I want to declare some other miscellaneous tasks that don't belong in either
+;; of the menus I declared above
 (cyanide-task-builder '(:id 'do-something
                         :display-name "Do Something"
                         :func (lambda () (interactive)

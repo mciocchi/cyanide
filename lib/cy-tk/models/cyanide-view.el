@@ -70,6 +70,10 @@
 (defun cyanide-disable-current-view ()
   "Disable current cyanide-view."
   (interactive
+   (cyanide-disable-current-view-1)))
+
+(defun cyanide-disable-current-view-1 ()
+  "Disable current cyanide-view."
    (progn
      (when (not cyanide-current-view)
        (error (concat "Cannot disable cyanide-current-view "
@@ -78,7 +82,11 @@
       (cyanide-get-one-by-slot cyanide-current-view
                                cyanide-view-collection
                                ":id"
-                               'eq)))))
+                               'eq))))
+
+(defun cyanide-disable-current-view-if-exists ()
+  (when cyanide-current-view
+    (cyanide-disable-current-view)))
 
 (defun cyanide-default-disabler ()
   (progn
