@@ -4,7 +4,7 @@
 ;;
 ;; Author: Matt Ciocchi <mciocchi@gmail.com>
 ;; Created: 06 September 2015
-;; Version: 4.0
+;; Version: 5.0.0
 ;; Package-Requires: ((ag "0.47"))
 ;; Keywords: project, window, buffer
 ;;

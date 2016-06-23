@@ -14,10 +14,9 @@
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
 (defvar legacy-tests '(cyanide-case-sensitive-test
-                       ; fail-test
-                       cyanide-edges-test
-                       cyanide-frame-test)
-  "All new tests need to be mapped here.")
+                                        ; fail-test
+                       )
+  "Old tests used to be mapped here.")
 
 (defun cyanide-test-executor (tests)
   (mapcar 'cyanide-test-executor-1 tests))
@@ -152,11 +151,6 @@
          cyanide-true-func
          cyanide-false-func)
 
-        (cyanide-tree-tests
-         nil
-         cyanide-true-func
-         cyanide-false-func)
-
         (cyanide-menu-function-test
          ,cyanide-menu-function-obj-1
          cyanide-true-func
@@ -219,41 +213,6 @@
                     (print "cyanide-case-sensitive-test [PASSED]\n")) ;; else
                   (if failed nil ; if failed return false
                     t))))))))))  ; else return true
-
-(defun cyanide-edges-test ()
-  "Construct cyanide-edges object, check getters and setters."
-  (let ((id (cl-gensym))
-        (edge-list `(,(abs (random))
-                     ,(abs (random))
-                     ,(abs (random))
-                     ,(abs (random)))))
-    (let ((edges (cyanide-edge-builder edge-list)))
-      (cyanide-edges-test-1 edges
-                            edge-list))))
-
-(defun cyanide-edges-test-1 (edges edge-list)
-  (progn
-    (cyanide-set-edges edges edge-list)
-    (if (equal edge-list (cyanide-get-edges edges))
-        (progn
-          (print "cyanide-edges-test [PASSED]")
-          t) ; if success return t
-      (progn
-        (print (concat "cyanide-edges-test [FAILED]: "
-                       "set value != get value."))
-        nil)))) ; else return nil
-
-(defun cyanide-frame-test ()
-  "Test constructor, getters, and setters for cyanide-frame."
-  (let ((frame (cyanide-frame-builder (selected-frame))))
-    (cyanide-set-frame frame (selected-frame))
-    (if (eq (selected-frame) (cyanide-get-frame frame))
-        (progn
-          (print "cyanide-frame-test [PASSED]")
-          t)     ; return t if passed.
-      (progn
-        (print "cyanide-frame-test [FAILED]")
-        nil)))) ; else return nil.
 
 (defun run-tests ()
   (let ((results (mapcar 'funcall
