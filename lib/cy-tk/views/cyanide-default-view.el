@@ -19,6 +19,8 @@
    :disable 'cyanide-default-disabler
    :enable (lambda nil
              (progn
+               (when cyanide-current-view
+                 (call-interactively 'cyanide-disable-current-view))
                (setq cyanide-current-view
                      'cyanide-default-view)
                (when cyanide-current-project

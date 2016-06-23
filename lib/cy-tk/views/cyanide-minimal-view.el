@@ -21,7 +21,7 @@
              (progn
                (when cyanide-current-view
                  (call-interactively 'cyanide-disable-current-view))
-               (push 'cyanide-minimal-view cyanide-view-stack)
+               (setq cyanide-current-view 'cyanide-minimal-view)
                (when cyanide-current-project
                  (setq frame-title-format
                        (oref
