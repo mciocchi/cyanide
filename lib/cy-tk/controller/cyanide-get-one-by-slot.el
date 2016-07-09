@@ -18,9 +18,9 @@
                                 stringified-slot
                                 equality-func)
   "Return one obj from LST where SYM matches with
-       EQUALITY-FUNC the value stored in STRINGIFIED-SLOT.
-       Optimized lookup: return the first relevant result
-        from the list and stop looking."
+   EQUALITY-FUNC the value stored in STRINGIFIED-SLOT.
+   Optimized lookup: return the first relevant result
+   from the list and stop looking."
   (let ((obj nil)
         (i nil)
         (l lst)
@@ -31,5 +31,11 @@
       (when (funcall equality-func (eval `(oref i ,slot)) sym)
         (setq obj i)))
     obj))
+
+(defun cyanide-get-by-id (id coll)
+  (cyanide-get-one-by-slot id
+                           coll
+                           ":id"
+                           'eq))
 
 (provide 'cyanide-get-one-by-slot)
