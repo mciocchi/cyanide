@@ -54,4 +54,10 @@
                   (when (oref ,obj ,slt) t)
                 (error nil)))))
 
+(defun assocdr (sym lst)
+  (cdr (assoc sym lst)))
+
+(defun assocar (sym lst)
+  (car (assoc sym lst)))
+
 (provide 'cyanide-misc-utils)
