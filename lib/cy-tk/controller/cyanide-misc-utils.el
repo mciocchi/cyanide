@@ -54,6 +54,9 @@
                   (when (oref ,obj ,slt) t)
                 (error nil)))))
 
+(defun assocadr (sym lst)
+  (car (assocdr sym lst)))
+
 (defun assocdr (sym lst)
   (cdr (assoc sym lst)))
 
