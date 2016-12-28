@@ -102,4 +102,13 @@
                      nil
                      1))))
 
+(defun cyanide-get-current-project ()
+  (cyanide-get-one-by-slot cyanide-current-project
+                           cyanide-project-collection
+                           ":id"
+                           'eq))
+
+(defun cyanide-get-current-project-root ()
+  (oref (cyanide-get-current-project) :project-root))
+
 (provide 'cyanide-project)
