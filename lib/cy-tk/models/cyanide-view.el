@@ -16,16 +16,10 @@
 (require 'cyanide-globals)
 (require 'cyanide-get-one-by-slot)
 
-(defclass cyanide-view ()
-  ((id           :initarg :id
-                 :initform nil
-                 :type symbol)
-   (display-name :initarg :display-name
-                 :initform ""
-                 :type string
-                 :custom string
-                 :documentation "Display name for a cyanide-view.")
-   ;; UI setup
+(defclass cyanide-view (identifiable
+                        nameable
+                        collectible)
+  (;; UI setup
    (enable       :initarg :enable
                  :type function
                  :documentation "Enable this cyanide-view.")

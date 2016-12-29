@@ -32,14 +32,8 @@
                        (concat "Invalid input to "
                                "cyanide-tokenize-window-treenode")))))))))))
 
-    (defclass cyanide-treenode ()
-      ((id         :initarg :id
-                   :initform nil
-                   :type symbol
-                   :documentation
-                   "Use id so that we don't have to rely solely upon object
-                    hashing or lower-level constructs like window id.")
-       (position   :initarg :position
+    (defclass cyanide-treenode (identifiable)
+      ((position   :initarg :position
                    :initform -2
                    :type integer
                    :documentation
@@ -279,11 +273,8 @@
         ,(cyanide-get-edge edges :right)
         ,(cyanide-get-edge edges :bottom)))
 
-    (defclass cyanide-frame ()
-      ((id    :initarg :id
-              :initform nil
-              :type symbol)
-       (frame :initarg :frame
+    (defclass cyanide-frame (identifiable)
+      ((frame :initarg :frame
               :type frame))
       "CyanIDE class to encapsulate emacs frames.")
 

@@ -13,13 +13,10 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
-(defclass cyanide-menu-item ()
-  ((id           :initarg :id
-                 :type symbol
-                 :initform nil)
-   (display-name :initarg :display-name
-                 :type string
-                 :initform ""))
+(defclass cyanide-menu-item (identifiable
+                             nameable)
+  ()
+  :abstract t
   "Abstract class that provides functionality common
    to both `cyanide-menu' and `cyanide-menu-function'.")
 
