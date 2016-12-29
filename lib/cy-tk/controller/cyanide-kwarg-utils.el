@@ -13,6 +13,8 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
+(require 'cyanide-misc-utils)
+
 (defun cyanide-missing-arg-error (arg)
   (error (concat "Required argument"
                  " "
@@ -44,5 +46,42 @@
       (when lst
         (add-to-list lst obj))
       obj)))
+
+;;
+;;Example Invocation:
+;;
+;;ELISP> (funcall (superlambda '(&optional x) '(print (concat "foo " x)))
+;; "bar")
+;;
+;;"foo bar"
+;;
+;;"foo bar"
+;;
+;;ELISP> (funcall (superlambda '(&optional x) '(print (concat "foo " x))))
+;;
+;;"foo "
+;;
+;;"foo "
+;;
+(defun superlambda (args body)
+  `(lambda ,args
+     ,body))
+
+(defun test3 (&rest args)
+  `(quote ,args))
+
+;; Next step- handle adding to collection, preferably with a lambda
+;;
+;; Invocation:
+;;
+;; ELISP> (cyanide-builder :collection 'baz :constructor cyanide-project :constructor-args
+;;              (:id 'foo :display-name "bar"))
+;; [eieio-class-tag--cyanide-project foo "bar" unbound "" unbound unbound unbound]
+;;
+(defmacro cyanide-builder (&rest args)
+  (let ((constructor      (plist-get args :constructor))
+        (collection       (plist-get args :collection))
+        (constructor-args (plist-get args :constructor-args)))
+    (eval `(append `(,constructor) constructor-args))))
 
 (provide 'cyanide-kwarg-utils)
