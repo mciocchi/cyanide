@@ -16,7 +16,6 @@
 (defclass cyanide-menu-item (identifiable
                              nameable)
   ()
-  :abstract t
   "Abstract class that provides functionality common
    to both `cyanide-menu' and `cyanide-menu-function'.")
 
