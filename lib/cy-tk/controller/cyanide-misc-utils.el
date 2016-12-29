@@ -63,4 +63,25 @@
 (defun assocar (sym lst)
   (car (assoc sym lst)))
 
+(defun filter (lst filter-items)
+  "Take list LST as input, return a new list without
+   FILTER-ITEMS"
+  (let ((new-lst '()))
+    (while lst
+      (let ((elem (pop lst)))
+        (when (not (memq elem filter-items))
+            (push elem new-lst))))
+    new-lst))
+
+(defun filter-plist (plst filter-keys)
+  "Take plist PLST as input, return a new plist without
+   FILTER-KEYS or values of FILTER-KEYS."
+  (let ((new-plst '()))
+    (while plst
+      (let ((elem (pop plst)))
+        (if (memq elem filter-keys)
+            (pop plst)
+          (setq new-plst (append new-plst `(,elem)))))) ; else
+    new-plst))
+
 (provide 'cyanide-misc-utils)
