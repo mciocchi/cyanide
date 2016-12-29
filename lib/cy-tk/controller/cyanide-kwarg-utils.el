@@ -72,6 +72,8 @@
 
 ;; Next step- handle adding to collection, preferably with a lambda
 ;;
+;; I would like to:  (persist obj)
+;;
 ;; Invocation:
 ;;
 ;; ELISP> (cyanide-builder :collection 'baz :constructor cyanide-project :constructor-args
@@ -82,6 +84,9 @@
   (let ((constructor      (plist-get args :constructor))
         (collection       (plist-get args :collection))
         (constructor-args (plist-get args :constructor-args)))
-    (eval `(append `(,constructor) constructor-args))))
+    (let ((obj (eval (eval `(append `(,constructor) constructor-args)))))
+      (print "obj:")
+      (print obj)
+      (collect obj)))) ; to do
 
 (provide 'cyanide-kwarg-utils)

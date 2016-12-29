@@ -28,16 +28,27 @@
                               :project-root)
                             'cyanide-project-collection))
 
-(defclass cyanide-project ()
-  ((id            :initarg :id
-                  :initform nil
-                  :type symbol)
-   (display-name  :initarg :display-name
-                  :initform ""
-                  :type string
-                  :documentation
-                  "Display name for a cyanide-project")
-   (default-view  :initarg :default-view
+(defclass identifiable ()
+  ((id :initarg :id
+       :initform nil
+       :type symbol)))
+
+(defclass nameable ()
+  ((display-name :initarg :display-name
+                 :initform ""
+                 :type string)))
+
+(defclass collectible ()
+  ((collection :initarg :collection
+               :initform nil)))
+
+;; (defmethod f ((obj collectible) x)
+;;               (print x))
+
+(defclass cyanide-project (identifiable
+                           nameable
+                           collectible)
+  ((default-view  :initarg :default-view
                   :type symbol
                   :documentation
                   "Default view at startup for a cyanide-project.")
