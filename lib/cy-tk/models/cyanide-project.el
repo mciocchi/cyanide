@@ -68,9 +68,6 @@
   (cyanide-add-to-collection (oref obj :collection)
                              obj))
 
-(defmethod init ((proj cyanide-project))
-  (cyanide-add-to-collection proj))
-
 (defclass cyanide-project (cyanide-identifiable
                            cyanide-nameable
                            cyanide-hash-collectible)
@@ -96,6 +93,9 @@
               :documentation
               "Jobs that can be launched to do
                work on a cyanide-project.")))
+
+(defmethod init ((proj cyanide-project))
+  (cyanide-add-to-collection proj))
 
 (cl-defmethod cyanide-load-project ((proj cyanide-project))
   "Load a cyanide-project:
