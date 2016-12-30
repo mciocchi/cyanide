@@ -78,13 +78,11 @@
 ;;              (:id 'foo :display-name "bar"))
 ;; [eieio-class-tag--cyanide-project foo "bar" unbound "" unbound unbound unbound]
 ;;
-(defmacro cyanide-builder (&rest args)
+(defun cyanide-builder (&rest args)
   (let ((constructor      (plist-get args :constructor))
         (collection       (plist-get args :collection))
         (constructor-args (plist-get args :constructor-args)))
     (let ((obj (eval (eval `(append `(,constructor) constructor-args)))))
-      (print "obj:")
-      (print obj)
-      (collect obj)))) ; to do
+      (cyanide-add-to-collection obj))))
 
 (provide 'cyanide-kwarg-utils)
