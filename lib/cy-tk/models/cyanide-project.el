@@ -68,8 +68,8 @@
   (cyanide-add-to-collection (oref obj :collection)
                              obj))
 
-(defmethod init ((cyanide-project))
-  (cyanide-add-to-collection cyanide-project))
+(defmethod init ((proj cyanide-project))
+  (cyanide-add-to-collection proj))
 
 (defclass cyanide-project (cyanide-identifiable
                            cyanide-nameable
