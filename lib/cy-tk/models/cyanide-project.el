@@ -28,26 +28,49 @@
                               :project-root)
                             'cyanide-project-collection))
 
-(defclass identifiable ()
+(defclass cyanide-identifiable ()
   ((id :initarg :id
        :initform nil
        :type symbol)))
 
-(defclass nameable ()
+(defclass cyanide-nameable ()
   ((display-name :initarg :display-name
                  :initform ""
                  :type string)))
 
-(defclass collectible ()
+(defclass cyanide-collectible (cyanide-identifiable)
   ((collection :initarg :collection
-               :initform nil)))
+               :initform []
+               :type vector
+               :documentation
+               "Object that implements cyanide-collection."))
+  :abstract t)
 
-;; (defmethod f ((obj collectible) x)
-;;               (print x))
+(defclass cyanide-hash-collectible (cyanide-collectible)
+  ())
 
-(defclass cyanide-project (identifiable
-                           nameable
-                           collectible)
+;; use a collection to collect all collections
+(defclass cyanide-collection (cyanide-identifiable)
+  ((implementation :initarg :implementation
+                   :initform nil
+                   :documentation
+                   "Object of arbitrary type: hashtable, list, vector, etc."))
+  :abstract t)
+
+(defclass cyanide-hash-collection (cyanide-collection)
+  ())
+
+(defmethod cyanide-add-to-collection ((coll cyanide-hash-collection)
+                                      elem)
+  (puthash (oref elem :id) elem (oref coll :implementation)))
+
+(defmethod cyanide-add-to-collection ((obj cyanide-collectible))
+  (cyanide-add-to-collection (oref obj :collection)
+                             obj))
+
+(defclass cyanide-project (cyanide-identifiable
+                           cyanide-nameable
+                           cyanide-hash-collectible)
   ((default-view  :initarg :default-view
                   :type symbol
                   :documentation

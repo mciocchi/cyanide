@@ -13,8 +13,8 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
-(defclass cyanide-menu-item (identifiable
-                             nameable)
+(defclass cyanide-menu-item (cyanide-identifiable
+                             cyanide-nameable)
   ()
   "Abstract class that provides functionality common
    to both `cyanide-menu' and `cyanide-menu-function'.")

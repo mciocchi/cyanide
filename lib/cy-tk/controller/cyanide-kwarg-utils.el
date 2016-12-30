@@ -72,8 +72,6 @@
 
 ;; Next step- handle adding to collection, preferably with a lambda
 ;;
-;; I would like to:  (persist obj)
-;;
 ;; Invocation:
 ;;
 ;; ELISP> (cyanide-builder :collection 'baz :constructor cyanide-project :constructor-args

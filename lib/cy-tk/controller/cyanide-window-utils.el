@@ -32,7 +32,7 @@
                        (concat "Invalid input to "
                                "cyanide-tokenize-window-treenode")))))))))))
 
-    (defclass cyanide-treenode (identifiable)
+    (defclass cyanide-treenode (cyanide-identifiable)
       ((position   :initarg :position
                    :initform -2
                    :type integer
@@ -273,7 +273,7 @@
         ,(cyanide-get-edge edges :right)
         ,(cyanide-get-edge edges :bottom)))
 
-    (defclass cyanide-frame (identifiable)
+    (defclass cyanide-frame (cyanide-identifiable)
       ((frame :initarg :frame
               :type frame))
       "CyanIDE class to encapsulate emacs frames.")

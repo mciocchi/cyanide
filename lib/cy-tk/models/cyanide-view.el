@@ -16,9 +16,9 @@
 (require 'cyanide-globals)
 (require 'cyanide-get-one-by-slot)
 
-(defclass cyanide-view (identifiable
-                        nameable
-                        collectible)
+(defclass cyanide-view (cyanide-identifiable
+                        cyanide-nameable
+                        cyanide-hash-collectible)
   (;; UI setup
    (enable       :initarg :enable
                  :type function
