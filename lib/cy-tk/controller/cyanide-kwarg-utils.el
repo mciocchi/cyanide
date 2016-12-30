@@ -47,29 +47,6 @@
         (add-to-list lst obj))
       obj)))
 
-;;
-;;Example Invocation:
-;;
-;;ELISP> (funcall (superlambda '(&optional x) '(print (concat "foo " x)))
-;; "bar")
-;;
-;;"foo bar"
-;;
-;;"foo bar"
-;;
-;;ELISP> (funcall (superlambda '(&optional x) '(print (concat "foo " x))))
-;;
-;;"foo "
-;;
-;;"foo "
-;;
-(defun superlambda (args body)
-  `(lambda ,args
-     ,body))
-
-(defun test3 (&rest args)
-  `(quote ,args))
-
 ;; Next step- handle adding to collection, preferably with a lambda
 ;;
 ;; Invocation:
@@ -78,11 +55,23 @@
 ;;              (:id 'foo :display-name "bar"))
 ;; [eieio-class-tag--cyanide-project foo "bar" unbound "" unbound unbound unbound]
 ;;
-(defun cyanide-builder (&rest args)
+;; (defun cyanide-builder (&rest args)
+;;   (let ((constructor      (plist-get args :constructor))
+;;         (collection       (plist-get args :collection))
+;;         (constructor-args (plist-get args :constructor-args)))
+;;     (let ((obj (eval (eval `(append `(,constructor) constructor-args)))))
+;;       (cyanide-add-to-collection obj))))
+
+;; invocation goal:
+;; (cyanide-build 'cyanide-project
+;;                :id 'test-project
+;;                :display-name "test-project"
+;;                :project-root "/home/matt/projects/test-project")
+
+(defun cyanide-build (&rest args)
   (let ((constructor      (plist-get args :constructor))
-        (collection       (plist-get args :collection))
         (constructor-args (plist-get args :constructor-args)))
     (let ((obj (eval (eval `(append `(,constructor) constructor-args)))))
-      (cyanide-add-to-collection obj))))
+      (init obj))))
 
 (provide 'cyanide-kwarg-utils)
