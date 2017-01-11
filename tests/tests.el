@@ -15,8 +15,9 @@
 
 (defvar legacy-tests '(cyanide-case-sensitive-test
                        ; fail-test
-                       cyanide-edges-test
-                       cyanide-frame-test)
+;;                       cyanide-edges-test
+;;                       cyanide-frame-test)
+                       )
   "All new tests need to be mapped here.")
 
 (defun cyanide-test-executor (tests)
@@ -66,44 +67,44 @@
                       (car (cyanide-get-sub-treenodes root-obj)))
                      'cyanide-treenode)))
 
-(defun cyanide-tree-tests (arg)
-  (let ((root-obj (cyanide-tree-builder
-                   (window-tree)
-                   (abs (random))
-                   (cyanide-frame-builder (selected-frame))
-                   nil)))
-    (let ((sub-obj (cyanide-tree-builder
-                    (window-tree)
-                    (abs (random))
-                    (cyanide-frame-builder (selected-frame))
-                    nil)))
-      (cyanide-add-sub-treenode root-obj sub-obj)
-      (cyanide-set-super-tree sub-obj root-obj)
-      ; return true only if all tests do.
-      (eval (cons 'and (cyanide-test-executor `((cyanide-tree-test
-                                                 ,root-obj
-                                                 cyanide-true-func
-                                                 cyanide-false-func)
+;; (defun cyanide-tree-tests (arg)
+;;   (let ((root-obj (cyanide-tree-builder
+;;                    (window-tree)
+;;                    (abs (random))
+;;                    (cyanide-frame-builder (selected-frame))
+;;                    nil)))
+;;     (let ((sub-obj (cyanide-tree-builder
+;;                     (window-tree)
+;;                     (abs (random))
+;;                     (cyanide-frame-builder (selected-frame))
+;;                     nil)))
+;;       (cyanide-add-sub-treenode root-obj sub-obj)
+;;       (cyanide-set-super-tree sub-obj root-obj)
+;;       ; return true only if all tests do.
+;;       (eval (cons 'and (cyanide-test-executor `((cyanide-tree-test
+;;                                                  ,root-obj
+;;                                                  cyanide-true-func
+;;                                                  cyanide-false-func)
 
-                                                (cyanide-get-sub-treenodes-test
-                                                 ,root-obj
-                                                 cyanide-true-func
-                                                 cyanide-false-func)
+;;                                                 (cyanide-get-sub-treenodes-test
+;;                                                  ,root-obj
+;;                                                  cyanide-true-func
+;;                                                  cyanide-false-func)
 
-                                                (cyanide-super-treenode-test
-                                                 ,sub-obj
-                                                 cyanide-true-func
-                                                 cyanide-false-func)
+;;                                                 (cyanide-super-treenode-test
+;;                                                  ,sub-obj
+;;                                                  cyanide-true-func
+;;                                                  cyanide-false-func)
 
-                                                (cyanide-super-treenode-test-2
-                                                 '(,sub-obj ,root-obj)
-                                                 cyanide-true-func
-                                                 cyanide-false-func)
+;;                                                 (cyanide-super-treenode-test-2
+;;                                                  '(,sub-obj ,root-obj)
+;;                                                  cyanide-true-func
+;;                                                  cyanide-false-func)
 
-                                                (cyanide-sub-treenode-test
-                                                 '(,sub-obj ,root-obj)
-                                                 cyanide-true-func
-                                                 cyanide-false-func))))))))
+;;                                                 (cyanide-sub-treenode-test
+;;                                                  '(,sub-obj ,root-obj)
+;;                                                  cyanide-true-func
+;;                                                  cyanide-false-func))))))))
 
 (defun cyanide-super-treenode-test (tree-obj)
   (eq (eieio-object-class (cyanide-get-super-tree tree-obj))
@@ -152,10 +153,10 @@
          cyanide-true-func
          cyanide-false-func)
 
-        (cyanide-tree-tests
-         nil
-         cyanide-true-func
-         cyanide-false-func)
+        ;; (cyanide-tree-tests
+        ;;  nil
+        ;;  cyanide-true-func
+        ;;  cyanide-false-func)
 
         (cyanide-menu-function-test
          ,cyanide-menu-function-obj-1
@@ -220,16 +221,16 @@
                   (if failed nil ; if failed return false
                     t))))))))))  ; else return true
 
-(defun cyanide-edges-test ()
-  "Construct cyanide-edges object, check getters and setters."
-  (let ((id (cl-gensym))
-        (edge-list `(,(abs (random))
-                     ,(abs (random))
-                     ,(abs (random))
-                     ,(abs (random)))))
-    (let ((edges (cyanide-edge-builder edge-list)))
-      (cyanide-edges-test-1 edges
-                            edge-list))))
+;; (defun cyanide-edges-test ()
+;;   "Construct cyanide-edges object, check getters and setters."
+;;   (let ((id (cl-gensym))
+;;         (edge-list `(,(abs (random))
+;;                      ,(abs (random))
+;;                      ,(abs (random))
+;;                      ,(abs (random)))))
+;;     (let ((edges (cyanide-edge-builder edge-list)))
+;;       (cyanide-edges-test-1 edges
+;;                             edge-list))))
 
 (defun cyanide-edges-test-1 (edges edge-list)
   (progn
@@ -243,17 +244,18 @@
                        "set value != get value."))
         nil)))) ; else return nil
 
-(defun cyanide-frame-test ()
-  "Test constructor, getters, and setters for cyanide-frame."
-  (let ((frame (cyanide-frame-builder (selected-frame))))
-    (cyanide-set-frame frame (selected-frame))
-    (if (eq (selected-frame) (cyanide-get-frame frame))
-        (progn
-          (print "cyanide-frame-test [PASSED]")
-          t)     ; return t if passed.
-      (progn
-        (print "cyanide-frame-test [FAILED]")
-        nil)))) ; else return nil.
+;; (defun cyanide-frame-test ()
+;;   "Test constructor, getters, and setters for cyanide-frame."
+;;   (let ((frame (cyanide-frame-builder (selected-frame))))
+;;     (cyanide-set-frame frame (selected-frame))
+;;     (if (eq (selected-frame) (cyanide-get-frame frame))
+;;         (progn
+;;           (print "cyanide-frame-test [PASSED]")
+;;           t)     ; return t if passed.
+;;       (progn
+;;         (print "cyanide-frame-test [FAILED]")
+;;         nil))))
+                                        ; else return nil.
 
 (defun run-tests ()
   (let ((results (mapcar 'funcall

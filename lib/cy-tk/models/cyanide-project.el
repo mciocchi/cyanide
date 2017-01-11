@@ -62,9 +62,11 @@
 
 (defmethod cyanide-add-to-collection ((coll cyanide-hash-collection)
                                       elem)
+  (print "func 1")
   (puthash (oref elem :id) elem (oref coll :implementation)))
 
 (defmethod cyanide-add-to-collection ((obj cyanide-collectible))
+  (print "func 2")
   (cyanide-add-to-collection (oref obj :collection)
                              obj))
 
@@ -94,6 +96,7 @@
               "Jobs that can be launched to do
                work on a cyanide-project.")))
 
+; to do: here is the problem
 (defmethod init ((proj cyanide-project))
   (cyanide-add-to-collection proj))
 
