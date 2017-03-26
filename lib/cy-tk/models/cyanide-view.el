@@ -93,10 +93,6 @@
         (setq split-height-threshold split-height-threshold-orig))
     (if split-width-threshold
         (setq split-width-threshold split-width-threshold-orig))
-    (if ag-reuse-window-orig
-        (setq ag-reuse-window ag-reuse-window-orig))
-    (if ag-reuse-buffers-orig
-        (setq ag-reuse-buffers ag-reuse-buffers-orig))
     (cyanide-delete-menu-object 'tasks)
     nil))
 

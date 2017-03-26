@@ -41,11 +41,6 @@
                 (* (/ (window-total-height) 10) 9))
                (split-window-vertically
                 (* (/ (window-total-height) 10) 9))
-               ;; ag search configuration
-               (setq ag-reuse-window-orig ag-reuse-window)
-               (setq ag-reuse-buffers-orig ag-reuse-buffers)
-               (setq ag-reuse-window t)
-               (setq ag-reuse-buffers t)
                (other-window 2)
                (switch-to-buffer "*Occur*")
                (set-window-dedicated-p

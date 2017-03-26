@@ -29,12 +29,6 @@
 (defvar cyanide-verbose nil
   "non-nil if cyanide should use verbose logging.")
 
-(defvar cyanide-find-dired-exclude-vc
-  "-not -path \"*\.svn*\" -not -path \"*\.git*\" "
-  "Exclude version control dot directories from
-       cyanide-find-dired. If this is set to an empty
-       string, CyanIDE will not exclude vc directories.")
-
 (defvar cyanide-view-collection '()
   "cyanide-views are all stored in this list.")
 

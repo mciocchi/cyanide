@@ -40,11 +40,6 @@
                      split-width-threshold)
                (setq split-height-threshold 80)
                (setq split-width-threshold 9999)
-               ;; ag search configuration
-               (setq ag-reuse-window-orig ag-reuse-window)
-               (setq ag-reuse-buffers-orig ag-reuse-buffers)
-               (setq ag-reuse-window t)
-               (setq ag-reuse-buffers t)
                (if cyanide-current-project
                    (cyanide-render-menu-with-tasks cyanide-current-project
                                                    'cyanide-default-menu-with-tasks)

@@ -142,13 +142,20 @@
                      nil
                      1))))
 
-(defun cyanide-get-current-project ()
-  (cyanide-get-one-by-slot cyanide-current-project
-                           cyanide-project-collection
-                           ":id"
-                           'eq))
-
 (defun cyanide-get-current-project-root ()
-  (oref (cyanide-get-current-project) :project-root))
+  (cyanide-project-oref :project-root))
+
+(defun cyanide-get-current-project ()
+  """
+  Return object representing `cyanide-current-project'. If
+  no project is loaded, return nil.
+  """
+  (cyanide-get-by-id cyanide-current-project cyanide-project-collection))
+
+(defmacro cyanide-project-oref (key)
+  """
+  Get property stored at key of `cyanide-current-project'.
+  """
+  `(oref (cyanide-get-current-project)  ,key))
 
 (provide 'cyanide-project)

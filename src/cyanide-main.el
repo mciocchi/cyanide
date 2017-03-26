@@ -27,54 +27,39 @@
     (require 'cyanide-default-view)
     (require 'cyanide-elisp-view)
     (require 'cyanide-minimal-view)
-    (require 'cyanide-ag-search)
-    (require 'cyanide-find-dired)
+    (require 'cyanide-helm-ag)
+    (require 'cyanide-helm-find)
     (require 'cyanide-get-many-by-slot)
     (require 'cyanide-misc-utils)
     (require 'cyanide-menu-utils)
 
     (cyanide-menu-builder '(:id 'cyanide-default-menu
-                                :display-name "CyanIDE"
-                                :members '(load-project
-                                           silver-search-project
-                                           find-in-project
-                                           enable-view
-                                           disable-current-view)))
+                            :display-name "CyanIDE"
+                            :members '(load-project
+                                       silver-search-project
+                                       find-in-project
+                                       enable-view
+                                       disable-current-view)))
 
     (cyanide-menu-function-builder '(:id 'load-project
-                                         :display-name "Load a Project"
-                                         :func (lambda ()
-                                                 (interactive)
-                                                 (call-interactively
-                                                  'cyanide-load-project-prompt))))
+                                     :display-name "Load a Project"
+                                     :func 'cyanide-load-project-prompt))
 
     (cyanide-menu-function-builder '(:id 'silver-search-project
-                                         :display-name "Silver Search Project"
-                                         :func (lambda ()
-                                                 (interactive)
-                                                 (call-interactively
-                                                  'cyanide-ag-search))))
+                                     :display-name "Search string in Project"
+                                     :func 'cyanide-helm-ag))
 
     (cyanide-menu-function-builder '(:id 'find-in-project
-                                         :display-name "Find in Project"
-                                         :func (lambda ()
-                                                 (interactive)
-                                                 (call-interactively
-                                                  'cyanide-find-dired))))
+                                     :display-name "Find in Project"
+                                     :func 'cyanide-helm-find))
 
     (cyanide-menu-function-builder '(:id 'enable-view
-                                         :display-name "Enable a View"
-                                         :func (lambda ()
-                                                 (interactive)
-                                                 (call-interactively
-                                                  'cyanide-enable-view-prompt))))
+                                     :display-name "Enable a View"
+                                     :func 'cyanide-enable-view-prompt))
 
     (cyanide-menu-function-builder '(:id 'disable-current-view
-                                         :display-name "Disable Current View"
-                                         :func (lambda ()
-                                                 (interactive)
-                                                 (call-interactively
-                                                  'cyanide-disable-current-view))))
+                                     :display-name "Disable Current View"
+                                     :func 'cyanide-disable-current-view))
 
     ;; It is not enough to check whether cyanide-mode is initialized. At certain
     ;; points in the stack, for instance, right when starting a

@@ -44,8 +44,8 @@
       (define-key map (kbd "C-c c d") 'cyanide-disable-current-view)
       (define-key map (kbd "C-c c v") 'cyanide-enable-view-prompt)
       (define-key map (kbd "C-c c t") 'cyanide-task-prompt)
-      (define-key map (kbd "C-c c a") 'cyanide-ag-search)
-      (define-key map (kbd "C-c c f") 'cyanide-find-dired)) map))
+      (define-key map (kbd "C-c c a") 'cyanide-helm-ag)
+      (define-key map (kbd "C-c c f") 'cyanide-helm-find)) map))
 
 (define-minor-mode cyanide-mode
   "CyanIDE's Yet Another Non-IDE"  ; docstring

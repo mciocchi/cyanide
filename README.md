@@ -37,16 +37,22 @@ along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
     * emacs 25 or higher
 
-      Check whether this package is available from your linux distribution. If
-      not, you will need to follow the
-      [instructions](https://savannah.gnu.org/projects/emacs) to download the
-      source code of an official emacs 25 daily build. Instructions regarding
-      how to compile from source are located in the README of that project.
+      Check whether this package is available from your OS. If it is not, you
+      will need to follow the
+      [instructions](https://savannah.gnu.org/projects/emacs) to download emacs
+      directly.
 
-    * [ag.el](https://github.com/Wilfred/ag.el)
-      The emacs frontend for The Silver Searcher. Refer to
-      [ag.el.readthedocs.io](https://agel.readthedocs.io/en/latest/installation.html)
-      for the installation instructions of that project.
+    * helm
+
+      Installation instructions can be found here:
+
+      https://github.com/emacs-helm/helm/wiki#install
+
+    * helm-ag
+
+      Installation instructions can be found here:
+
+      https://github.com/syohex/emacs-helm-ag#installation
 
   * CyanIDE Install
 
@@ -195,9 +201,7 @@ along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
                                  (concat "/home/"
                                          "user/"
                                          "projects/"
-                                         "cyanide/"
-                                         "working-copy/"
-                                         "wip/"
+                                         "test-project/"
                                          "jail-test-project-start.sh")))))
 
 (cyanide-task-builder '(:id 'jail-stop
@@ -207,9 +211,7 @@ along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
                                  (concat "/home/"
                                          "user/"
                                          "projects/"
-                                         "cyanide/"
-                                         "working-copy/"
-                                         "wip/"
+                                         "test-project/"
                                          "jail-test-project-stop.sh")))))
 
 ;; I want to declare some other miscellaneous tasks that don't belong in either
@@ -299,8 +301,8 @@ along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
     "C-c c d" cyanide-disable-current-view
     "C-c c v" cyanide-enable-view-prompt
     "C-c c t" cyanide-task-prompt
-    "C-c c a" cyanide-ag-search
-    "C-c c f" cyanide-find-dired
+    "C-c c a" cyanide-helm-ag
+    "C-c c f" cyanide-helm-find
     ```
 
     These should be self-explanatory, but if you wish you may refer to the

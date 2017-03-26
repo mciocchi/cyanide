@@ -13,13 +13,20 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
-(defun cyanide-case-sensitive (re)
-  "Respect emacs defaults and determine whether cyanide
-   should attempt to match with case-sensitivity.
+(require 'cyanide-globals)
+(require 'cyanide-project)
+(require 'helm-files)
 
-   For more information, see `cyanide-case-sensitive-test'"
-  (or (let ((case-fold-search nil))
-        (string-match "[$.*[:upper:].*^]" re))
-      (not case-fold-search)))
+(defun cyanide-helm-find ()
+  """
+  Find file in current `cyanide-project' with `helm-find'.
+  """
+  (interactive)
+  (if cyanide-current-project
+      (helm-find-1 (cyanide-get-current-project-root))
+    ;; If no project is loaded, error out:
+    (error (concat "cyanide-current-project is nil. "
+                   "Cannot invoke cyanide-helm-find "
+                   "before loading a cyanide-project."))))
 
-(provide 'cyanide-case-sensitive)
+(provide 'cyanide-helm-find)
