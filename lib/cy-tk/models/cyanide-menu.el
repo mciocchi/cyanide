@@ -14,7 +14,6 @@
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
 (require 'cyanide-menu-item)
-(require 'cyanide-kwarg-utils)
 (require 'cyanide-globals)
 
 (defclass cyanide-menu (cyanide-menu-item)
@@ -23,13 +22,6 @@
             :initform '()))
   "Class that represents  a menu-panel and contains
    members which inherit from `cyanide-menu-item'.")
-
-(defun cyanide-menu-builder (kwargs)
-  "Constructor for `cyanide-menu'."
-  (cyanide-kwargobj-builder 'cyanide-menu
-                            kwargs
-                            '(:id :display-name)
-                            'cyanide-menu-item-collection))
 
 ;; vectorize:
 ;; if it's a menu-function, invoke vectorize on one item.

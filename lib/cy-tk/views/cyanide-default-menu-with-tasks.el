@@ -13,13 +13,13 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
-(cyanide-menu-builder '(:id 'cyanide-default-menu-with-tasks
-                        :display-name "CyanIDE"
-                        :members '(tasks
-                                   load-project
-                                   silver-search-project
-                                   find-in-project
-                                   enable-view
-                                   disable-current-view)))
+(cyanide-menu :id 'cyanide-default-menu-with-tasks
+              :display-name "CyanIDE"
+              :members '(tasks
+                         load-project
+                         silver-search-project
+                         find-in-project
+                         enable-view
+                         disable-current-view))
 
 (provide 'cyanide-default-menu-with-tasks)

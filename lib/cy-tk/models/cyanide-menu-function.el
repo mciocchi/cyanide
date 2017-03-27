@@ -14,20 +14,12 @@
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
 (require 'cyanide-menu-item)
-(require 'cyanide-kwarg-utils)
 
 (defclass cyanide-menu-function (cyanide-menu-item)
   ((func :initarg :func
          :type nil))
   "Class that represents functions stored in a
    `cyanide-menu'.")
-
-(defun cyanide-menu-function-builder (kwargs)
-  "Constructor for `cyanide-menu-function'."
-  (cyanide-kwargobj-builder 'cyanide-menu-function
-                            kwargs
-                            '(:id :display-name :func)
-                            'cyanide-menu-item-collection))
 
 ;; vectorize:
 ;; cast one string/function pair to a vector.

@@ -14,91 +14,22 @@
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
 (require 'cyanide-globals)
-(require 'cyanide-kwarg-utils)
-;;(require 'cyanide-view)
 (require 'cyanide-prompt)
+(require 'cyanide-identifiable)
+(require 'cyanide-nameable)
+(require 'cyanide-taskable)
+(require 'cyanide-hookable)
+(require 'cyanide-pathable)
+(require 'cyanide-viewable)
 
-(defun cyanide-project-builder (kwargs)
-  "Constructor for `cyanide-project'."
-  (cyanide-kwargobj-builder 'cyanide-project
-                            kwargs
-                            '(:id
-                              :display-name
-                              :default-view
-                              :project-root)
-                            'cyanide-project-collection))
-
-(defclass cyanide-identifiable ()
-  ((id :initarg :id
-       :initform nil
-       :type symbol)))
-
-(defclass cyanide-nameable ()
-  ((display-name :initarg :display-name
-                 :initform ""
-                 :type string)))
-
-(defclass cyanide-collectible (cyanide-identifiable)
-  ((collection :initarg :collection
-               :initform []
-               :type vector
-               :documentation
-               "Object that implements cyanide-collection."))
-  :abstract t)
-
-(defclass cyanide-hash-collectible (cyanide-collectible)
-  ())
-
-;; use a collection to collect all collections
-(defclass cyanide-collection (cyanide-identifiable)
-  ((implementation :initarg :implementation
-                   :initform nil
-                   :documentation
-                   "Object of arbitrary type: hashtable, list, vector, etc."))
-  :abstract t)
-
-(defclass cyanide-hash-collection (cyanide-collection)
-  ())
-
-(defmethod cyanide-add-to-collection ((coll cyanide-hash-collection)
-                                      elem)
-  (print "func 1")
-  (puthash (oref elem :id) elem (oref coll :implementation)))
-
-(defmethod cyanide-add-to-collection ((obj cyanide-collectible))
-  (print "func 2")
-  (cyanide-add-to-collection (oref obj :collection)
-                             obj))
-
-(defclass cyanide-project (cyanide-identifiable
+(defclass cyanide-project (eieio-instance-tracker
+                           cyanide-identifiable
                            cyanide-nameable
-                           cyanide-hash-collectible)
-  ((default-view  :initarg :default-view
-                  :type symbol
-                  :documentation
-                  "Default view at startup for a cyanide-project.")
-   (project-root  :initarg :project-root
-                  :initform ""
-                  :type string
-                  :documentation
-                  "Project root.")
-   (load-hook     :initarg :load-hook
-                  :type list
-                  :documentation
-                  "hook called at project load-time.")
-   (teardown-hook :initarg :teardown-hook
-                  :type list
-                  :documentation
-                  "hook called at project teardown.")
-   (tasks     :initarg :tasks
-              :type list
-              :documentation
-              "Jobs that can be launched to do
-               work on a cyanide-project.")))
-
-; to do: here is the problem
-(defmethod init ((proj cyanide-project))
-  (cyanide-add-to-collection proj))
+                           cyanide-pathable
+                           cyanide-viewable
+                           cyanide-hookable
+                           cyanide-taskable)
+  ((tracking-symbol :initform cyanide-project-collection)))
 
 (cl-defmethod cyanide-load-project ((proj cyanide-project))
   "Load a cyanide-project:
@@ -157,5 +88,7 @@
   Get property stored at key of `cyanide-current-project'.
   """
   `(oref (cyanide-get-current-project)  ,key))
+
+
 
 (provide 'cyanide-project)

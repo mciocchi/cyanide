@@ -33,33 +33,33 @@
     (require 'cyanide-misc-utils)
     (require 'cyanide-menu-utils)
 
-    (cyanide-menu-builder '(:id 'cyanide-default-menu
-                            :display-name "CyanIDE"
-                            :members '(load-project
-                                       silver-search-project
-                                       find-in-project
-                                       enable-view
-                                       disable-current-view)))
+    (cyanide-menu :id 'cyanide-default-menu
+                  :display-name "CyanIDE"
+                  :members '(load-project
+                             silver-search-project
+                             find-in-project
+                             enable-view
+                             disable-current-view))
 
-    (cyanide-menu-function-builder '(:id 'load-project
-                                     :display-name "Load a Project"
-                                     :func 'cyanide-load-project-prompt))
+    (cyanide-menu-function :id 'load-project
+                           :display-name "Load a Project"
+                           :func 'cyanide-load-project-prompt)
 
-    (cyanide-menu-function-builder '(:id 'silver-search-project
-                                     :display-name "Search string in Project"
-                                     :func 'cyanide-helm-ag))
+    (cyanide-menu-function :id 'silver-search-project
+                           :display-name "Search string in Project"
+                           :func 'cyanide-helm-ag)
 
-    (cyanide-menu-function-builder '(:id 'find-in-project
-                                     :display-name "Find in Project"
-                                     :func 'cyanide-helm-find))
+    (cyanide-menu-function :id 'find-in-project
+                           :display-name "Find in Project"
+                           :func 'cyanide-helm-find)
 
-    (cyanide-menu-function-builder '(:id 'enable-view
-                                     :display-name "Enable a View"
-                                     :func 'cyanide-enable-view-prompt))
+    (cyanide-menu-function :id 'enable-view
+                           :display-name "Enable a View"
+                           :func 'cyanide-enable-view-prompt)
 
-    (cyanide-menu-function-builder '(:id 'disable-current-view
-                                     :display-name "Disable Current View"
-                                     :func 'cyanide-disable-current-view))
+    (cyanide-menu-function :id 'disable-current-view
+                           :display-name "Disable Current View"
+                           :func 'cyanide-disable-current-view)
 
     ;; It is not enough to check whether cyanide-mode is initialized. At certain
     ;; points in the stack, for instance, right when starting a

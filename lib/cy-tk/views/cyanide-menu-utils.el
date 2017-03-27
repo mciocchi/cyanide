@@ -30,9 +30,9 @@
     (let ((members (oref project
                          :tasks)))
       (cyanide-delete-menu-object 'tasks)
-      (let ((menu (cyanide-menu-builder '(:id 'tasks
-                                          :display-name "Tasks"
-                                          :members members))))
+      (let ((menu (cyanide-menu :id 'tasks
+                                :display-name "Tasks"
+                                :members members)))
         menu))))
 
 (defun cyanide-delete-menu-object (menu-id)

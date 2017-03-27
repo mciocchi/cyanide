@@ -13,16 +13,10 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
-(require 'cyanide-identifiable)
-(require 'cyanide-nameable)
+(defclass cyanide-identifiable ()
+  ((id :initarg :id
+       :initform nil
+       :type symbol))
+  :abstract t)
 
-(defclass cyanide-menu-item (eieio-instance-tracker
-                             cyanide-identifiable
-                             cyanide-nameable)
-  ((tracking-symbol :initform cyanide-menu-item-collection))
-  :abstract t
-  :documentation
-  "Abstract class that provides functionality common
-   to both `cyanide-menu' and `cyanide-menu-function'.")
-
-(provide 'cyanide-menu-item)
+(provide 'cyanide-identifiable)
