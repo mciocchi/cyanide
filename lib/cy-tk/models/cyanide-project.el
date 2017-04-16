@@ -73,8 +73,8 @@
                      nil
                      1))))
 
-(defun cyanide-get-current-project-root ()
-  (cyanide-project-oref :project-root))
+(defun cyanide-get-current-project-path ()
+  (cyanide-project-oref :path))
 
 (defun cyanide-get-current-project ()
   """

@@ -23,7 +23,7 @@
   """
   (interactive)
   (if cyanide-current-project
-      (helm-ag (cyanide-get-current-project-root))
+      (helm-ag (cyanide-get-current-project-path))
     ;; If no project is loaded, error out:
     (error (concat "cyanide-current-project is nil. "
                    "Cannot invoke cyanide-helm-ag "

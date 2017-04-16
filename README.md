@@ -116,7 +116,7 @@ along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
    :display-name "Test Project"
    ; I want to "pop" into my default preferred view when this project is loaded
    :default-view 'cyanide-elisp-view
-   :project-root "/home/user/test-project"
+   :path "/home/user/test-project"
    ; functions to call at load time
    :load-hook '()
    ; List of functions to call at project teardown time. Using this generic
