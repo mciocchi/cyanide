@@ -13,11 +13,6 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
-(defvar cyanide-window-local-variables (make-hash-table :test 'equal))
-
-(defvar cyanide-treenodes '()
-  "This collection holds all cyanide-treenode objects.")
-
 (defvar cyanide-current-view nil
   "This var stores a symbol used by cyanide to determine
        what view it's currently in.")
