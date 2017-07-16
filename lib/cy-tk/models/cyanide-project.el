@@ -21,10 +21,12 @@
 (require 'cyanide-hookable)
 (require 'cyanide-pathable)
 (require 'cyanide-viewable)
+(require 'cyanide-describeable)
 
 (defclass cyanide-project (eieio-instance-tracker
                            cyanide-identifiable
                            cyanide-nameable
+                           cyanide-describeable
                            cyanide-pathable
                            cyanide-viewable
                            cyanide-hookable
