@@ -27,24 +27,4 @@
 (defun cyanide-arg-required (arg kwargs)
   (when (not (memq arg kwargs)) (cyanide-missing-arg-error arg)))
 
-(defun cyanide-kwargobj-builder (class
-                                 kwargs
-                                 &optional
-                                 required-kwargs
-                                 lst)
-  "Check arbitrary KWARGS and `cyanide-missing-arg-error' if
-       there exist any REQUIRED-KWARGS that are not present.
-       Construct object of class CLASS with KWARGS and
-       `add-to-list' LST if it is present."
-  (progn
-    (when required-kwargs
-      (mapcar
-       (lambda (required-kwarg)
-         (cyanide-arg-required required-kwarg kwargs))
-       required-kwargs))
-    (let ((obj (eval (cons class kwargs))))
-      (when lst
-        (add-to-list lst obj))
-      obj)))
-
 (provide 'cyanide-kwarg-utils)
