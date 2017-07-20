@@ -1,12 +1,13 @@
 ;;; cyanide.el --- CyanIDE's Yet Another Non-IDE
 ;;
-;; Copyright (C) 2015-2016 Matt Ciocchi <mciocchi@gmail.com>
+;; Copyright (C) 2015-2017 Matt Ciocchi <mciocchi@gmail.com>
 ;;
 ;; Author: Matt Ciocchi <mciocchi@gmail.com>
 ;; Created: 06 September 2015
-;; Version: 4.0
-;; Package-Requires: ((ag "0.47"))
-;; Keywords: project, window, buffer
+;; Package-Version: 20170729.1740
+;; Version: 6.0.0
+;; Package-Requires: ((emacs "25.1.1") (eieio "1.4") (helm "20170724.2137") (helm-ag "20170209.745"))
+;; Keywords: project, search, window, buffer, task
 ;;
 ;;; License:
 ;;
