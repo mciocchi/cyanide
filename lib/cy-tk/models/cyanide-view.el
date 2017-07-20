@@ -17,9 +17,11 @@
 (require 'cyanide-get-one-by-slot)
 (require 'cyanide-nameable)
 
-(defclass cyanide-view (cyanide-identifiable
+(defclass cyanide-view (eieio-instance-tracker
+                        cyanide-identifiable
                         cyanide-nameable)
-  (;; UI setup
+  ((tracking-symbol :initform cyanide-view-collection)
+   ;; UI setup
    (enable       :initarg :enable
                  :type function
                  :documentation "Enable this cyanide-view.")
@@ -50,16 +52,6 @@
                      'equal
                      nil
                      1))))
-
-(defun cyanide-view-builder (kwargs)
-  "Constructor for `cyanide-view'"
-  (cyanide-kwargobj-builder 'cyanide-view
-                            kwargs
-                            '(:id
-                              :display-name
-                              :enable
-                              :disable)
-                            'cyanide-view-collection))
 
 (defun cyanide-disable-current-view ()
   "Disable current cyanide-view."
