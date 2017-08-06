@@ -16,7 +16,11 @@
 (defclass cyanide-describeable ()
   ((description :initarg :description
                 :initform ""
-                :type string))
+                :type string
+                :documentation
+                "Brief description of this object instance."))
+  "Objects that inherit from `cyanide-describeable' provide a helpful
+:description field describing how the instance is intended to be used."
   :abstract t)
 
 (provide 'cyanide-describeable)

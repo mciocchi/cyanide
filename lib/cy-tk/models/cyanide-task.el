@@ -24,8 +24,7 @@
 (defclass cyanide-task (eieio-instance-tracker
                         cyanide-menu-function)
   ((tracking-symbol :initform cyanide-menu-item-collection))
-  "Class that represents repetitive jobs that need to be
-       manually executed.")
+  "Class that represents jobs that need to be manually executed.")
 
 (defun cyanide-task-prompt ()
   "Prompt user for task to execute and execute it."

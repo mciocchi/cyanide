@@ -16,7 +16,11 @@
 (defclass cyanide-nameable ()
   ((display-name :initarg :display-name
                  :initform ""
-                 :type string))
+                 :type string
+                 :documentation
+                 "Display name for a `cyanide-nameable' object."))
+  "Objects that inherit `cyanide-nameable' will be listed by their display name
+in menus and prompts, rather than their Unique ID or object identity."
   :abstract t)
 
 (provide 'cyanide-nameable)

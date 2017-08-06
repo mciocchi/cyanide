@@ -17,8 +17,9 @@
   ((tasks :initarg :tasks
           :type list
           :documentation
-          "Jobs that can be launched to do work on a
-           cyanide-project."))
+          "List of jobs that can be executed to perform units of work."))
+  "Objects that inherit from `cyanide-taskable' contain a list of tasks related
+to the parent object."
   :abstract t)
 
 (provide 'cyanide-taskable)

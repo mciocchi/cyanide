@@ -19,6 +19,8 @@
          :type string
          :documentation
          "Directory path."))
+  "Objects that inherit from `cyanide-pathable' possess a :path reference to
+local resources on disk."
   :abstract t)
 
 (provide 'cyanide-pathable)

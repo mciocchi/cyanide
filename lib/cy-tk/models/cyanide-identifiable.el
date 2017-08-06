@@ -16,7 +16,10 @@
 (defclass cyanide-identifiable ()
   ((id :initarg :id
        :initform nil
-       :type symbol))
+       :type symbol
+       :documentation
+       "Unique ID used to refer to a `cyanide-identifiable' object."))
+  "Objects that inherit from `cyanide-identifiable' possess a Unique ID field."
   :abstract t)
 
 (provide 'cyanide-identifiable)
