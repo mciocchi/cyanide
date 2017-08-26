@@ -31,7 +31,9 @@
                            cyanide-viewable
                            cyanide-hookable
                            cyanide-taskable)
-  ((tracking-symbol :initform cyanide-project-collection)))
+  ((tracking-symbol :initform cyanide-project-collection))
+  "Total representation of a project, including its path on the filesystem,
+  name, views, and hooks to toggle configurations at project load time.")
 
 (cl-defmethod cyanide-load-project ((proj cyanide-project))
   "Load a cyanide-project:

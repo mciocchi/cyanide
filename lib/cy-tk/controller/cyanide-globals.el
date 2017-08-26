@@ -21,9 +21,6 @@
   "This var stores a symbol used by cyanide to determine
        what project it's currently in.")
 
-(defvar cyanide-verbose nil
-  "non-nil if cyanide should use verbose logging.")
-
 (defvar cyanide-view-collection '()
   "cyanide-views are all stored in this list.")
 
