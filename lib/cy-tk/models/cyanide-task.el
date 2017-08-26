@@ -14,7 +14,6 @@
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
 (require 'cyanide-menu-function)
-(require 'cyanide-kwarg-utils)
 (require 'cyanide-globals)
 (require 'cyanide-get-one-by-slot)
 (require 'cyanide-prompt)

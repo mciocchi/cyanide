@@ -96,4 +96,16 @@
                                                       (eval `(oref x ,slot))
                                                       x)) l))))
 
+(defun cyanide-missing-arg-error (arg)
+  (error (concat "Required argument"
+                 " "
+                 (format "%s" arg)
+                 " "
+                 "missing from"
+                 " "
+                 (format "%s" kwargs))))
+
+(defun cyanide-arg-required (arg kwargs)
+  (when (not (memq arg kwargs)) (cyanide-missing-arg-error arg)))
+
 (provide 'cyanide-misc-utils)
