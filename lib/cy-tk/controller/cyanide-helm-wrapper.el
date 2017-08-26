@@ -15,6 +15,7 @@
 
 (require 'cyanide-globals)
 (require 'cyanide-project)
+(require 'helm-ag)
 (require 'helm-files)
 
 (defun cyanide-helm-find ()
@@ -29,4 +30,16 @@
                    "Cannot invoke cyanide-helm-find "
                    "before loading a cyanide-project."))))
 
-(provide 'cyanide-helm-find)
+(defun cyanide-helm-ag ()
+  """
+  Find string in current `cyanide-project' with `helm-ag'.
+  """
+  (interactive)
+  (if cyanide-current-project
+      (helm-ag (cyanide-get-current-project-path))
+    ;; If no project is loaded, error out:
+    (error (concat "cyanide-current-project is nil. "
+                   "Cannot invoke cyanide-helm-ag "
+                   "before loading a cyanide-project."))))
+
+(provide 'cyanide-helm-wrapper)

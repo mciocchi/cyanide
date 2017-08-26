@@ -29,8 +29,7 @@
     (require 'cyanide-default-view)
     (require 'cyanide-elisp-view)
     (require 'cyanide-minimal-view)
-    (require 'cyanide-helm-ag)
-    (require 'cyanide-helm-find)
+    (require 'cyanide-helm-wrapper)
     (require 'cyanide-misc-utils)
     (require 'cyanide-menu-utils)
 
