@@ -18,11 +18,13 @@
 (require 'cyanide-globals)
 (require 'cyanide-get-one-by-slot)
 (require 'cyanide-prompt)
+(require 'cyanide-describeable)
 
 ; Tasks are nothing more than cyanide-menu-functions for now, but it is
 ; likely that they will need to provide additional functionality soon.
 (defclass cyanide-task (eieio-instance-tracker
-                        cyanide-menu-function)
+                        cyanide-menu-function
+                        cyanide-describeable)
   ((tracking-symbol :initform cyanide-menu-item-collection))
   "Class that represents jobs that need to be manually executed.")
 
