@@ -90,9 +90,7 @@
 (let ((default-directory user-emacs-directory))
   (normal-top-level-add-subdirs-to-load-path))
 
-;; Import dependencies first, and then cyanIDE
-(require 'eieio)
-(require 'eieio-base)
+;; Import cyanIDE
 (require 'cyanide)
 
 ;; Enable CyanIDE global-minor-mode on startup.

@@ -16,6 +16,8 @@
 (defun cyanide-main ()
   (progn
 
+    (require 'eieio)
+    (require 'eieio-base)
     (require 'cyanide-globals)
     (require 'cyanide-kwarg-utils)
     (require 'cyanide-project)
