@@ -190,6 +190,7 @@
     "C-c c t" cyanide-task-prompt
     "C-c c a" cyanide-helm-ag
     "C-c c f" cyanide-helm-find
+    "C-c c o" cyanide-helm-occur
     ```
 
     These should be self-explanatory, but if you wish, you may refer to the

@@ -46,7 +46,8 @@
       (define-key map (kbd "C-c c v") 'cyanide-enable-view-prompt)
       (define-key map (kbd "C-c c t") 'cyanide-task-prompt)
       (define-key map (kbd "C-c c a") 'cyanide-helm-ag)
-      (define-key map (kbd "C-c c f") 'cyanide-helm-find)) map)
+      (define-key map (kbd "C-c c f") 'cyanide-helm-find)
+      (define-key map (kbd "C-c c o") 'helm-occur)) map)
   "Keybindings for CyanIDE")
 
 (define-minor-mode cyanide-mode
