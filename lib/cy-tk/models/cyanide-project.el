@@ -52,11 +52,9 @@
                                                 cyanide-project-collection
                                                 ":id"
                                                 'eq)))
-    (when previous-proj (cyanide-hook-executor
-                         (oref previous-proj :teardown-hook)))
+    (when previous-proj (run-teardown-hook previous-proj))
     (setq cyanide-current-project sym)
-    (when load-hook
-      (cyanide-hook-executor load-hook))
+    (run-load-hook proj)
     (when default-view (funcall (oref default-view :enable)))
     nil))
 
