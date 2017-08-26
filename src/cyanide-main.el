@@ -31,7 +31,6 @@
     (require 'cyanide-minimal-view)
     (require 'cyanide-helm-ag)
     (require 'cyanide-helm-find)
-    (require 'cyanide-get-many-by-slot)
     (require 'cyanide-misc-utils)
     (require 'cyanide-menu-utils)
 

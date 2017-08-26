@@ -84,4 +84,16 @@
           (setq new-plst (append new-plst `(,elem)))))) ; else
     new-plst))
 
+(defun cyanide-get-many-by-slot (sym lst stringified-slot equality-func)
+  "Return all objects from LST where SYM matches with
+       EQUALITY-FUNC the value stored in STRINGIFIED-SLOT."
+  (let ((res '())
+        (l lst)
+        (slot (intern stringified-slot)))
+    (cyanide-filter (mapcar (lambda (x)
+                              (cyanide-return-if-true equality-func
+                                                      sym
+                                                      (eval `(oref x ,slot))
+                                                      x)) l))))
+
 (provide 'cyanide-misc-utils)
