@@ -14,4 +14,5 @@
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
 (require 'cyanide-hookable-test)
+(require 'cyanide-view-test)
 (provide 'cyanide-tests)

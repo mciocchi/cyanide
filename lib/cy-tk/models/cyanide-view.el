@@ -16,11 +16,15 @@
 (require 'cyanide-globals)
 (require 'cyanide-get-one-by-slot)
 (require 'cyanide-nameable)
+(require 'cyanide-hookable)
 
 (defclass cyanide-view (eieio-instance-tracker
                         cyanide-identifiable
-                        cyanide-nameable)
+                        cyanide-nameable
+                        cyanide-hookable
+                        cyanide-describeable)
   ((tracking-symbol :initform cyanide-view-collection)
+
    ;; UI setup
    (enable       :initarg :enable
                  :type function
@@ -30,6 +34,32 @@
                  :type function
                  :documentation "Disable this cyanide-view."))
   "Definition of a cyanide-view configuration.")
+
+(cl-defmethod enable ((view cyanide-view))
+  (let ((id (oref view :id)))
+    (push id cyanide-current-views)
+    (run-load-hook view)))
+
+(cl-defmethod disable ((view cyanide-view))
+  (let ((id (oref view :id)))
+    (if (equal id (car cyanide-current-views))
+        (progn
+          (run-teardown-hook view)
+          (pop cyanide-current-views))
+      (error (concat "Can not tear down view- other views have been enabled "
+                     "on top of it, you must disable them first!")))))
+
+(defun cyanide-disable-current-view ()
+  (let ((id (car cyanide-current-views)))
+    (when id
+      (let ((view (cyanide-get-by-id id cyanide-view-collection)))
+        (if view
+            (disable view)
+          (error "Invalid id from cyanide-current-views!"))))))
+
+(defun cyanide-disable-all-views ()
+  (while (bound-and-true-p cyanide-current-views)
+    (cyanide-disable-current-view)))
 
 ;; Get quoted function from cyanide-view and execute.
 (cl-defmethod cyanide-call-enable ((view cyanide-view))
@@ -53,33 +83,11 @@
                      nil
                      1))))
 
-(defun cyanide-disable-current-view ()
-  "Disable current cyanide-view."
-  (interactive
-   (cyanide-disable-current-view-1)))
-
-(defun cyanide-disable-current-view-1 ()
-  "Disable current cyanide-view."
-   (progn
-     (when (not cyanide-current-view)
-       (error (concat "Cannot disable cyanide-current-view "
-                      "if cyanide-current-view is nil")))
-     (cyanide-call-disable
-      (cyanide-get-one-by-slot cyanide-current-view
-                               cyanide-view-collection
-                               ":id"
-                               'eq))))
-
-(defun cyanide-disable-current-view-if-exists ()
-  (when cyanide-current-view
-    (cyanide-disable-current-view)))
-
 (defun cyanide-default-disabler ()
   (progn
     (cyanide-windows-dedicated nil)
     (cyanide-windows-locked nil)
     (delete-other-windows)
-    (setq cyanide-current-view nil)
     ;; Revert window settings back to default.
     (if split-height-threshold-orig
         (setq split-height-threshold split-height-threshold-orig))

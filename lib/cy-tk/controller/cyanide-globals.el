@@ -13,9 +13,8 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
-(defvar cyanide-current-view nil
-  "This var stores a symbol used by cyanide to determine
-       what view it's currently in.")
+(defvar cyanide-current-views nil
+  "List of views active in cyanide at any given time.")
 
 (defvar cyanide-current-project nil
   "This var stores a symbol used by cyanide to determine

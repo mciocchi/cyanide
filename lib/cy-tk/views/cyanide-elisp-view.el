@@ -19,10 +19,7 @@
               :disable 'cyanide-default-disabler
               :enable (lambda nil
                         (progn
-                          (when cyanide-current-view
-                            (call-interactively 'cyanide-disable-current-view))
-                          (setq cyanide-current-view
-                                'cyanide-elisp-view)
+                          (cyanide-disable-all-views)
                           (when cyanide-current-project
                             (setq frame-title-format
                                   (oref

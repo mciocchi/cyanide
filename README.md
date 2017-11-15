@@ -146,18 +146,21 @@
     or executing a diff, views can even be enabled from inside a corresponding
     cyanide-task.
 
-    It should also be noted that views are additive: enabling one will set
-    cyanide-current-view to the value of its :id, but will not necessarily
-    disable the previous view unless users explicitly configure it to do so. By
-    implication, this property of views allows them to "stack up" and delegate
+    It should also be noted that views are additive: enabling one will add its
+    :id to the cyanide-current-views list, but will not necessarily disable the
+    previous view unless users explicitly configure it to do so. By implication,
+    this property of views allows them to "stack up" and delegate
     responsibility. For instance: in a simple setup, a view might enable two
     "subviews," one for window A, and one for window B.
 
+    When views are disabled, they are popped off of the cyanide-current-views
+    list and disabled in order of the most to least recently enabled. There are
+    currently two methods to disable views: cyanide-disable-current-view, which
+    only disables the most recent view, and cyanide-disable-all-views.
+
     The sky is the limit with views, but users are advised to keep it simple, as
     interactions can happen when enabling multiple views at the same time that
-    were not explicitly designed to work together. In the upcoming release of
-    CyanIDE, the cyanide-current-view global variable will be replaced by a
-    linked list that better represents the "stacking" behavior of views.
+    were not explicitly designed to work together.
 
     Users that have written views, tasks, and other extensions that they find
     particularly useful are encouraged to submit them for potential inclusion in
