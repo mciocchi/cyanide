@@ -19,7 +19,7 @@
 (require 'cyanide-nameable)
 (require 'cyanide-taskable)
 (require 'cyanide-hookable)
-(require 'cyanide-pathable)
+(require 'cyanide-pathable-dfd)
 (require 'cyanide-viewable)
 (require 'cyanide-describeable)
 
@@ -27,7 +27,7 @@
                            cyanide-identifiable
                            cyanide-nameable
                            cyanide-describeable
-                           cyanide-pathable
+                           cyanide-pathable-dfd
                            cyanide-viewable
                            cyanide-hookable
                            cyanide-taskable)
