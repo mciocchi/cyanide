@@ -31,6 +31,7 @@
     (require 'cyanide-helm-wrapper)
     (require 'cyanide-misc-utils)
     (require 'cyanide-menu-utils)
+    (require 'cyanide-loader)
 
     (cyanide-menu :id 'cyanide-default-menu
                   :display-name "CyanIDE"
@@ -85,5 +86,8 @@
                               'eq)
                              'cyanide-default-menu
                              cyanide-mode-map)
-        (setq cyanide-menu-initialized t)))))
+        (setq cyanide-menu-initialized t)))
+
+    (cyanide-import-projects-from-toplevel)))
+
 (provide 'cyanide-main)
