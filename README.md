@@ -3,12 +3,12 @@
 * About
 
   CyanIDE is a global minor mode that provides an extensible development
-  environment which runs on top of emacs. It provides functionality for
-  project-aware searching and browsing of java, perl, python, clojure, ruby,
-  javascript, and lisp code. I have taken pains to make CyanIDE fast and easy to
-  use. It boasts a near-instant load time, and thanks to integration with [The
-  Silver Searcher](https://github.com/ggreer/the_silver_searcher), search times
-  are also nearly instant, even in projects with thousands of files.
+  environment for emacs. It provides functionality for project-aware searching
+  and browsing of code for all popular programming languages. I have taken pains
+  to make CyanIDE fast and easy to use. It boasts a near-instant load time, and
+  thanks to integration with
+  [The Silver Searcher](https://github.com/ggreer/the_silver_searcher), search
+  times are also nearly instant, even in projects with thousands of files.
 
   I decided to write CyanIDE because I was looking for an emacs mode to do the
   same thing, but could not find one with sensible defaults that was easy to
@@ -62,8 +62,8 @@
     this manner may initially appear to be simple and "user friendly," but in
     actuality, it can serve to obscure what the IDE is actually doing.
 
-    Worse than that, when the time comes to "export" project structure XML from
-    a traditional IDE, perhaps to port to a new machine, or to share with a
+    Worse still, when the time comes to "export" project structure XML from a
+    traditional IDE, perhaps to port to a new machine, or to share with a
     colleague, it never seems to work 100% correctly. At this point, users of
     traditional IDEs usually must resort to painstakingly executing a laundry
     list of GUI operations in order to restore their environment back to its
@@ -86,6 +86,8 @@
     require a project to be loaded.
 
 ```lisp
+;; init.el
+
 ;; Make files in dot emacs config directory available to be imported
 (let ((default-directory user-emacs-directory))
   (normal-top-level-add-subdirs-to-load-path))
@@ -96,13 +98,19 @@
 ;; Enable CyanIDE global-minor-mode on startup.
 (setq-default cyanide-mode t)
 
-;; Define a new project
+;; Allow CyanIDE to discover .cy.el project structure files like this:
+;; ~/projects/demo-project-2/.cy.el
+;; ~/projects/demo-project-3/.cy.el
+;; ...
+(setq cyanide-project-toplevel-directories '("~/projects"))
+
+;; Define a new project inside init.el
 (cyanide-project :id 'demo-project
                  :display-name "Demo Project"
                  :description "Demo project for CyanIDE"
                  :path "~/projects/demo-project"
                  :default-view 'cyanide-minimal-view
-                 :load-hook '()
+                 :load-hook '(demo-project-load-hook)
                  :teardown-hook '()
                  :tasks '(hello-world-task))
 
@@ -111,13 +119,62 @@
               :display-name "Hello World"
               :func 'hello-world)
 
-(defun hello-world ()
-  (interactive
-   (async-shell-command "echo 'Hello, world!'")))
+;; Define a hello-world function which is only available after our Demo Project
+;; has been loaded
+(defun demo-project-load-hook ()
+  (defun hello-world ()
+    (interactive
+      (async-shell-command "echo 'Hello, world!'"))))
 ```
 
-    Use the example above to map other projects into cyanide. Tasks, Views, and
-    Projects are dynamically pulled into emacs at load time like this:
+  * .cy.el Project Files
+
+    CyanIDE project structures like the examples above may be mapped via two
+    different methods. They may be mapped either in the users .init.el, or in
+    .cy.el files placed inside the project root. There are two vars which
+    control how CyanIDE checks for these project configuration files:
+    "cyanide-project-toplevel-directories" and
+    "cyanide-project-config-file-name."
+
+    "cyanide-project-toplevel-directories" is a list of paths which CyanIDE will
+    scan for project directories containing .cy.el project structure files.
+
+    At startup time, CyanIDE will scan all directories, to a depth of one,
+    within each toplevel directory path to determine whether they contain .cy.el
+    files. Any directory found which contains a .cy.el file will be considered
+    by CyanIDE to be a project, and CyanIDE will attempt to evaluate the .cy.el
+    file contained therein.
+
+    It should be noted that a .cy.el file may not necessarily contain a
+    cyanide-project definition, and in fact it may contain any arbitrary elisp
+    code. Users should therefore carefully audit .cy.el files imported from
+    third-party sources before loading them.
+
+    "cyanide-project-config-file-name" is a var which CyanIDE uses to deterimine
+    what name to use to search for project structure files. It defaults to
+    ".cy.el," but users may opt to choose a different name.
+
+```lisp
+;; ~/projects/demo-project-2/.cy.el
+
+;; When defining a project inside of a .cy.el file, it is not necessary to
+;; provide a project :path. CyanIDE will infer the :path from the location of
+;; the .cy.el file which is being loaded:
+(cyanide-project :id 'demo-project-2
+                 :display-name "Demo Project"
+                 :description "Demo project for CyanIDE"
+;;               :path "~/projects/demo-project-2"
+                 :default-view 'cyanide-minimal-view
+                 :load-hook '(demo-project-2-load-hook)
+                 :teardown-hook '()
+                 :tasks '(hello-world-task))
+;; ...
+
+```
+
+    The examples above can be used as a guide to map other projects into
+    CyanIDE. Tasks, Views, and Projects are dynamically pulled into emacs at
+    project load time like this:
 
 ![Load Project](http://imgur.com/3aKGWZ9 "Load Project Prompt")
 
@@ -128,7 +185,7 @@
   * Views
 
     CyanIDE is roughly based upon a model-view-controller design. Projects are
-    modeled by the user in their init.el, just like in the example
+    modeled by the user in their init.el, just like the examples
     above. cyanide.el controls bootstrap logic and high-level functions. Views
     are objects that manage setup and teardown of different configurations,
     including buffer and window arrangements.
@@ -154,9 +211,9 @@
     "subviews," one for window A, and one for window B.
 
     When views are disabled, they are popped off of the cyanide-current-views
-    list and disabled in order of the most to least recently enabled. There are
-    currently two methods to disable views: cyanide-disable-current-view, which
-    only disables the most recent view, and cyanide-disable-all-views.
+    list and disabled in "last in, first out" order. There are currently two
+    methods to disable views: cyanide-disable-current-view, which only disables
+    the most recent view, and cyanide-disable-all-views.
 
     The sky is the limit with views, but users are advised to keep it simple, as
     interactions can happen when enabling multiple views at the same time that
@@ -175,7 +232,7 @@
 
     Tasks are constructed with a :func property which can store any emacs lisp
     function, including async-shell-command, which allows CyanIDE users to
-    compile and deploy their code using whatever build tool they prefer.
+    compile and deploy their code using whatever build tools they prefer.
 
   * Keybindings
 
