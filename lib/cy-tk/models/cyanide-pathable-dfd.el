@@ -21,7 +21,6 @@ otherwise return `default-directory'."
   (let ((dir default-directory))
     (when load-file-name
       (setq dir (file-name-directory load-file-name)))
-    (print (concat "cyanide-default-pathable-directory: " dir))
     dir))
 
 (defclass cyanide-pathable-dfd (cyanide-pathable)
