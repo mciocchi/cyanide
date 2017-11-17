@@ -23,17 +23,6 @@
   (when (funcall test sym1 sym2)
     retval))
 
-(defun cyanide-hook-executor (hooks)
-  "Execute hook functions in HOOKS with some extra
-   logging."
-  (let ((f (lambda (func)
-             (progn
-               (message (concat "cyanide-hook-executor calling"
-                                " "
-                                (format "%s" func)))
-               (funcall func)))))
-    (mapcar f hooks)))
-
 (defun cyanide-list-display-names (lst)
   "Return a list of :display-name slots from an
    arbitrary LST of objects."

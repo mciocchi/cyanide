@@ -25,7 +25,6 @@
     (require 'cyanide-menu-function)
     (require 'cyanide-task)
     (require 'cyanide-default-menu-with-tasks)
-    (require 'cyanide-default-view)
     (require 'cyanide-elisp-view)
     (require 'cyanide-minimal-view)
     (require 'cyanide-helm-wrapper)

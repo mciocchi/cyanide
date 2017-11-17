@@ -23,16 +23,7 @@
                         cyanide-nameable
                         cyanide-hookable
                         cyanide-describeable)
-  ((tracking-symbol :initform cyanide-view-collection)
-
-   ;; UI setup
-   (enable       :initarg :enable
-                 :type function
-                 :documentation "Enable this cyanide-view.")
-   ;; Teardown
-   (disable      :initarg :disable
-                 :type function
-                 :documentation "Disable this cyanide-view."))
+  ((tracking-symbol :initform cyanide-view-collection))
   "Definition of a cyanide-view configuration.")
 
 (cl-defmethod enable ((view cyanide-view))
@@ -50,31 +41,25 @@
                      "on top of it, you must disable them first!")))))
 
 (defun cyanide-disable-current-view ()
-  (let ((id (car cyanide-current-views)))
-    (when id
-      (let ((view (cyanide-get-by-id id cyanide-view-collection)))
-        (if view
-            (disable view)
-          (error "Invalid id from cyanide-current-views!"))))))
+  (interactive
+   (let ((id (car cyanide-current-views)))
+     (when id
+       (let ((view (cyanide-get-by-id id cyanide-view-collection)))
+         (if view
+             (disable view)
+           (error "Invalid id from cyanide-current-views!"))))
+     nil)))
 
 (defun cyanide-disable-all-views ()
-  (while (bound-and-true-p cyanide-current-views)
-    (cyanide-disable-current-view)))
-
-;; Get quoted function from cyanide-view and execute.
-(cl-defmethod cyanide-call-enable ((view cyanide-view))
-  "Enable a cyanide-view."
-  (funcall (oref view enable)))
-
-(cl-defmethod cyanide-call-disable ((view cyanide-view))
-  "Disable a cyanide-view."
-  (funcall (oref view disable)))
+  (interactive
+   (while (bound-and-true-p cyanide-current-views)
+     (call-interactively 'cyanide-disable-current-view))))
 
 (defun cyanide-enable-view-prompt ()
   "Prompt user to enable a cyanide-view, and then enable it."
   (interactive
    (let ((view-names (cyanide-list-display-names cyanide-view-collection)))
-     (cyanide-prompt 'cyanide-call-enable
+     (cyanide-prompt 'enable
                      "Enable view (tab for completion): "
                      view-names
                      cyanide-view-collection
@@ -89,12 +74,13 @@
     (cyanide-windows-locked nil)
     (delete-other-windows)
     ;; Revert window settings back to default.
-    (if split-height-threshold-orig
+    (if (bound-and-true-p split-height-threshold-orig)
         (setq split-height-threshold split-height-threshold-orig))
-    (if split-width-threshold
+    (if (bound-and-true-p split-width-threshold)
         (setq split-width-threshold split-width-threshold-orig))
     (cyanide-delete-menu-object 'tasks)
-    nil))
+    nil)
+)
 
 (defun cyanide-windows-locked (lock-arg &optional minibuf all-frames)
   "Set window locking for all windows in the current frame.

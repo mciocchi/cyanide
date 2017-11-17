@@ -52,9 +52,9 @@ just as easily stripped away on an ad-hoc basis."
 (defmacro call-hooks-on-object-property (obj prop)
   (let ((f (lambda (func)
              (progn
-               (message (concat "cyanide-hook-executor calling"
-                                " "
-                                (format "%s" func)))
+               ;; (message (concat "cyanide-hook-executor calling"
+               ;;                  " "
+               ;;                  (format "%s" func)))
                (funcall func)))))
     `(mapcar ,f (oref ,obj ,prop))))
 

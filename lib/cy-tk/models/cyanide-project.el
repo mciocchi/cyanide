@@ -43,19 +43,21 @@
    3) if `cyanide-current-project' has a load-hook, execute it.
    4) if `cyanide-current-project' has a default-view, enable it"
   (let ((load-hook (oref proj load-hook))
-        (default-view (cyanide-get-one-by-slot (oref proj default-view)
-                                               cyanide-view-collection
-                                               ":id"
-                                               'eq))
+        (default-view nil)
         (sym (oref proj :id))
         (previous-proj (cyanide-get-one-by-slot cyanide-current-project
                                                 cyanide-project-collection
                                                 ":id"
                                                 'eq)))
+    (when (slot-boundp proj :default-view)
+      (setq default-view (cyanide-get-one-by-slot (oref proj :default-view)
+                                                  cyanide-view-collection
+                                                  ":id"
+                                                  'eq)))
     (when previous-proj (run-teardown-hook previous-proj))
     (setq cyanide-current-project sym)
     (run-load-hook proj)
-    (when default-view (funcall (oref default-view :enable)))
+    (when default-view (enable default-view))
     nil))
 
 (defun cyanide-load-project-prompt ()

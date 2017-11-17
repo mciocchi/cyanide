@@ -190,10 +190,10 @@
     are objects that manage setup and teardown of different configurations,
     including buffer and window arrangements.
 
-    Currently, only cyanide-minimal-view, cyanide-elisp-view and
-    cyanide-default-view are available. To stick with standard emacs behavior
-    and avoid re-arranging windows at load-time, use cyanide-minimal-view, which
-    does not do anything else other than adding project tasks to the menu-bar.
+    Currently, only cyanide-minimal-view and cyanide-elisp-view and are
+    available by default. To stick with standard emacs behavior and avoid
+    re-arranging windows at load-time, use cyanide-minimal-view, which does not
+    do anything else other than adding project tasks to the menu-bar.
 
     If users prefer a certain window and buffer arrangement for a specific
     project, they need only define it and map it to the :default-view of their
