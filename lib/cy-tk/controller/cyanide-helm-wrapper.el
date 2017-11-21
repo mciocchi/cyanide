@@ -24,8 +24,8 @@
   """
   (interactive)
   (if cyanide-current-project
-      (helm-find-1 (cyanide-get-current-project-path))
-    ;; If no project is loaded, error out:
+      (let ((default-directory (cyanide-get-current-project-path)))
+        (helm-find nil))
     (error (concat "cyanide-current-project is nil. "
                    "Cannot invoke cyanide-helm-find "
                    "before loading a cyanide-project."))))
