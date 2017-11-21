@@ -60,23 +60,13 @@
                            :display-name "Disable Current View"
                            :func 'cyanide-disable-current-view)
 
-    ;; It is not enough to check whether cyanide-mode is initialized. At certain
-    ;; points in the stack, for instance, right when starting a
-    ;; global-minor-mode at init time, before the user actually does anything,
-    ;; the mode will still be set to nil, even after cyanide-mode has already
-    ;; explicitly been enabled. When the user first interacts with the UI, at
-    ;; that point the mode switches to t. This appears to be an issue with emacs
-    ;; global minor modes and I am opening a bug report. In the meantime we need
-    ;; a var as a guard here that does not suffer from the same flakiness.
-    (defvar cyanide-menu-initialized nil
-      "This is an internal variable used by CyanIDE and
-       should not be used by anything except CyanIDE. When
-       `cyanide-menu-initialized' is nil, CyanIDE will
-       attempt to render the CyanIDE menu, at which point
-       `cyanide-menu-initialized' will be set to t to
-       prevent unnecessary GUI re-rendering.")
+    (defvar cyanide-initialized nil
+      "This is an internal variable used by CyanIDE and should not be used by
+      anything except CyanIDE. When `cyanide-initialized' is nil, CyanIDE will
+      attempt to render the CyanIDE menu, at which point `cyanide-initialized'
+      will be set to t to prevent unnecessary GUI re-rendering.")
 
-    (when (not cyanide-menu-initialized)
+    (when (not cyanide-initialized)
       (progn
         (cyanide-menu-render (cyanide-get-one-by-slot
                               'cyanide-default-menu
@@ -85,8 +75,7 @@
                               'eq)
                              'cyanide-default-menu
                              cyanide-mode-map)
-        (setq cyanide-menu-initialized t)))
-
-    (cyanide-import-projects-from-toplevel)))
+        (cyanide-load-project-dotfiles)
+        (setq cyanide-initialized t)))))
 
 (provide 'cyanide-main)

@@ -16,6 +16,7 @@
 (require 'cyanide-globals)
 
 (defun cyanide-try-load-dotfile (dotfile memo)
+  "Try to load elisp file at long path DOTFILE. Catch and report any errors."
   (condition-case err
       (load dotfile)
     ('error (message (concat "error while loading dotfile: "
@@ -24,6 +25,9 @@
                              (format "%s" err))))))
 
 (defun cyanide-load-toplevel (memo toplevel)
+  "Iterate over subdirectories of target TOPLEVEL path. If the subdirectory
+  contains a file named `cyanide-project-config-file-name', evaluate the file
+  with `cyanide-try-load-dotfile'"
   (if (and (file-exists-p toplevel)
              (directory-name-p toplevel))
     (let ((memo-and-subdirs (cons memo (directory-files toplevel))))
@@ -37,9 +41,6 @@
                                            subdir
                                            "/"
                                            cyanide-project-config-file-name)))
-                  ;; also check for dupe project ids at project construction
-                  ;; time, throw away and raise alert message if one already
-                  ;; exists. This should be part of cyanide-identifiable
                   (cyanide-try-load-dotfile (concat
                                              toplevel
                                              subdir
@@ -52,34 +53,11 @@
     (message (concat "could not load projects from toplevel which is not a "
                      "directory: " toplevel))))
 
-(defun cyanide-load-dotfiles ()
+(defun cyanide-load-project-dotfiles ()
+  "Load all files of `cyanide-project-config-file-name' from project directories
+  in `cyanide-project-toplevel-directories'."
   (let ((memo-and-toplevels (cons '() cyanide-project-toplevel-directories)))
     (reduce (lambda (memo elt) (cyanide-load-toplevel memo elt))
             memo-and-toplevels)))
-
-(defun cyanide-get-project-directories-from-toplevel ()
-  (let ((project-directories '()))
-    (mapcar (lambda (toplevel)
-              (mapcar (lambda (dir)
-                        (when (and (file-directory-p (concat toplevel dir))
-                                   (not (equal "." dir))
-                                   (not (equal ".." dir)))
-                          (push (concat toplevel dir) project-directories)))
-                      (directory-files toplevel)))
-            cyanide-project-toplevel-directories)
-    project-directories))
-
-(defun cyanide-import-projects-from-toplevel ()
-  (mapcar (lambda (dir)
-            (when (and (file-exists-p dir)
-                       (file-exists-p (concat
-                                       dir
-                                       "/"
-                                       cyanide-project-config-file-name)))
-              (load (concat
-                     dir
-                     "/"
-                     cyanide-project-config-file-name))))
-          (cyanide-get-project-directories-from-toplevel)))
 
 (provide 'cyanide-loader)
