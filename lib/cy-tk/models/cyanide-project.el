@@ -22,6 +22,7 @@
 (require 'cyanide-pathable-dfd)
 (require 'cyanide-viewable)
 (require 'cyanide-describeable)
+(require 'cyanide-crypto)
 
 (defclass cyanide-project (eieio-instance-tracker
                            cyanide-identifiable
@@ -91,8 +92,117 @@
   """
   Get property stored at key of `cyanide-current-project'.
   """
-  `(oref (cyanide-get-current-project)  ,key))
+  `(oref (cyanide-get-current-project) ,key))
 
+(cl-defmethod cyanide-export-command ((proj cyanide-project)
+                                      destination-dir
+                                      extension
+                                      &optional
+                                      encrypt
+                                      pw)
+  "Generate a shell command to serialize a cyanide-project with gzip compression
+   and gpg2 encryption, and then export it to DESTINATION DIR"
+  (let ((orig-dir default-directory)
+        (basename (file-name-nondirectory
+                   (directory-file-name (oref proj :path))))
+        (path (oref proj :path))
+        (destination nil)
+        (command nil))
+    (setq destination (format "%s%s%s" destination-dir basename extension))
+    ;; if encrypt is nil, we will create an unencrypted .tar.gz
+    (if (eq nil encrypt)
+        (progn
+          (setq command
+                (format "cd %s && cd ../ && tar -cvzf %s %s ;\n"
+                        path destination basename)))
+      ;; if value of encrypt is 'symmetric, prompt for gpg2 passphrase,
+      ;; and then encrypt.
+      (if (eq 'symmetric encrypt)
+          (progn
+            (assert (eq 'string (type-of pw)) nil "should be a string")
+            (setq
+             command
+             (format
+              (concat "cd %s && cd ../ && tar -cvz %s "
+                      "|gpg2 --output %s "
+                      "--batch --passphrase %s --symmetric ;\n")
+              path basename destination pw)))
+        ;; else if encrypt is a string, we will try to match it against a key in
+        ;; our gpg2 keyring. If a gpg2 key is found, we will create a .tar.gz
+        ;; file and use the key to encrypt it.
+        (if (eq 'string (type-of encrypt))
+            (progn
+              (setq command
+                    (format
+                     (concat "cd %s && cd ../ && tar -cvz %s "
+                             "|gpg2 --output %s --recipient %s -e ;\n")
+                     path basename destination encrypt)))
+          ;; else if encrypt is neither a string nor 'symmetric nor nil, error.
+          (error (format "unhandled argument to encrypt: %s" encrypt)))))
+    `(:command ,command
+      :basename ,basename
+      :source ,(directory-file-name (oref proj :path))
+      :destination ,destination
+      :encrypt ,encrypt)))
 
+(defun cyanide-export-all-projects-1 (memo)
+  (let ((existing-dest-files (plist-get memo :existing-dest-files)))
+    (async-shell-command (concat (mapconcat (lambda (elt)
+                                              (concat "rm -fv " elt))
+                                            existing-dest-files
+                                            ";\n")
+                                 (if existing-dest-files ";\n" "")
+                                 (plist-get memo :command)))))
+
+(defun cyanide-prompt-before-export-all-projects-1 (memo)
+  (interactive)
+  (let ((input (read-string (concat "Files already exist at "
+                                    "the following export "
+                                    "destinations:\n"
+                                    (mapconcat
+                                     (lambda (dest) dest)
+                                     (plist-get
+                                      memo
+                                      :existing-dest-files)
+                                     "\n")
+                                    "\nOverwrite (O) or exit (X): "))))
+    (if (equal input "O")
+        (export-all-projects-1 memo)
+      (if (equal input "X")
+          (message "Exiting!"))
+      (message
+       (concat "Unhandled input, please select (O)verwrite or e(X)it.")))))
+
+(defun cyanide-export-all-projects (destination-dir extension &optional encrypt)
+  "Export all "
+  (let ((pw nil))
+    (when (eq 'symmetric encrypt)
+      (setq pw
+            (cyanide-pw cyanide-pw-use-salt-hashing
+                        cyanide-pw-salt-iterations)))
+    ;; bail out and raise alert if password does not match.
+    (if (eq 'MISMATCH pw)
+        (message "Passwords did not match, exiting!")
+      ;; else continue
+      (let ((memo (cons '(:command
+                          ""
+                          :existing-dest-files ())
+                        cyanide-project-collection))
+            (func (lambda (memo elt)
+                    (let ((props (cyanide-export-command
+                                  elt destination-dir extension encrypt pw)))
+                      `(:command
+                        ,(concat (plist-get memo :command)
+                                 (plist-get props :command))
+                        :existing-dest-files
+                        ,(if (file-exists-p (plist-get props :destination))
+                             (cons (plist-get props :destination)
+                                   (plist-get memo :existing-dest-files))
+                           (plist-get memo :existing-dest-files)))))))
+        (let ((retval (reduce func memo)))
+          ;; first check here if passwords matched, and bail out if they didn't.
+          (if (not (eq '() (plist-get retval :existing-dest-files)))
+              (cyanide-prompt-before-export-all-projects-1 retval)
+            (cyanide-export-all-projects-1 retval)))))))
 
 (provide 'cyanide-project)
