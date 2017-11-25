@@ -145,7 +145,8 @@
       :destination ,destination
       :encrypt ,encrypt)))
 
-(defun cyanide-export-all-projects-1 (memo)
+(defun cyanide-export-all-projects-2 (memo)
+  "Handle export command execution for cyanide-projects."
   (let ((existing-dest-files (plist-get memo :existing-dest-files)))
     (async-shell-command (concat (mapconcat (lambda (elt)
                                               (concat "rm -fv " elt))
@@ -155,26 +156,67 @@
                                  (plist-get memo :command)))))
 
 (defun cyanide-prompt-before-export-all-projects-1 (memo)
+  "Prompt user whether to overwrite files when exporting cyanide-projects."
   (interactive)
-  (let ((input (read-string (concat "Files already exist at "
-                                    "the following export "
-                                    "destinations:\n"
-                                    (mapconcat
-                                     (lambda (dest) dest)
-                                     (plist-get
-                                      memo
-                                      :existing-dest-files)
-                                     "\n")
-                                    "\nOverwrite (O) or exit (X): "))))
+  (let ((input (completing-read (concat "Files already exist at "
+                                        "the following export "
+                                        "destinations:\n"
+                                        (mapconcat
+                                         (lambda (dest) dest)
+                                         (plist-get
+                                          memo
+                                          :existing-dest-files)
+                                         "\n")
+                                        "\nOverwrite (O) or exit (X): ")
+                                '("O" "X")
+                                nil
+                                t)))
     (if (equal input "O")
         (export-all-projects-1 memo)
       (if (equal input "X")
-          (message "Exiting!"))
-      (message
-       (concat "Unhandled input, please select (O)verwrite or e(X)it.")))))
+          (message "Exiting!")
+        (message
+         (concat "Unhandled input, please select (O)verwrite or e(X)it."))))))
 
-(defun cyanide-export-all-projects (destination-dir extension &optional encrypt)
-  "Export all "
+(defun cyanide-export-all-projects ()
+  "Compress and optionally encrypt all cyanide-projects before exporting them to
+   DESTINATION-DIR."
+  (interactive)
+  (let ((destination-dir nil)
+        (destination-dir-msg nil)
+        (extension ".tar.gz.gpg")
+        (encrypt-arg nil)
+        (encrypt-msg nil)
+        (encrypt nil)
+        (no-op nil))
+    (setq destination-dir-msg
+          "Select project export directory: ")
+    (setq destination-dir (read-directory-name destination-dir-msg))
+    (setq encrypt-msg
+          "Select encryption type: (S)ymmetric, (A)symmetric, (N)one e(X)it: ")
+    (setq encrypt-arg (completing-read encrypt-msg '("S" "A" "N" "X") nil t))
+    (if (equal "S" encrypt-arg)
+        (setq encrypt 'symmetric)
+      (if (equal "A" encrypt-arg)
+          (setq encrypt (read-string "select recipient gpg2 key: "))
+        (if (equal "N" encrypt-arg)
+            (setq extension ".tar.gz") ; no-op
+          (if (equal "X" encrypt-arg)
+              (progn
+                (message "Exiting.")
+                (setq no-op t))
+            (progn
+              (message (concat "unhandled argument: " encrypt-arg))
+              (setq no-op t))))))
+    (when (not no-op)
+      (cyanide-export-all-projects-1 destination-dir extension encrypt))))
+
+(defun cyanide-export-all-projects-1 (destination-dir
+                                      extension
+                                      &optional
+                                      encrypt)
+  "Compress and optionally encrypt all cyanide-projects before exporting them to
+   DESTINATION-DIR."
   (let ((pw nil))
     (when (eq 'symmetric encrypt)
       (setq pw
@@ -203,6 +245,6 @@
           ;; first check here if passwords matched, and bail out if they didn't.
           (if (not (eq '() (plist-get retval :existing-dest-files)))
               (cyanide-prompt-before-export-all-projects-1 retval)
-            (cyanide-export-all-projects-1 retval)))))))
+            (cyanide-export-all-projects-2 retval)))))))
 
 (provide 'cyanide-project)
