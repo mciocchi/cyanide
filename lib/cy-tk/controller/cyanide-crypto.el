@@ -18,9 +18,9 @@
   `cyanide-pw-salt-iterations' and will use
   `cyanide-pw-use-salt-hashing' as a salt string.")
 
-(defvar cyanide-pw-salt-iterations nil "Number of times for for CyanIDE to salt
-  passwords. Must be set as an integer in order for CyanIDE to apply hashing to
-  passwords via `cyanide-pw-use-salt-hashing'.")
+(defvar cyanide-pw-salt-iterations 0 "Number of times for for CyanIDE to hash
+  and salt passwords. Must be set as a positive nonzero integer in order for
+  CyanIDE to apply hashing to passwords via `cyanide-pw-use-salt-hashing'.")
 
 (defvar cyanide-default-salt-hash-func 'cyanide-sha512sum)
 
@@ -46,7 +46,11 @@
   "Apply HASH-FUNC to SALT+VAL a number of times equal to I. If HASH-FUNC is
    nil, use `cyanide-default-salt-hash-func'"
   (let ((hash (if hash-func hash-func cyanide-default-salt-hash-func)))
-    (if (>= i 0)
+    (assert (eq 'integer (type-of i))
+            nil (concat "when cyanide-pw-use-salt-hashing, "
+                        "cyanide-pw-salt-iterations should be a positive "
+                        "integer"))
+    (if (> i 0)
         (cyanide-salted-hashed-value
          (funcall hash (format "%s%s" salt val)) salt (- i 1) hash)
       (format "%s%s" salt val))))
@@ -66,9 +70,7 @@
         (pw2 (read-passwd "repeat password: ")))
     (if (equal pw1 pw2)
         (if salt
-            (progn
-              (assert (eq 'integer (type-of i)) nil "should be an integer")
-              (cyanide-salted-hashed-value pw1 salt i hash-func))
+            (cyanide-salted-hashed-value pw1 salt i hash-func)
           pw1) ; else use literal password
       'MISMATCH))) ; else passwords did not match
 

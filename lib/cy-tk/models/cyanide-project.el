@@ -155,7 +155,7 @@
                                  (if existing-dest-files ";\n" "")
                                  (plist-get memo :command)))))
 
-(defun cyanide-prompt-before-export-all-projects-1 (memo)
+(defun cyanide-prompt-before-export-overwrite-projects (memo)
   "Prompt user whether to overwrite files when exporting cyanide-projects."
   (interactive)
   (let ((input (completing-read (concat "Files already exist at "
@@ -172,7 +172,7 @@
                                 nil
                                 t)))
     (if (equal input "O")
-        (export-all-projects-1 memo)
+        (cyanide-export-all-projects-2 memo)
       (if (equal input "X")
           (message "Exiting!")
         (message
@@ -244,7 +244,7 @@
         (let ((retval (reduce func memo)))
           ;; first check here if passwords matched, and bail out if they didn't.
           (if (not (eq '() (plist-get retval :existing-dest-files)))
-              (cyanide-prompt-before-export-all-projects-1 retval)
+              (cyanide-prompt-before-export-overwrite-projects retval)
             (cyanide-export-all-projects-2 retval)))))))
 
 (provide 'cyanide-project)
