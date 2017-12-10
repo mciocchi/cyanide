@@ -184,7 +184,7 @@
   (interactive)
   (let ((destination-dir nil)
         (destination-dir-msg nil)
-        (extension ".tar.gz.gpg")
+        (extension ".cy.tar.gz.gpg")
         (encrypt-arg nil)
         (encrypt-msg nil)
         (encrypt nil)
@@ -200,7 +200,7 @@
       (if (equal "A" encrypt-arg)
           (setq encrypt (read-string "select recipient gpg2 key: "))
         (if (equal "N" encrypt-arg)
-            (setq extension ".tar.gz") ; no-op
+            (setq extension ".cy.tar.gz")
           (if (equal "X" encrypt-arg)
               (progn
                 (message "Exiting.")
@@ -246,5 +246,63 @@
           (if (not (eq '() (plist-get retval :existing-dest-files)))
               (cyanide-prompt-before-export-overwrite-projects retval)
             (cyanide-export-all-projects-2 retval)))))))
+
+(defun cyanide-prompt-for-overwrite-project ()
+  (let ((input (completing-read
+                (concat
+                 "A directory already exists at that path. Would you like to "
+                 "(O)verwrite it, (C)reate a project inside of it, or e(X)it? ")
+                '("O" "C" "X") nil t)))
+    (if (equal "O" input)
+        'overwrite
+      (if (equal "C" input)
+          'create
+        (if (equal "X" input)
+            'exit
+                                        ; else
+          (error "unhandled input"))))))
+
+(defun cyanide-initialize-project ()
+  (interactive)
+  (let ((path (completing-read "choose a toplevel directory for this project: "
+                               cyanide-project-toplevel-directories nil t))
+        (dir (read-string "choose a base directory for this project: "))
+        (id nil))
+    (setq id (read-string (format "choose a unique id for this project (%s): "
+                                  dir)))
+    (when (equal "" id) (setq id dir))
+    (cyanide-initialize-project-1 id (concat path dir))))
+
+(defun cyanide-initialize-project-overwrite (id path display-name))
+
+(defun cyanide-initialize-project-create-inside (id path display-name))
+
+(defun cyanide-initialize-project-new-directory (id path display-name))
+
+(defun cyanide-initialize-project-1 (id path)
+  (let ((display-name "")
+        (overwrite nil))
+    (when (file-exists-p path)
+      (setq overwrite (cyanide-prompt-for-overwrite-project)))
+    (if (eq 'exit overwrite)
+        nil ; no-op
+      (progn
+        (setq display-name
+              (read-string
+               (format "choose a display name for this project. (%s): " id)))
+        (when (equal "" display-name) (setq display-name id))
+        ;; - default-view
+        ;; - load-hook
+        ;; - teardown-hook
+        ;; - tasks
+        (if (eq 'overwrite overwrite)
+            (cyanide-initialize-project-overwrite (intern id) path display-name)
+          (if (eq 'create overwrite)
+              (cyanide-initialize-project-create-inside
+               (intern id) path display-name)
+            (if (eq nil overwrite)
+                (cyanide-initialize-project-new-directory
+                 (intern id) path display-name)
+              (error "unhandled input"))))))))
 
 (provide 'cyanide-project)
