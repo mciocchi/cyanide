@@ -4,12 +4,8 @@
 ;;
 ;; Author: Matt Ciocchi <mciocchi@gmail.com>
 ;; Created: 06 September 2015
-;; Package-Version: 20170729.1740
-;; Version: 6.0.0
-;; Package-Requires: ((emacs "25.1.1") (eieio "1.4") (helm "20170724.2137") (helm-ag "20170209.745"))
-;; Keywords: project, search, window, buffer, task
-;;
-;;; License:
+;; Version: 6.1.3
+;; Keywords: convenience, extensions, files, frames, lisp, maint, matching, processes, tools
 ;;
 ;; This file is part of CyanIDE.
 ;;
@@ -28,7 +24,7 @@
 ;;
 ;;; Commentary:
 ;;
-;; CyanIDE stands for CyanIDE's Yet Another Non-IDE. It provides project-aware
+;; CyanIDE stands for CyanIDE's Yet Another Non-IDE.  It provides project-aware
 ;; configuration, instant search, an object-oriented API, and dozens of helper
 ;; functions in one convenient toolkit.
 ;;
@@ -36,6 +32,7 @@
 ;; read it online at https://github.com/mciocchi/cyanide
 ;;
 ;;; Code:
+
 (require 'cyanide-main)
 
 (defvar cyanide-mode-map
@@ -47,8 +44,9 @@
       (define-key map (kbd "C-c c t") 'cyanide-task-prompt)
       (define-key map (kbd "C-c c a") 'cyanide-helm-ag)
       (define-key map (kbd "C-c c f") 'cyanide-helm-find)
-      (define-key map (kbd "C-c c o") 'helm-occur)) map)
-  "Keybindings for CyanIDE")
+      (define-key map (kbd "C-c c o") 'helm-occur))
+    map)
+  "Keybindings for CyanIDE.")
 
 (define-minor-mode cyanide-mode
   "CyanIDE's Yet Another Non-IDE"  ; docstring

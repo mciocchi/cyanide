@@ -1,7 +1,5 @@
-
+(source gnu)
 (source melpa)
 
-(package-file "cyanide.el")
-
-(development
- (depends-on "ag"))
+(depends-on "helm-ag")
+(depends-on "helm")
