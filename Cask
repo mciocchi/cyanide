@@ -4,7 +4,7 @@
 (depends-on "helm-ag")
 (depends-on "helm-files")
 (depends-on "helm")
+(depends-on "cl")
 
 (development
- (depends-on "cl")
  (depends-on "ert"))

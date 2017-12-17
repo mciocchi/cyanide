@@ -13,6 +13,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
+(require 'cl)
 (require 'cyanide-globals "lib/controller/cyanide-globals")
 
 (defun cyanide-try-load-dotfile (dotfile memo)
