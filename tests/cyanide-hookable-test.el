@@ -14,7 +14,7 @@
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
 (require 'ert)
-(require 'cyanide-hookable)
+(require 'cyanide-hookable "lib/models/cyanide-hookable")
 
 (ert-deftest cyanide-hookable-test ()
   (defclass hookable-test-class (cyanide-hookable)

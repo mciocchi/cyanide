@@ -13,8 +13,8 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
-(require 'cyanide-get-one-by-slot)
-(require 'cyanide-menu)
+(require 'cyanide-get-one-by-slot "lib/controller/cyanide-get-one-by-slot")
+(require 'cyanide-menu "lib/models/cyanide-menu")
 
 (defun cyanide-tasks-menu-builder (project-id)
   "Build tasks menu object for a `cyanide-project'."

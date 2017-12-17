@@ -13,7 +13,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
-(require 'cyanide-get-one-by-slot)
+(require 'cyanide-get-one-by-slot "lib/controller/cyanide-get-one-by-slot")
 
 (defun cyanide-prompt (prompt-func
                        prompt-str

@@ -1,12 +1,10 @@
 ;;; cyanide.el --- CyanIDE's Yet Another Non-IDE
 ;;
-;; Copyright (C) 2015-2017 Matt Ciocchi <mciocchi@gmail.com>
-;;
 ;; Author: Matt Ciocchi <mciocchi@gmail.com>
 ;; Created: 06 September 2015
-;; Version: 6.1.3
+;; Version: 6.2.0
 ;; Keywords: convenience, extensions, files, frames, lisp, maint, matching, processes, tools
-;;
+
 ;; This file is part of CyanIDE.
 ;;
 ;; CyanIDE is free software: you can redistribute it and/or modify
@@ -21,19 +19,42 @@
 ;;
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
-;;
+
 ;;; Commentary:
 ;;
-;; CyanIDE stands for CyanIDE's Yet Another Non-IDE.  It provides project-aware
-;; configuration, instant search, an object-oriented API, and dozens of helper
-;; functions in one convenient toolkit.
+;; CyanIDE stands for CyanIDE's Yet Another Non-IDE.
+;; 
+;; The two goals of CyanIDE are:
 ;;
-;; For screenshots and installation instructions, refer to the README, or
-;; read it online at https://github.com/mciocchi/cyanide
+;; 1) To help beginner users with a minimal knowledge of elisp get started with
+;;    emacs quickly by providing basic functionality which most projects need.
 ;;
+;; 2) To provide a common framework by which advanced users can work together to
+;;    develop new functionality with speed and simplicity.
+;;
+;; With these two goals in mind, CyanIDE offers:
+;;
+;; * nearly instant project aware search via helm-ag
+;;
+;; * hooks to run arbitrary elisp at project load time
+;;
+;; * easy project specific configuration via .cy.el dotfiles
+;;
+;; * a dead-simple means for users to define project lifecycle tasks (compile,
+;;   test, run, etc.)
+;;
+;; * a way to optionally "pop" into arbitrary buffer and window configurations,
+;;   especially at project load time
+;;
+;; * an extensible API for advanced users to work with projects and artifacts,
+;;   implemented in EIEIO CLOS
+;;
+;; For help getting started quickly, refer to the README, or read it online at
+;; https://github.com/mciocchi/cyanide
+
 ;;; Code:
 
-(require 'cyanide-main)
+(require 'cyanide-main "lib/cyanide-main")
 
 (defvar cyanide-mode-map
   (let ((map (make-sparse-keymap)))
@@ -54,6 +75,7 @@
   " cyanide "                      ; lighter
   :keymap cyanide-mode-map         ; keymap
   (cyanide-main)                   ; body
+  :require 'cyanide
   :global t)
 
 (define-globalized-minor-mode global-cyanide-mode cyanide-mode

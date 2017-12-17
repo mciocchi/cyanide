@@ -13,7 +13,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
-(require 'cyanide-menu-item)
+(require 'cyanide-menu-item "lib/models/cyanide-menu-item")
 
 (defclass cyanide-menu-function (cyanide-menu-item)
   ((func :initarg :func

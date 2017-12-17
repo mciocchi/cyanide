@@ -13,6 +13,6 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
-(require 'cyanide-hookable-test)
-(require 'cyanide-view-test)
+(require 'cyanide-hookable-test "tests/cyanide-hookable-test")
+(require 'cyanide-view-test "tests/cyanide-view-test")
 (provide 'cyanide-tests)

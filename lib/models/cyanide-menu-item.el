@@ -13,8 +13,8 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
-(require 'cyanide-identifiable)
-(require 'cyanide-nameable)
+(require 'cyanide-identifiable "lib/models/cyanide-identifiable")
+(require 'cyanide-nameable "lib/models/cyanide-nameable")
 
 (defclass cyanide-menu-item (eieio-instance-tracker
                              cyanide-identifiable

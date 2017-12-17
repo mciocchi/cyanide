@@ -13,10 +13,10 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
-(require 'cyanide-globals)
-(require 'cyanide-get-one-by-slot)
-(require 'cyanide-nameable)
-(require 'cyanide-hookable)
+(require 'cyanide-globals "lib/controller/cyanide-globals")
+(require 'cyanide-get-one-by-slot "lib/controller/cyanide-get-one-by-slot")
+(require 'cyanide-nameable "lib/models/cyanide-nameable")
+(require 'cyanide-hookable "lib/models/cyanide-hookable")
 
 (defclass cyanide-view (eieio-instance-tracker
                         cyanide-identifiable

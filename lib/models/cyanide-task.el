@@ -13,11 +13,11 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
-(require 'cyanide-menu-function)
-(require 'cyanide-globals)
-(require 'cyanide-get-one-by-slot)
-(require 'cyanide-prompt)
-(require 'cyanide-describeable)
+(require 'cyanide-menu-function "lib/models/cyanide-menu-function")
+(require 'cyanide-globals "lib/controller/cyanide-globals")
+(require 'cyanide-get-one-by-slot "lib/controller/cyanide-get-one-by-slot")
+(require 'cyanide-prompt "lib/controller/cyanide-prompt")
+(require 'cyanide-describeable "lib/models/cyanide-describeable")
 
 ; Tasks are nothing more than cyanide-menu-functions for now, but it is
 ; likely that they will need to provide additional functionality soon.

@@ -13,8 +13,8 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
-(require 'cyanide-menu-item)
-(require 'cyanide-globals)
+(require 'cyanide-menu-item "lib/models/cyanide-menu-item")
+(require 'cyanide-globals "lib/controller/cyanide-globals")
 
 (defclass cyanide-menu (cyanide-menu-item)
   ((members :initarg :members

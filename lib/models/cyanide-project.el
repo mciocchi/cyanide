@@ -13,16 +13,16 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
-(require 'cyanide-globals)
-(require 'cyanide-prompt)
-(require 'cyanide-identifiable)
-(require 'cyanide-nameable)
-(require 'cyanide-taskable)
-(require 'cyanide-hookable)
-(require 'cyanide-pathable-dfd)
-(require 'cyanide-viewable)
-(require 'cyanide-describeable)
-(require 'cyanide-crypto)
+(require 'cyanide-globals "lib/controller/cyanide-globals")
+(require 'cyanide-prompt "lib/controller/cyanide-prompt")
+(require 'cyanide-identifiable "lib/models/cyanide-identifiable")
+(require 'cyanide-nameable "lib/models/cyanide-nameable")
+(require 'cyanide-taskable "lib/models/cyanide-taskable")
+(require 'cyanide-hookable "lib/models/cyanide-hookable")
+(require 'cyanide-pathable-dfd "lib/models/cyanide-pathable-dfd")
+(require 'cyanide-viewable "lib/models/cyanide-viewable")
+(require 'cyanide-describeable "lib/models/cyanide-describeable")
+(require 'cyanide-crypto "lib/controller/cyanide-crypto")
 
 (defclass cyanide-project (eieio-instance-tracker
                            cyanide-identifiable

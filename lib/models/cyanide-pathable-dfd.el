@@ -13,7 +13,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
-(require 'cyanide-pathable)
+(require 'cyanide-pathable "lib/models/cyanide-pathable")
 
 (defun cyanide-default-pathable-directory ()
   "return the directory of `load-file-name' if `load-file-name' is non-nil,

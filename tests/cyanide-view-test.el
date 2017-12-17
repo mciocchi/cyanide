@@ -14,7 +14,7 @@
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
 (require 'ert)
-(require 'cyanide-view)
+(require 'cyanide-view "lib/models/cyanide-view")
 (require 'cl)
 
 (ert-deftest cyanide-view-should-construct ()
