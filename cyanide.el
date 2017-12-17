@@ -2,7 +2,7 @@
 ;;
 ;; Author: Matt Ciocchi <mciocchi@gmail.com>
 ;; Created: 06 September 2015
-;; Version: 6.2.1
+;; Version: 6.2.2
 ;; Keywords: convenience, extensions, files, frames, lisp, maint, matching, processes, tools
 
 ;; This file is part of CyanIDE.
