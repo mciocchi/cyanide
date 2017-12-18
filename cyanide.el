@@ -2,7 +2,7 @@
 ;;
 ;; Author: Matt Ciocchi <mciocchi@gmail.com>
 ;; Created: 06 September 2015
-;; Version: 6.2.2
+;; Version: 6.2.3
 ;; Keywords: convenience, extensions, files, frames, lisp, maint, matching, processes, tools
 
 ;; This file is part of CyanIDE.
@@ -26,13 +26,18 @@
 ;; 
 ;; The two goals of CyanIDE are:
 ;;
-;; 1) To help beginner users with a minimal knowledge of elisp get started with
-;;    emacs quickly by providing basic functionality which most projects need.
+;; 1) To help beginner emacs users with minimal knowledge of elisp get started
+;;    with emacs quickly by providing core functionality which most projects
+;;    need.
 ;;
-;; 2) To provide a common framework by which advanced users can work together to
-;;    develop new functionality with speed and simplicity.
+;; 2) To help intermediate emacs users by providing hooks for them to extend
+;;    cyanide projects with additional customizations.
 ;;
-;; With these two goals in mind, CyanIDE offers:
+;; 3) To help advanced emacs users by providing a common framework which they
+;;    can use to work together to develop modern features with speed and
+;;    simplicity.
+;;
+;; With these goals in mind, CyanIDE offers:
 ;;
 ;; * nearly instant project aware search via helm-ag
 ;;
@@ -49,8 +54,8 @@
 ;; * an extensible API for advanced users to work with projects and artifacts,
 ;;   implemented in EIEIO CLOS
 ;;
-;; For help getting started quickly, refer to the README, or read it online at
-;; https://github.com/mciocchi/cyanide
+;; For help getting started, refer to the quick start section of the README, or
+;; read it online at https://github.com/mciocchi/cyanide#quick-start
 
 ;;; Code:
 
