@@ -33,7 +33,7 @@
 6) create a "projects" toplevel directory:
 
 ```bash
-mkdir ~/projects/example
+mkdir ~/projects
 ```
 
 7) create an example project directory inside of the toplevel:
