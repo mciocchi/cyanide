@@ -29,14 +29,16 @@
 (defvar cyanide-menu-item-collection '()
   "cyanide-menu-items are stored in this list.")
 
-(defvar cyanide-project-config-file-name ".cy.el"
-  "This variable stores the name of config files which cyanide will search for
-  in order to find cyanide project directories in
-  `cyanide-project-toplevel-directories'")
+(defvar cyanide-project-config-file-name "init.el"
+  "This variable stores the name of `cyanide-project' config files which
+   are discovered and loaded via `cyanide-load-toplevel'.")
+
+(defvar cyanide-project-config-dotdir-name ".cy"
+  "This variable stores the name of `cyanide-project' config directories which
+   are discovered and loaded via `cyanide-load-toplevel'.")
 
 (defvar cyanide-project-toplevel-directories '()
-  "This list stores paths to toplevel directories which contain cyanide
-   project directories which cyanide discovers by searching for project config
-   files named `cyanide-project-config-file-name'")
+  "This list stores paths which `cyanide-load-toplevel' will scan to check for
+   `cyanide-project' directories.")
 
 (provide 'cyanide-globals)

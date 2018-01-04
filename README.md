@@ -20,7 +20,7 @@
 
 (cask-initialize)
 
-;; Allow CyanIDE to discover the .cy.el file we created:
+;; Allow CyanIDE to discover projects we've created:
 (setq cyanide-project-toplevel-directories '("~/projects/"))
 
 ;; Import cyanIDE
@@ -30,16 +30,28 @@
 (setq-default cyanide-mode t)
 ```
 
-5) create a "projects" toplevel with an example project directory inside of it:
+6) create a "projects" toplevel directory:
 
 ```bash
-mkdir -p ~/projects/example
+mkdir ~/projects/example
 ```
 
-6) create a .cy.el project config file:
+7) create an example project directory inside of the toplevel:
+
+```bash
+mkdir ~/projects/example
+```
+
+8) create a cyanide config directory inside of our example project:
+
+```bash
+mkdir ~/projects/example/.cy
+```
+
+9) create a project-specific init file inside of the config directory:
 
 ```lisp
-;; ~/projects/example/.cy.el
+;; ~/projects/example/.cy/init.el
 
 (cyanide-project :id 'example-project
                  :display-name "example-project"
@@ -53,8 +65,8 @@ mkdir -p ~/projects/example
                     (async-shell-command "echo Hello, world!")))
 ```
 
-7) eval-buffer on the .cy.el file you created, or just close and re-open emacs
-8) invoke "C-c c l" to load the project you just created
+10) eval-buffer on the init.el file you created, or just close and re-open emacs
+11) invoke "C-c c l" to load the project you just created
 
 ## Goals
 
@@ -73,7 +85,7 @@ mkdir -p ~/projects/example
 
 * hooks to run arbitrary elisp at project load time
 
-* easy project specific configuration via .cy.el dotfiles
+* easy project specific configuration via .cy/init.el files
 
 * a dead-simple means for users to define project lifecycle tasks (compile,
   test, run, etc.)

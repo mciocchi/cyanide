@@ -26,28 +26,42 @@
                              (format "%s" err))))))
 
 (defun cyanide-load-toplevel (memo toplevel)
-  "Iterate over subdirectories of target TOPLEVEL path. If the subdirectory
-  contains a file named `cyanide-project-config-file-name', evaluate the file
-  with `cyanide-try-load-dotfile'"
+  "Iterate over subdirectories of TOPLEVEL path, to a depth of one.
+
+  If the subdirectory contains a directory named
+  `cyanide-project-config-dotdir-name', check for a file inside of it named
+  `cyanide-project-config-file-name'.
+
+  If `cyanide-project-config-file-name' exists inside of the dotdir, attempt to
+  evaluate it with `cyanide-try-load-dotfile'"
   (if (and (file-exists-p toplevel)
              (directory-name-p toplevel))
-    (let ((memo-and-subdirs (cons memo (directory-files toplevel))))
+    (let ((memo-and-subdirs (cons memo (directory-files toplevel)))
+          (project-dir nil)
+          (project-config-dir nil)
+          (project-init-file nil))
+
       (reduce (lambda (memo subdir)
-                (when (and (file-directory-p (concat toplevel subdir))
+                (setq project-dir
+                      (concat toplevel
+                              subdir
+                              "/"))
+
+                (setq project-config-dir
+                      (concat project-dir
+                              cyanide-project-config-dotdir-name
+                              "/"))
+
+                (setq project-init-file
+                      (concat project-config-dir
+                              cyanide-project-config-file-name))
+
+                (when (and (file-directory-p project-dir)
                            (not (equal "." subdir))
                            (not (equal ".." subdir))
-                           (file-exists-p (concat toplevel subdir))
-                           (file-exists-p (concat
-                                           toplevel
-                                           subdir
-                                           "/"
-                                           cyanide-project-config-file-name)))
-                  (cyanide-try-load-dotfile (concat
-                                             toplevel
-                                             subdir
-                                             "/"
-                                             cyanide-project-config-file-name)
-                                            memo))
+                           (file-directory-p project-config-dir)
+                           (file-exists-p project-init-file))
+                  (cyanide-try-load-dotfile project-init-file memo))
                 memo)
               memo-and-subdirs))
     ; else

@@ -24,17 +24,30 @@
 (require 'cyanide-describeable "lib/models/cyanide-describeable")
 (require 'cyanide-crypto "lib/controller/cyanide-crypto")
 
+(defun cyanide-infer-project-path-from-dotdir ()
+  "Return the parent of the parent directory of current `load-file-name' if
+  `load-file-name' is non-nil, otherwise return `default-directory'."
+  (let ((dir default-directory))
+    (when load-file-name
+      (setq dir (file-name-directory
+                 (directory-file-name
+                  (file-name-directory load-file-name)))))
+    dir))
+
 (defclass cyanide-project (eieio-instance-tracker
                            cyanide-identifiable
                            cyanide-nameable
                            cyanide-describeable
-                           cyanide-pathable-dfd
+                           cyanide-pathable
                            cyanide-viewable
                            cyanide-hookable
                            cyanide-taskable)
-  ((tracking-symbol :initform cyanide-project-collection))
-  "Total representation of a project, including its path on the filesystem,
-  name, views, and hooks to toggle configurations at project load time.")
+  ((tracking-symbol :initform cyanide-project-collection)
+   (path :initarg :path
+         :type string
+         :initform  (cyanide-infer-project-path-from-dotdir)
+         :documentation
+         "Directory path.")))
 
 (cl-defmethod cyanide-load-project ((proj cyanide-project))
   "Load a cyanide-project:
