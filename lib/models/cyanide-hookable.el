@@ -49,19 +49,15 @@ atomic units of change that can be applied to the global emacs runtime and then
 just as easily stripped away on an ad-hoc basis."
   :abstract t)
 
-(defmacro call-hooks-on-object-property (obj prop)
-  (let ((f (lambda (func)
-             (progn
-               ;; (message (concat "cyanide-hook-executor calling"
-               ;;                  " "
-               ;;                  (format "%s" func)))
-               (funcall func)))))
-    `(mapcar ,f (oref ,obj ,prop))))
+(defmacro run-hooks-on-object-property (obj prop)
+  `(let ((hook (oref ,obj ,prop)))
+     (message (format "running hooks" ""))
+     (run-hooks 'hook)))
 
 (cl-defmethod run-load-hook ((hookable cyanide-hookable))
-  (call-hooks-on-object-property hookable :load-hook))
+  (run-hooks-on-object-property hookable :load-hook))
 
 (cl-defmethod run-teardown-hook ((hookable cyanide-hookable))
-  (call-hooks-on-object-property hookable :teardown-hook))
+  (run-hooks-on-object-property hookable :teardown-hook))
 
 (provide 'cyanide-hookable)

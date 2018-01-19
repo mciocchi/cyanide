@@ -35,8 +35,8 @@
   (let ((id (oref view :id)))
     (if (equal id (car cyanide-current-views))
         (progn
-          (run-teardown-hook view)
-          (pop cyanide-current-views))
+          (pop cyanide-current-views)
+          (run-teardown-hook view))
       (error (concat "Can not tear down view- other views have been enabled "
                      "on top of it, you must disable them first!")))))
 
