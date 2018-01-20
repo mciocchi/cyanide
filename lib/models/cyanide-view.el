@@ -55,6 +55,20 @@
    (while (bound-and-true-p cyanide-current-views)
      (call-interactively 'cyanide-disable-current-view))))
 
+(defun cyanide-refresh-all-views ()
+  (let ((previous-views cyanide-current-views))
+    (call-interactively 'cyanide-disable-all-views)
+    (cyanide-enable-multiple-views (reverse previous-views))))
+
+(defun cyanide-enable-multiple-views (new-views)
+  (progn
+    (while (and (not (eq nil cyanide-current-views))
+                (not (eq (nil new-views))))
+      (call-interactively 'cyanide-disable-current-view))
+    (while (not (eq nil new-views))
+      (enable (cyanide-get-by-id (car new-views) cyanide-view-collection))
+      (setq new-views (cdr new-views)))))
+
 (defun cyanide-enable-view-prompt ()
   "Prompt user to enable a cyanide-view, and then enable it."
   (interactive
