@@ -2,7 +2,7 @@
 
 ## Quick Start
 
-1) Begin with a spacemacs installation.
+### 1) Begin with a spacemacs installation.
 
 If you would like your CyanIDE install to work with zero configuration, choose
 "helm" when spacemacs prompts you which search-narrowing framework you would
@@ -21,7 +21,7 @@ git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d &&
     nohup emacs >> /dev/null &
 ```
 
-2) Once emacs is done bootstrapping, change the dotspacemacs/user-config
+### 2) Once emacs is done bootstrapping, change the dotspacemacs/user-config
 function in your .spacemacs file to load CyanIDE. You may wish to copy the
 example below to get started.
 
@@ -60,25 +60,25 @@ you should place your code here."
   )
 ```
 
-3) create a "projects" toplevel directory:
+### 3) create a "projects" toplevel directory:
 
 ```bash
 mkdir ~/projects
 ```
 
-4) create an example project directory inside of the toplevel:
+### 4) create an example project directory inside of the toplevel:
 
 ```bash
 mkdir ~/projects/example
 ```
 
-5) create a cyanide config directory inside of our example project:
+### 5) create a cyanide config directory inside of our example project:
 
 ```bash
 mkdir ~/projects/example/.cy
 ```
 
-6) create a project-specific init file inside of the config directory:
+### 6) create a project-specific init file inside of the config directory:
 
 ```lisp
 ;; ~/projects/example/.cy/init.el
@@ -95,9 +95,9 @@ mkdir ~/projects/example/.cy
                     (async-shell-command "echo Hello, world!")))
 ```
 
-7) eval-buffer on the init.el file you created, or just close and re-open emacs
+### 7) eval-buffer on the init.el file you created, or just close and re-open emacs
 
-8) invoke "C-c c l" to load the project you just created
+### 8) invoke "C-c c l" to load the project you just created
 
 ## Goals
 
