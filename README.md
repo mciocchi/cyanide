@@ -45,8 +45,6 @@ you should place your code here."
   ;; make cyanide scope and classes available everywhere
   (setq-default cyanide-mode t)
 
-  (global-company-mode t)
-
   ;; optional but useful, start with a single project defined, to work inside of
   ;; dot-emacs directory
   (cyanide-project :id 'dot-emacs
