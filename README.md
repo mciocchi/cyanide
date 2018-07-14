@@ -2,53 +2,83 @@
 
 ## Quick Start
 
-1) If you have not installed cask, follow the instructions at:
-   [cask.readthedocs.io](https://cask.readthedocs.io/en/latest/guide/installation.html)
-2) From inside emacs, invoke "M-x package-list-packages"
-3) In the *packages* buffer which just opened, find package "cyanide" listed in
-   the melpa archive
-4) press "i" on cyanide, and then "x" to execute the installation
-5) make sure that you have the bare minimum in your init.el for a cyanide
-   installation via cask:
+1) Begin with a spacemacs installation.
 
-```lisp
-;; ~/.emacs.d/init.el
+If you would like your CyanIDE install to work with zero configuration, choose
+"helm" when spacemacs prompts you which search-narrowing framework you would
+like to use:
 
-;; Your cask file will be in a different location depending upon which version
-;; you installed:
-(require 'cask "~/.emacs.d/.cask/25.3/elpa/cask-20170917.1107/cask.el")
+```bash
+EMACSD=~/.emacs.d;
+LISP=$EMACSD/lisp;
 
-(cask-initialize)
+git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d &&
 
-;; Allow CyanIDE to discover projects we've created:
-(setq cyanide-project-toplevel-directories '("~/projects/"))
+    mkdir -p $LISP &&
 
-;; Import cyanIDE
-(require 'cyanide)
+    git clone https://github.com/mciocchi/cyanide.git $LISP"/cyanide" &&
 
-;; Enable CyanIDE global-minor-mode on startup.
-(setq-default cyanide-mode t)
+    nohup emacs >> /dev/null &
 ```
 
-6) create a "projects" toplevel directory:
+2) Once emacs is done bootstrapping, change the dotspacemacs/user-config
+function in your .spacemacs file to load CyanIDE. You may wish to copy the
+example below to get started.
+
+```lisp
+(defun dotspacemacs/user-config ()
+  "Configuration function for user code.
+This function is called at the very end of Spacemacs initialization after
+layers configuration.
+This is the place where most of your configurations should be done. Unless it is
+explicitly specified that a variable should be set before a package is loaded,
+you should place your code here."
+
+  (let ((default-directory (concat user-emacs-directory "lisp")))
+    (normal-top-level-add-subdirs-to-load-path))
+
+  (setq cyanide-project-toplevel-directories
+        `("~/projects/"))
+
+  (require 'cyanide)
+
+  ;; make cyanide scope and classes available everywhere
+  (setq-default cyanide-mode t)
+
+  (global-company-mode t)
+
+  ;; optional but useful, start with a single project defined, to work inside of
+  ;; dot-emacs directory
+  (cyanide-project :id 'dot-emacs
+                   :display-name "dot-emacs"
+                   :default-view 'cyanide-minimal-view
+                   :load-hook '((lambda ()
+                                  (dired (cyanide-project-oref :path))))
+                   :tasks '()
+                   :teardown-hook '()
+                   :path "~/.emacs.d/")
+  )
+```
+
+3) create a "projects" toplevel directory:
 
 ```bash
 mkdir ~/projects
 ```
 
-7) create an example project directory inside of the toplevel:
+4) create an example project directory inside of the toplevel:
 
 ```bash
 mkdir ~/projects/example
 ```
 
-8) create a cyanide config directory inside of our example project:
+5) create a cyanide config directory inside of our example project:
 
 ```bash
 mkdir ~/projects/example/.cy
 ```
 
-9) create a project-specific init file inside of the config directory:
+6) create a project-specific init file inside of the config directory:
 
 ```lisp
 ;; ~/projects/example/.cy/init.el
@@ -65,8 +95,9 @@ mkdir ~/projects/example/.cy
                     (async-shell-command "echo Hello, world!")))
 ```
 
-10) eval-buffer on the init.el file you created, or just close and re-open emacs
-11) invoke "C-c c l" to load the project you just created
+7) eval-buffer on the init.el file you created, or just close and re-open emacs
+
+8) invoke "C-c c l" to load the project you just created
 
 ## Goals
 
@@ -81,7 +112,7 @@ mkdir ~/projects/example/.cy
 
 ## Features
 
-* nearly instant project aware search via helm-ag
+* nearly instant project aware search via helm-projectile-ag
 
 * hooks to run arbitrary elisp at project load time
 
@@ -109,8 +140,8 @@ a project's load-hook.
 "C-c c v" cyanide-enable-view-prompt
 "C-c c t" cyanide-task-prompt
 "C-c c a" cyanide-keyword-search-function (defaults to helm-projectile-ag)
-"C-c c f" cyanide-find-file-function (defaults to cyanide-helm-find)
-"C-c c o" cyanide-occur-function (defaults to helm-occur)
+"C-c c f" cyanide-find-file-function      (defaults to cyanide-helm-find)
+"C-c c o" cyanide-occur-function          (defaults to helm-occur)
 ```
 
 These keybindings are mostly self-explanatory, but if you wish, you may refer to

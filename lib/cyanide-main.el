@@ -13,11 +13,14 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
+
+(require 'eieio)
+(require 'eieio-base)
+(require 'cyanide-project)
+
 (defun cyanide-main ()
   (progn
 
-    (require 'eieio)
-    (require 'eieio-base)
     (require 'cyanide-globals "lib/controller/cyanide-globals")
     (require 'cyanide-project "lib/models/cyanide-project")
     (require 'cyanide-view "lib/models/cyanide-view")
