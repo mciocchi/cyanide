@@ -99,16 +99,18 @@ mkdir ~/projects/example/.cy
 ## Keybindings
 
 cyanide-mode-map provides the following keybindings, which may be altered or
-overridden just like any other emacs mode-map:
+overridden globally just like any other emacs mode-map. It is also possible to
+override these variables on a project-by-project basis by setting them inside of
+a project's load-hook.
 
 ```
 "C-c c l" cyanide-load-project-prompt
 "C-c c d" cyanide-disable-current-view
 "C-c c v" cyanide-enable-view-prompt
 "C-c c t" cyanide-task-prompt
-"C-c c a" cyanide-helm-ag
-"C-c c f" cyanide-helm-find
-"C-c c o" cyanide-helm-occur
+"C-c c a" cyanide-keyword-search-function (defaults to helm-projectile-ag)
+"C-c c f" cyanide-find-file-function (defaults to cyanide-helm-find)
+"C-c c o" cyanide-occur-function (defaults to helm-occur)
 ```
 
 These keybindings are mostly self-explanatory, but if you wish, you may refer to

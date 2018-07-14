@@ -35,7 +35,7 @@
     (cyanide-menu :id 'cyanide-default-menu
                   :display-name "CyanIDE"
                   :members '(load-project
-                             silver-search-project
+                             keyword-search-project
                              find-in-project
                              enable-view
                              disable-current-view))
@@ -44,13 +44,13 @@
                            :display-name "Load a Project"
                            :func 'cyanide-load-project-prompt)
 
-    (cyanide-menu-function :id 'silver-search-project
+    (cyanide-menu-function :id 'keyword-search-project
                            :display-name "Search string in Project"
-                           :func 'cyanide-helm-ag)
+                           :func cyanide-keyword-search-function)
 
     (cyanide-menu-function :id 'find-in-project
                            :display-name "Find in Project"
-                           :func 'cyanide-helm-find)
+                           :func cyanide-find-file-function)
 
     (cyanide-menu-function :id 'enable-view
                            :display-name "Enable a View"

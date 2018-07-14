@@ -68,9 +68,9 @@
       (define-key map (kbd "C-c c d") 'cyanide-disable-current-view)
       (define-key map (kbd "C-c c v") 'cyanide-enable-view-prompt)
       (define-key map (kbd "C-c c t") 'cyanide-task-prompt)
-      (define-key map (kbd "C-c c a") 'cyanide-helm-projectile-ag)
-      (define-key map (kbd "C-c c f") 'cyanide-helm-projectile-find-file-dwim)
-      (define-key map (kbd "C-c c o") 'helm-occur))
+      (define-key map (kbd "C-c c a") cyanide-keyword-search-function)
+      (define-key map (kbd "C-c c f") cyanide-find-file-function)
+      (define-key map (kbd "C-c c o") cyanide-occur-function))
     map)
   "Keybindings for CyanIDE.")
 

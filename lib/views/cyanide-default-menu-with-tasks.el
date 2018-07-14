@@ -17,7 +17,7 @@
               :display-name "CyanIDE"
               :members '(tasks
                          load-project
-                         silver-search-project
+                         keyword-search-project
                          find-in-project
                          enable-view
                          disable-current-view))

@@ -15,8 +15,8 @@
 
 (require 'cyanide-globals "lib/controller/cyanide-globals")
 (require 'cyanide-project "lib/models/cyanide-project")
-(require 'helm-ag)
-(require 'helm-files)
+(require 'helm-find)
+(require 'helm-projectile)
 
 (defun cyanide-helm-find ()
   """
@@ -30,18 +30,6 @@
                    "Cannot invoke cyanide-helm-find "
                    "before loading a cyanide-project."))))
 
-(defun cyanide-helm-ag ()
-  """
-  Find string in current `cyanide-project' with `helm-ag'.
-  """
-  (interactive)
-  (if cyanide-current-project
-      (helm-ag (cyanide-get-current-project-path))
-    ;; If no project is loaded, error out:
-    (error (concat "cyanide-current-project is nil. "
-                   "Cannot invoke cyanide-helm-ag "
-                   "before loading a cyanide-project."))))
-
 (defun cyanide-helm-projectile-find-file-dwim ()
   """
   Find file in current `cyanide-project' with `helm-projectile-find-file-dwim'.
@@ -52,18 +40,6 @@
         (helm-projectile-find-file-dwim))
     (error (concat "cyanide-current-project is nil. "
                    "Cannot invoke cyanide-helm-find "
-                   "before loading a cyanide-project."))))
-
-(defun cyanide-helm-projectile-ag ()
-  """
-  Find string in current `cyanide-project' with `helm-projectile-ag'.
-  """
-  (interactive)
-  (if cyanide-current-project
-      (helm-projectile-ag (cyanide-get-current-project-path))
-    ;; If no project is loaded, error out:
-    (error (concat "cyanide-current-project is nil. "
-                   "Cannot invoke cyanide-helm-ag "
                    "before loading a cyanide-project."))))
 
 (provide 'cyanide-helm-wrapper)

@@ -41,4 +41,16 @@
   "This list stores paths which `cyanide-load-toplevel' will scan to check for
    `cyanide-project' directories.")
 
+(defvar cyanide-keyword-search-function 'helm-projectile-ag
+  "This variable tells CyanIDE what function to invoke to keyword search the
+  current project.")
+
+(defvar cyanide-find-file-function 'cyanide-helm-find
+  "This variable tells CyanIDE what function to invoke to find files by name in
+  the current project.")
+
+(defvar cyanide-occur-function 'helm-occur
+  "This variable tells CyanIDE what function to invoke to search for occurrences
+  of a keyword in the current buffer the current project.")
+
 (provide 'cyanide-globals)
