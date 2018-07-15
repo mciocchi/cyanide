@@ -45,8 +45,14 @@ you should place your code here."
   ;; make cyanide scope and classes available everywhere
   (setq-default cyanide-mode t)
 
-  ;; optional but useful, start with a single project defined, to work inside of
-  ;; dot-emacs directory
+  ;; If you prefer ivy instead of helm, uncomment these lines. You may also
+  ;; set alternate search functions here.
+  ;; (setq cyanide-keyword-search-function 'counsel-projectile-ag)
+  ;; (setq cyanide-find-file-function 'counsel-projectile-find-file)
+  ;; (setq cyanide-occur-function 'swiper)
+
+  ;; Optional but useful: start with a single project defined, for working
+  ;; inside of dot-emacs directory
   (cyanide-project :id 'dot-emacs
                    :display-name "dot-emacs"
                    :default-view 'cyanide-minimal-view

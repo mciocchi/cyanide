@@ -15,14 +15,13 @@
 
 (require 'cyanide-globals "lib/controller/cyanide-globals")
 (require 'cyanide-project "lib/models/cyanide-project")
-(require 'helm-find)
-(require 'helm-projectile)
 
 (defun cyanide-helm-find ()
   """
   Find file in current `cyanide-project' with `helm-find'.
   """
   (interactive)
+  (require 'helm-find)
   (if cyanide-current-project
       (let ((default-directory (cyanide-get-current-project-path)))
         (helm-find nil))
@@ -35,6 +34,7 @@
   Find file in current `cyanide-project' with `helm-projectile-find-file-dwim'.
   """
   (interactive)
+  (require 'helm-projectile)
   (if cyanide-current-project
       (let ((default-directory (cyanide-get-current-project-path)))
         (helm-projectile-find-file-dwim))
