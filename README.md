@@ -1,5 +1,33 @@
 # cyanide (CyanIDE's Yet Another Non-IDE)
 
+## Features
+
+* hooks to allow users to run arbitrary elisp at project load time
+
+* easy project specific configuration via .cy/init.el files
+
+* a dead-simple means for users to define project lifecycle tasks (compile,
+  test, run, etc.)
+
+* a way to "pop" into arbitrary buffer and window configurations, especially at
+  project load time
+
+* an extensible API for advanced users to work with projects and artifacts,
+  implemented in EIEIO CLOS
+
+* nearly instant project aware search
+
+## Goals
+
+* To help beginner emacs users with minimal knowledge of elisp get started
+   with emacs quickly by providing core functionality which most projects need.
+
+* To help intermediate emacs users by providing hooks for them to extend
+   cyanide projects with additional customizations.
+
+* To help advanced emacs users by providing a common framework which they can
+   use to work together to develop modern features with speed and simplicity.
+
 ## Quick Start
 
 ### 1) Begin with a spacemacs installation.
@@ -99,37 +127,9 @@ mkdir ~/projects/example/.cy
                     (async-shell-command "echo Hello, world!")))
 ```
 
-### 7) eval-buffer on the init.el file you created, or just close and re-open emacs
+### 7) close and re-open emacs to cause the init.el to be loaded.
 
 ### 8) invoke "C-c c l" to load the project you just created
-
-## Goals
-
-1) To help beginner emacs users with minimal knowledge of elisp get started
-   with emacs quickly by providing core functionality which most projects need.
-
-2) To help intermediate emacs users by providing hooks for them to extend
-   cyanide projects with additional customizations.
-
-3) To help advanced emacs users by providing a common framework which they can
-   use to work together to develop modern features with speed and simplicity.
-
-## Features
-
-* nearly instant project aware search via helm-projectile-ag
-
-* hooks to run arbitrary elisp at project load time
-
-* easy project specific configuration via .cy/init.el files
-
-* a dead-simple means for users to define project lifecycle tasks (compile,
-  test, run, etc.)
-
-* a way to optionally "pop" into arbitrary buffer and window configurations,
-  especially at project load time
-
-* an extensible API for advanced users to work with projects and artifacts,
-  implemented in EIEIO CLOS
 
 ## Keybindings
 
@@ -152,6 +152,50 @@ These keybindings are mostly self-explanatory, but if you wish, you may refer to
 the interactive documentation exposed through the standard emacs help keybinding
 "C-h c" for more information.
 
+## Project Roadmap (in order of priority)
+
+* write a CyanIDE spacemacs layer
+
+* write a function to programmatically initialize new cyanide-projects
+
+  should handle the following cases:
+
+  - green field (fresh local project)
+
+  - initialize .cy config dir inside of a pre-existing local project
+
+  - initialize from git
+
+* reconsider whether CyanIDE should have anything to do with project search
+
+  This is a crowded space and there are a lot of utilities that already do this.
+
+* look into getting CyanIDE into MELPA
+
+  This will require putting everything in one file. Is it really worth it?
+
+* write more tests with ert - we need better code coverage
+
+* views should be a bit smarter. It should be easier to implement a view.
+
+## CyanIDE Ecosystem
+
+If you use CyanIDE, there are several other utilities which may be useful to you:
+
+### [cyanide-org-integration](https://github.com/mciocchi/cyanide-org-integration)
+
+allows org-mode configuration on a per-project basis
+
+### [cyanide-treemacs-view](https://github.com/mciocchi/cyanide-treemacs-view)
+
+launches a [treemacs](https://github.com/Alexander-Miller/treemacs) sidebar in the current project
+which can be configured to automatically pop up at project load time
+
+### [cyanide-shell-view](https://github.com/mciocchi/cyanide-shell-view)
+
+can instantly launch or close a full screen shell instance in the current
+project root.
+
 ## Screenshots
 
 ![Load Project](https://i.imgur.com/z14mLs8.png "Load Project Prompt")
@@ -159,31 +203,3 @@ the interactive documentation exposed through the standard emacs help keybinding
 ![Tasks Menu](https://i.imgur.com/76YKADT.png "Tasks Menu")
 
 ![Task Executed](https://i.imgur.com/IrLEIWF.png "Task Executed")
-
-## Thanks
-
-There are a number of projects without which CyanIDE would not have been
-possible. Of course I must extend a special thanks to the thousands of
-developers who have contributed to emacs over the years, legendary heroes from
-time immemorial, too numerous to name.
-
-I would also like to thank [Geoff Greer](https://github.com/ggreer) for
-developing the blindingly-fast Silver Searcher, without which CyanIDE search
-would have been greatly hampered. Also credit is due to Thierry Volpiatto and
-the other contributors to [helm](https://emacs-helm.github.io/helm/) for
-developing the helm search narrowing framework which I use with Syohei Yoshida's
-[emacs-helm-ag](https://github.com/syohex/emacs-helm-ag). In the early days I
-used [Wilfred Hughes](https://github.com/Wilfred)' ag.el for the same
-purpose. CyanIDE is really just a wrapper bundling together these utilities
-which have already solved the difficult problems for me, and in that sense I am
-just standing on the shoulders of giants.
-
-I would also like to thank [Alex Kesling](https://github.com/akesling) for
-providing invaluable advice regarding some development decisions I had to make,
-along with [Rachael Hobbs](https://github.com/rahobbs) and [Christopher
-Fox](https://github.com/cdfox). In the same vein, last but definitely not least,
-I would like to thank [Gregory Maglio](https://github.com/gmaglio) for his
-constant encouragement and- separately but simultaneously- along with [Roman
-Khmelichek](https://github.com/rkhmelichek) and [Jack
-Man](https://github.com/jdotman), tolerating my rambling about functional
-programming constructs for more than a year!
