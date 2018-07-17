@@ -130,4 +130,26 @@
              (set-window-dedicated-p x bool))))
     (walk-windows f minibuf all-frames)))
 
+(defun cyanide-get-current-views ()
+  "Get all views that are currently active."
+  (mapcar (lambda (view)
+            (cyanide-get-one-by-slot view
+                                     cyanide-view-collection
+                                     ":id"
+                                     'eq))
+          cyanide-current-views))
+
+(defmacro cyanide-views-oref (key)
+  "Get a property from each currently active cyanide-view."
+  `(mapcar (lambda (view)
+             (oref view ,key))
+           (cyanide-get-current-views)))
+
+(defun cyanide-project-and-views-frame-title ()
+  "Render text for window title bar in the format:
+PROJECT_DISPLAY_NAME (VIEW_DISPLAY_NAMES)"
+  (format "%s %s"
+          (cyanide-project-oref :display-name)
+          (cyanide-views-oref :display-name)))
+
 (provide 'cyanide-view)

@@ -221,4 +221,11 @@
               (cyanide-prompt-before-export-all-projects-1 retval)
             (cyanide-export-all-projects-1 retval)))))))
 
+(defun cd-proj-root ()
+  "Change directory to the root of the currently active project."
+  (when (not (bound-and-true-p cyanide-current-project))
+    (error "No cyanide-project loaded!"))
+  (cd (cyanide-project-oref :path))
+  nil)
+
 (provide 'cyanide-project)
