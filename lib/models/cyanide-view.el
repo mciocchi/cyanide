@@ -27,6 +27,10 @@
   "Definition of a cyanide-view configuration.")
 
 (cl-defun enable (view-or-views)
+  "enable accepts either a view object, an id corresponding to a view object, or
+a list of those two types, and invokes their `:load-hook'.
+
+Views that are loaded in this manner are added to `cyanide-current-views.'"
   (let ((enabl (lambda (view)
                  (if (symbolp view)
                      (enable (cyanide-get-by-id view cyanide-view-collection))
@@ -39,6 +43,10 @@
       (funcall enabl view-or-views))))
 
 (cl-defun disable (view-or-views)
+  "disable accepts either a view object, an id corresponding to a view object, or
+a list of those two types, and invokes their `:teardown-hook'.
+
+Views that are dorn down in this manner are removed from `cyanide-current-views.'"
   (let ((disabl (lambda (view)
                   (if (symbolp view)
                       (disable (cyanide-get-by-id view cyanide-view-collection))
@@ -66,6 +74,10 @@
      (call-interactively 'cyanide-disable-current-view))))
 
 (defun cyanide-refresh-all-views ()
+  (interactive)
+  (cyanide-refresh-all-views-1))
+
+(defun cyanide-refresh-all-views-1 ()
   (let ((previous-views cyanide-current-views))
     (call-interactively 'cyanide-disable-all-views)
     (cyanide-enable-multiple-views (reverse previous-views))))
