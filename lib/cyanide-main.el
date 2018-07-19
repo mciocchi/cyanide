@@ -24,16 +24,18 @@
     (require 'cyanide-globals "lib/controller/cyanide-globals")
     (require 'cyanide-project "lib/models/cyanide-project")
     (require 'cyanide-view "lib/models/cyanide-view")
+    (require 'cyanide-view-simple "lib/models/cyanide-view-simple")
     (require 'cyanide-menu "lib/models/cyanide-menu")
     (require 'cyanide-menu-function "lib/models/cyanide-menu-function")
     (require 'cyanide-task "lib/models/cyanide-task")
     (require 'cyanide-default-menu-with-tasks "lib/views/cyanide-default-menu-with-tasks")
     (require 'cyanide-elisp-view "lib/views/cyanide-elisp-view")
-    (require 'cyanide-minimal-view "lib/views/cyanide-minimal-view")
     (require 'cyanide-helm-wrapper "lib/controller/cyanide-helm-wrapper")
     (require 'cyanide-misc-utils "lib/controller/cyanide-misc-utils")
     (require 'cyanide-menu-utils "lib/views/cyanide-menu-utils")
     (require 'cyanide-loader "lib/controller/cyanide-loader")
+
+    (cyanide-view-simple :id 'cyanide-minimal-view)
 
     (cyanide-menu :id 'cyanide-default-menu
                   :display-name "CyanIDE"

@@ -14,47 +14,22 @@
 ;; along with CyanIDE.  If not, see <http://www.gnu.org/licenses/>.
 
 
-(cyanide-view :id 'cyanide-elisp-view
-              :display-name "cyanide-elisp-view"
-              :teardown-hook '(cyanide-default-disabler)
-              :load-hook '((lambda nil
-                             (progn
-                               (when cyanide-current-project
-                                 (setq frame-title-format
-                                       (oref
-                                        (cyanide-get-one-by-slot cyanide-current-project
-                                                                 cyanide-project-collection
-                                                                 ":id"
-                                                                 'eq)
-                                        display-name)))
-                               (setq split-height-threshold-orig
-                                     split-height-threshold)
-                               (setq split-width-threshold-orig
-                                     split-width-threshold)
-                               (setq split-height-threshold 80)
-                               (setq split-width-threshold 9999)
-                               (split-window-vertically
-                                (* (/ (window-total-height) 10) 9))
-                               (split-window-vertically
-                                (* (/ (window-total-height) 10) 9))
-                               (other-window 2)
-                               (switch-to-buffer "*Occur*")
-                               (set-window-dedicated-p
-                                (get-buffer-window (current-buffer)) 1)
-                               (other-window 2)
-                               (switch-to-buffer "*ielm*")
-                               (set-window-dedicated-p
-                                (get-buffer-window (current-buffer)) 1)
-                               (ielm)
-                               (other-window 2)
-                               (if cyanide-current-project
-                                   (cyanide-render-menu-with-tasks cyanide-current-project
-                                                                   'cyanide-default-menu-with-tasks)
-                                 (cyanide-menu-render (cyanide-get-one-by-slot 'cyanide-default-menu
-                                                                               cyanide-menu-item-collection
-                                                                               ":id"
-                                                                               'eq)
-                                                      'cyanide-default-menu
-                                                      cyanide-mode-map))))))
+(require 'cyanide-view-simple)
+
+(cyanide-view-simple :id 'cyanide-elisp-view
+                     :teardown-hook '((lambda nil
+                                        (progn
+                                          (set-window-dedicated-p ielm-window nil)
+                                          (delete-window ielm-window))))
+                     :load-hook '((lambda nil
+                                    (progn
+                                      (split-window-vertically
+                                       (* (/ (window-total-height) 10) 9))
+                                      (other-window 1)
+                                      (setq ielm-window (selected-window))
+                                      (switch-to-buffer "*ielm*")
+                                      (set-window-dedicated-p ielm-window 1)
+                                      (ielm)
+                                      (other-window 1)))))
 
 (provide 'cyanide-elisp-view)

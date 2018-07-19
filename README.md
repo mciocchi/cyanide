@@ -83,7 +83,12 @@ you should place your code here."
   ;; inside of dot-emacs directory
   (cyanide-project :id 'dot-emacs
                    :display-name "dot-emacs"
-                   :default-view 'cyanide-minimal-view
+                   ;; views are also optional and you can use CyanIDE without
+                   ;; ever using them. cyanide-minimal-view is designed to be as
+                   ;; uninvasive to the traditional emacs user experience as
+                   ;; possible and will only render the CyanIDE menu, cd into
+                   ;; the project root, and change the window title.
+                   :default-view cyanide-minimal-view
                    :load-hook '((lambda ()
                                   (dired (cyanide-project-oref :path))))
                    :tasks '()
@@ -176,7 +181,7 @@ the interactive documentation exposed through the standard emacs help keybinding
 
 * write more tests with ert - we need better code coverage
 
-* views should be a bit smarter. It should be easier to implement a view.
+* fix CyanIDE menu
 
 ## CyanIDE Ecosystem
 
