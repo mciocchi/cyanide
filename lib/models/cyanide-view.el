@@ -26,28 +26,38 @@
   ((tracking-symbol :initform cyanide-view-collection))
   "Definition of a cyanide-view configuration.")
 
-(cl-defmethod enable ((view cyanide-view))
-  (let ((id (oref view :id)))
-    (push id cyanide-current-views)
-    (run-load-hook view)))
+(cl-defun enable (view-or-views)
+  (let ((enabl (lambda (view)
+                 (if (symbolp view)
+                     (enable (cyanide-get-by-id view cyanide-view-collection))
+                   (if (eieio-object-p view)
+                       (progn (push (oref view :id) cyanide-current-views)
+                              (run-load-hook view))
+                     (error (format "type err: %s" (type-of view))))))))
+    (if (listp view-or-views)
+        (mapcar enabl view-or-views)
+      (funcall enabl view-or-views))))
 
-(cl-defmethod disable ((view cyanide-view))
-  (let ((id (oref view :id)))
-    (if (equal id (car cyanide-current-views))
-        (progn
-          (pop cyanide-current-views)
-          (run-teardown-hook view))
-      (error (concat "Can not tear down view- other views have been enabled "
-                     "on top of it, you must disable them first!")))))
+(cl-defun disable (view-or-views)
+  (let ((disabl (lambda (view)
+                  (if (symbolp view)
+                      (disable (cyanide-get-by-id view cyanide-view-collection))
+                    (if (eieio-object-p view)
+                        (if (equal (oref view :id) (car cyanide-current-views))
+                            (progn (pop cyanide-current-views)
+                                   (run-teardown-hook view))
+                          (error (concat "Can not tear down view- other views have been enabled "
+                                         "on top of it, you must disable them first!")))
+                      (error (format "type err: %s" (type-of view))))))))
+    (if (listp view-or-views)
+        (mapcar disabl view-or-views)
+      (funcall disabl view-or-views))))
 
 (defun cyanide-disable-current-view ()
   (interactive
    (let ((id (car cyanide-current-views)))
      (when id
-       (let ((view (cyanide-get-by-id id cyanide-view-collection)))
-         (if view
-             (disable view)
-           (error "Invalid id from cyanide-current-views!"))))
+       (disable id))
      nil)))
 
 (defun cyanide-disable-all-views ()

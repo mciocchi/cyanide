@@ -15,9 +15,9 @@
 
 (defclass cyanide-viewable ()
   ((default-view :initarg :default-view
-                 :type symbol
-                 :documentation
-                 "Default view to be loaded when a `cyanide-viewable' object is
+     :type nil
+     :documentation
+     "Default view to be loaded when a `cyanide-viewable' object is
                  enabled."))
   "`cyanide-viewable' objects possess a :default-view object which is also
 loaded when the `cyanide-viewable' is loaded."

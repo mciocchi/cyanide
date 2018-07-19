@@ -60,21 +60,14 @@
   (let ((load-hook (oref proj load-hook))
         (default-view nil)
         (proj-id (oref proj :id))
-        (previous-proj (cyanide-get-one-by-slot cyanide-current-project
-                                                cyanide-project-collection
-                                                ":id"
-                                                'eq)))
-    (when (not (eq nil cyanide-current-views))
-      (call-interactively 'cyanide-disable-all-views))
-    (when (slot-boundp proj :default-view)
-      (setq default-view (cyanide-get-one-by-slot (oref proj :default-view)
-                                                  cyanide-view-collection
-                                                  ":id"
-                                                  'eq)))
+        (previous-proj (cyanide-get-by-id cyanide-current-project
+                                          cyanide-project-collection)))
+    (call-interactively 'cyanide-disable-all-views)
     (when previous-proj (run-teardown-hook previous-proj))
     (setq cyanide-current-project proj-id)
     (run-load-hook proj)
-    (when default-view (enable default-view))
+    (when (slot-boundp proj :default-view)
+      (enable (oref proj :default-view)))
     nil))
 
 (defun cyanide-load-project-prompt ()
