@@ -23,9 +23,8 @@ teardown-hook tasks."
                                                              cyanide-mode-map)
                                         (cd-proj-root)))))
         (pre-configured-teardown-hook '((lambda ()
-                                          (progn
-                                            (setq frame-title-format
-                                                  (cyanide-project-and-views-frame-title)))))))
+                                          (setq frame-title-format
+                                                (cyanide-project-and-views-frame-title-disabling))))))
 
     (when (eq nil description) (setq description ""))
     (when (eq nil display-name) (setq display-name (format "%s" id)))

@@ -46,14 +46,14 @@ Views that are loaded in this manner are added to `cyanide-current-views.'"
   "disable accepts either a view object, an id corresponding to a view object, or
 a list of those two types, and invokes their `:teardown-hook'.
 
-Views that are dorn down in this manner are removed from `cyanide-current-views.'"
+Views that are torn down in this manner are removed from `cyanide-current-views.'"
   (let ((disabl (lambda (view)
                   (if (symbolp view)
                       (disable (cyanide-get-by-id view cyanide-view-collection))
                     (if (eieio-object-p view)
                         (if (equal (oref view :id) (car cyanide-current-views))
-                            (progn (pop cyanide-current-views)
-                                   (run-teardown-hook view))
+                            (progn (run-teardown-hook view)
+                                   (pop cyanide-current-views))
                           (error (concat "Can not tear down view- other views have been enabled "
                                          "on top of it, you must disable them first!")))
                       (error (format "type err: %s" (type-of view))))))))
@@ -173,5 +173,15 @@ PROJECT_DISPLAY_NAME (VIEW_DISPLAY_NAMES)"
   (format "%s %s"
           (cyanide-project-oref :display-name)
           (cyanide-views-oref :display-name)))
+
+(defun cyanide-project-and-views-frame-title-disabling ()
+  "Render text for window title bar in the format:
+PROJECT_DISPLAY_NAME (VIEW_DISPLAY_NAMES)"
+  (format "%s %s"
+          (cyanide-project-oref :display-name)
+          (cdr (cyanide-views-oref :display-name))))
+
+(defun cyanide-most-recent-view ()
+  (car (cyanide-get-current-views)))
 
 (provide 'cyanide-view)
