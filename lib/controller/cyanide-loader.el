@@ -75,4 +75,19 @@
     (reduce (lambda (memo elt) (cyanide-load-toplevel memo elt))
             memo-and-toplevels)))
 
+(defun cyanide-reload-project-dotfiles ()
+  "Reload all files of `cyanide-project-config-file-name' from project
+  directories in `cyanide-project-toplevel-directories'."
+  (let ((memo-and-toplevels (cons '() cyanide-project-toplevel-directories)))
+    (setq cyanide-project-collection '())
+    (cyanide-load-project-dotfiles)))
+
+(defun cyanide-reload ()
+  "Reload all project files, and the current project, if a project is currently
+loaded."
+  (interactive)
+  (cyanide-reload-project-dotfiles)
+  (when (bound-and-true-p cyanide-current-project)
+    (cyanide-load-project (cyanide-get-current-project))))
+
 (provide 'cyanide-loader)

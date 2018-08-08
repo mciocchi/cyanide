@@ -183,7 +183,7 @@
        (concat "Unhandled input, please select (O)verwrite or e(X)it.")))))
 
 (defun cyanide-export-all-projects (destination-dir extension &optional encrypt)
-  "Export all "
+  "Export all cyanide-projects."
   (let ((pw nil))
     (when (eq 'symmetric encrypt)
       (setq pw
@@ -220,5 +220,223 @@
     (error "No cyanide-project loaded!"))
   (cd (cyanide-project-oref :path))
   nil)
+
+(cl-defmethod toplevel-of ((proj cyanide-project))
+  "Return the location of the directory one level up from PROJ"
+  (mapconcat
+   (lambda (str)
+     str)
+   (butlast
+    (split-string
+     (directory-file-name
+      (oref
+       (car cyanide-project-collection)
+       :path))
+     "/"))
+   "/"))
+
+(cl-defmethod dotdir-of ((proj cyanide-project))
+  "Guess the dotdir location of a `cyanide-project'"
+  (concat
+   (oref
+    proj
+    :path)
+   cyanide-project-config-dotdir-name))
+
+(cl-defmethod dotdir-of ((proj string))
+  "Guess the dotdir location of a `cyanide-project'"
+  (concat
+   (directory-file-name proj)
+   "/"
+   cyanide-project-config-dotdir-name))
+
+(cl-defmethod dotfile-of ((proj cyanide-project))
+  "Guess the dotfile location of a `cyanide-project'"
+  (concat
+   (dotdir-of
+    proj)
+   "/"
+   cyanide-project-config-file-name))
+
+(cl-defmethod dotfile-of ((proj string))
+  "Guess the dotfile location of a `cyanide-project'"
+  (concat
+   (dotdir-of
+    proj)
+   "/"
+   cyanide-project-config-file-name))
+
+(defun cyanide-project-find-dotfile ()
+  "Find the dotfile of the `cyanide-current-project' and open it in a buffer."
+  (interactive)
+  (find-file (dotfile-of (cyanide-get-current-project))))
+
+(defun cyanide-project-initialize-new-directory-handler (path)
+  "Prompt user whether to create an empty project directory, or clone one from
+git."
+  (interactive)
+  (let ((response (read-string
+                  (concat
+                   path
+                   " does not exist. "
+                   "clone from [g]it, "
+                   "or [m]ake new directory? "))))
+    (when (equal response "g") (cyanide-project-initialize-from-git path))
+    (when (equal response "m") (cyanide-project-initialize-new-directory path))))
+
+(defun cyanide-project-initialize-existing-directory (path)
+  "Initialize a `cyanide-project' in an existing directory. If the directory has
+a pre-existing project init file, prompt whether to load it."
+  (interactive)
+  (if (file-exists-p (dotfile-of path))
+      (when
+          (equal
+           "y"
+           (read-string
+            (concat
+             "a dotfile exists in that directory. "
+             "Would you like to load it? [y] ")))
+        (cyanide-try-load-dotfile (dotfile-of path) '()))
+    (let (view-name project-name)
+      (setq view-name (completing-read
+                       "default-view: "
+                       (cons
+                        "nil"
+                        (mapcar
+                         (lambda
+                           (view)
+                           (oref view :display-name))
+                         cyanide-view-collection)))
+            project-name (file-name-nondirectory (directory-file-name path)))
+      (switch-to-buffer "*tmp*")
+      (insert
+       (format
+        "%s%s%s%s%s%s%s%s%s%s%s%s"
+        "(cyanide-project :id "
+        "'"
+        project-name
+        " "
+        ":display-name "
+        "\""
+        project-name
+        "\""
+        " "
+        ":default-view '"
+        (when (not (equal view-name "nil")) (oref
+                                             (cyanide-get-one-by-slot
+                                              view-name
+                                              cyanide-view-collection
+                                              ":display-name"
+                                              'equal)
+                                             :id))
+        ")"))
+      (message "writing file, path: " path)
+      (write-file (dotfile-of path))
+      (kill-buffer (file-name-nondirectory (dotfile-of path)))
+      (cyanide-try-load-dotfile (dotfile-of path) '())
+      (cyanide-ask-to-load (intern project-name)))))
+
+(defun cyanide-project-initialize-new-directory (path)
+  "Create a new empty `cyanide-project' directory."
+  (interactive)
+  (let ((proj-path (directory-file-name path))
+        (view-name (completing-read
+                    "default-view: "
+                    (cons
+                     "nil"
+                     (mapcar
+                      (lambda
+                        (view)
+                        (oref view :display-name))
+                      cyanide-view-collection))))
+        (name nil)
+        init-path)
+    (setq name (file-name-nondirectory proj-path))
+    (setq init-path (concat proj-path "/.cy/init.el" ))
+    (switch-to-buffer "*tmp*")
+    (insert
+     (format
+      "%s%s%s%s%s%s%s%s%s%s%s%s"
+      "(cyanide-project :id "
+      "'"
+      name
+      " "
+      ":display-name "
+      "\""
+      name
+      "\""
+      " "
+      ":default-view "
+      (when (not (equal view-name "nil")) (oref
+                                           (cyanide-get-one-by-slot
+                                            view-name
+                                            cyanide-view-collection
+                                            ":display-name"
+                                            'equal)
+                                           :id))
+      ")"))
+    (write-file init-path)
+    (kill-buffer (file-name-nondirectory init-path))
+    (cyanide-try-load-dotfile init-path '())
+    (cyanide-ask-to-load (intern name))))
+
+(defun cyanide-project-initialize-from-git (path)
+  "Clone an arbitrary git repository, and initialize it as a `cyanide-project'."
+  (interactive)
+  (let ((source (read-string "source (git url): "))
+        response
+        retval)
+    (shell-command
+     (format
+      "%s%s%s%s"
+      "git clone "
+      source
+      " "
+      path))
+    (cyanide-project-initialize-existing-directory path)))
+
+(defun cyanide-project-initialize (&optional path)
+  "Create a new cyanide-project directory.
+
+1) If PATH exists, designate it as a `cyanide-project'.
+
+2) If PATH does not exist, clone a git project at that location, or leave it
+empty.
+
+3) if the PATH does not contain a CyanIDE init file, attempt to create one.
+
+4) Ask the user whether to load the CyanIDE init file.
+
+In order for the project to be discovered at startup, PATH should correspond to
+a directory inside one of the `cyanide-project-toplevel-directories'.
+"
+  (interactive)
+  (when (not (bound-and-true-p path))
+    (setq
+     path (read-file-name "destination path for new project: "
+                          (car cyanide-project-toplevel-directories))))
+  (message (format "%s" (file-exists-p path)))
+  (if (file-exists-p path)
+      (cyanide-project-initialize-existing-directory path)
+    (cyanide-project-initialize-new-directory-handler path)))
+
+(defun cyanide-ask-to-load (id)
+  "Prompt whether to load a `cynide-project' by id."
+  (interactive)
+  (let ((proj (cyanide-get-by-id id cyanide-project-collection)))
+    (let ((response (read-string
+                     (concat
+                      "would you like to load "
+                      (oref proj :display-name)
+                      " "
+                      "[y]?: ")
+                     nil
+                     nil
+                     "y")))
+      (when
+          (equal
+           response
+           "y")
+        (cyanide-load-project proj)))))
 
 (provide 'cyanide-project)

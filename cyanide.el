@@ -64,6 +64,7 @@
 (defvar cyanide-mode-map
   (let ((map (make-sparse-keymap)))
     (progn
+      (define-key map (kbd "C-c c i") 'cyanide-project-initialize)
       (define-key map (kbd "C-c c l") 'cyanide-load-project-prompt)
       (define-key map (kbd "C-c c d") 'cyanide-disable-current-view)
       (define-key map (kbd "C-c c v") 'cyanide-enable-view-prompt)

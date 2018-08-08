@@ -6,6 +6,8 @@
 
 * easy project specific configuration via .cy/init.el files
 
+* A way to automatically initialize projects from git or from an arbitrary local directory
+
 * a dead-simple means for users to define project lifecycle tasks (compile,
   test, run, etc.)
 
@@ -16,6 +18,9 @@
   implemented in EIEIO CLOS
 
 * nearly instant project aware search
+
+* ability to dynamically reload projects after changing their configuration via
+  cyanide-reload and cyanide-reload-project-dotfiles.
 
 ## Goals
 
@@ -105,23 +110,18 @@ mkdir ~/projects
 
 ### 4) create an example project directory inside of the toplevel:
 
-```bash
-mkdir ~/projects/example
-```
+Either invoke cyanide-project-initialize by typing C-c c i, or run it via the
+minibuffer. You may use it to generate projects which look something like the
+example below, however, cyanide-project-initialize does not yet automatically
+create lifecycle tasks.
 
-### 5) create a cyanide config directory inside of our example project:
-
-```bash
-mkdir ~/projects/example/.cy
-```
-
-### 6) create a project-specific init file inside of the config directory:
+cyanide-project-initialize may also initialize projects by cloning them from git.
 
 ```lisp
 ;; ~/projects/example/.cy/init.el
 
-(cyanide-project :id 'example-project
-                 :display-name "example-project"
+(cyanide-project :id 'example
+                 :display-name "example"
                  :default-view 'cyanide-minimal-view
                  :tasks '(hello-world-task))
 
@@ -132,10 +132,6 @@ mkdir ~/projects/example/.cy
                     (async-shell-command "echo Hello, world!")))
 ```
 
-### 7) close and re-open emacs to cause the init.el to be loaded.
-
-### 8) invoke "C-c c l" to load the project you just created
-
 ## Keybindings
 
 cyanide-mode-map provides the following keybindings, which may be altered or
@@ -144,6 +140,7 @@ override these variables on a project-by-project basis by setting them inside of
 a project's load-hook.
 
 ```
+"C-c c i" cyanide-project-initialize
 "C-c c l" cyanide-load-project-prompt
 "C-c c d" cyanide-disable-current-view
 "C-c c v" cyanide-enable-view-prompt
@@ -161,16 +158,9 @@ the interactive documentation exposed through the standard emacs help keybinding
 
 * write a CyanIDE spacemacs layer
 
-* write a function to programmatically initialize new cyanide-projects
-
-  should handle the following cases:
-
-  - green field (fresh local project)
-
-  - initialize .cy config dir inside of a pre-existing local project
-
-  - initialize from git
-
+* cyanide-project-initialize should be able to be configured to work with other
+  version control systems and OSes.
+  
 * reconsider whether CyanIDE should have anything to do with project search
 
   This is a crowded space and there are a lot of utilities that already do this.
@@ -181,7 +171,7 @@ the interactive documentation exposed through the standard emacs help keybinding
 
 * write more tests with ert - we need better code coverage
 
-* fix CyanIDE menu
+* fix CyanIDE menu - consider replacing with [hydra](https://github.com/abo-abo/hydra)
 
 ## CyanIDE Ecosystem
 
