@@ -18,8 +18,23 @@
           :type list
           :documentation
           "List of jobs that can be executed to perform units of work."))
-  "Objects that inherit from `cyanide-taskable' contain a list of tasks related
-to the parent object."
+  "Objects that inherit from `cyanide-taskable' contain a list of tasks. This
+list is composed of task objects or ids corresponding to task objects."
   :abstract t)
+
+(defmethod tasks-of ((taskable cyanide-taskable))
+  "return a list of `cyanide-task's from `cyanide-taskable'. For each element of
+:tasks, if it is an object, return it. If the element is not an object, try to
+`cyanide-get-by-id' a `cyanide-task' from `cyanide-menu-item-collection'
+corresponding to that symbol. If `cyanide-get-by-id' returns nil, try to
+evaluate the symbol and return it."
+  (mapcar (lambda (elt)
+            (if (eieio-object-p elt)
+                elt
+              (let ((retval (cyanide-get-by-id elt cyanide-menu-item-collection)))
+                (if (bound-and-true-p retval)
+                    retval
+                  (eval elt)))))
+          (oref taskable :tasks)))
 
 (provide 'cyanide-taskable)

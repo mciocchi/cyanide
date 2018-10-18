@@ -23,4 +23,7 @@
 local resources on disk."
   :abstract t)
 
+(defmethod basename ((pathable cyanide-pathable))
+  (file-name-nondirectory (directory-file-name (oref pathable :path))))
+
 (provide 'cyanide-pathable)

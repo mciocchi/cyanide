@@ -65,6 +65,7 @@
     (call-interactively 'cyanide-disable-all-views)
     (when previous-proj (run-teardown-hook previous-proj))
     (setq cyanide-current-project proj-id)
+    (cd-proj-root)
     (run-load-hook proj)
     (when (slot-boundp proj :default-view)
       (enable (oref proj :default-view)))
@@ -103,117 +104,6 @@
   """
   `(oref (cyanide-get-current-project) ,key))
 
-(cl-defmethod cyanide-export-command ((proj cyanide-project)
-                                      destination-dir
-                                      extension
-                                      &optional
-                                      encrypt
-                                      pw)
-  "Generate a shell command to serialize a cyanide-project with gzip compression
-   and gpg2 encryption, and then export it to DESTINATION DIR"
-  (let ((orig-dir default-directory)
-        (basename (file-name-nondirectory
-                   (directory-file-name (oref proj :path))))
-        (path (oref proj :path))
-        (destination nil)
-        (command nil))
-    (setq destination (format "%s%s%s" destination-dir basename extension))
-    ;; if encrypt is nil, we will create an unencrypted .tar.gz
-    (if (eq nil encrypt)
-        (progn
-          (setq command
-                (format "cd %s && cd ../ && tar -cvzf %s %s ;\n"
-                        path destination basename)))
-      ;; if value of encrypt is 'symmetric, prompt for gpg2 passphrase,
-      ;; and then encrypt.
-      (if (eq 'symmetric encrypt)
-          (progn
-            (assert (eq 'string (type-of pw)) nil "should be a string")
-            (setq
-             command
-             (format
-              (concat "cd %s && cd ../ && tar -cvz %s "
-                      "|gpg2 --output %s "
-                      "--batch --passphrase %s --symmetric ;\n")
-              path basename destination pw)))
-        ;; else if encrypt is a string, we will try to match it against a key in
-        ;; our gpg2 keyring. If a gpg2 key is found, we will create a .tar.gz
-        ;; file and use the key to encrypt it.
-        (if (eq 'string (type-of encrypt))
-            (progn
-              (setq command
-                    (format
-                     (concat "cd %s && cd ../ && tar -cvz %s "
-                             "|gpg2 --output %s --recipient %s -e ;\n")
-                     path basename destination encrypt)))
-          ;; else if encrypt is neither a string nor 'symmetric nor nil, error.
-          (error (format "unhandled argument to encrypt: %s" encrypt)))))
-    `(:command ,command
-      :basename ,basename
-      :source ,(directory-file-name (oref proj :path))
-      :destination ,destination
-      :encrypt ,encrypt)))
-
-(defun cyanide-export-all-projects-1 (memo)
-  (let ((existing-dest-files (plist-get memo :existing-dest-files)))
-    (async-shell-command (concat (mapconcat (lambda (elt)
-                                              (concat "rm -fv " elt))
-                                            existing-dest-files
-                                            ";\n")
-                                 (if existing-dest-files ";\n" "")
-                                 (plist-get memo :command)))))
-
-(defun cyanide-prompt-before-export-all-projects-1 (memo)
-  (interactive)
-  (let ((input (read-string (concat "Files already exist at "
-                                    "the following export "
-                                    "destinations:\n"
-                                    (mapconcat
-                                     (lambda (dest) dest)
-                                     (plist-get
-                                      memo
-                                      :existing-dest-files)
-                                     "\n")
-                                    "\nOverwrite (O) or exit (X): "))))
-    (if (equal input "O")
-        (export-all-projects-1 memo)
-      (if (equal input "X")
-          (message "Exiting!"))
-      (message
-       (concat "Unhandled input, please select (O)verwrite or e(X)it.")))))
-
-(defun cyanide-export-all-projects (destination-dir extension &optional encrypt)
-  "Export all cyanide-projects."
-  (let ((pw nil))
-    (when (eq 'symmetric encrypt)
-      (setq pw
-            (cyanide-pw cyanide-pw-use-salt-hashing
-                        cyanide-pw-salt-iterations)))
-    ;; bail out and raise alert if password does not match.
-    (if (eq 'MISMATCH pw)
-        (message "Passwords did not match, exiting!")
-      ;; else continue
-      (let ((memo (cons '(:command
-                          ""
-                          :existing-dest-files ())
-                        cyanide-project-collection))
-            (func (lambda (memo elt)
-                    (let ((props (cyanide-export-command
-                                  elt destination-dir extension encrypt pw)))
-                      `(:command
-                        ,(concat (plist-get memo :command)
-                                 (plist-get props :command))
-                        :existing-dest-files
-                        ,(if (file-exists-p (plist-get props :destination))
-                             (cons (plist-get props :destination)
-                                   (plist-get memo :existing-dest-files))
-                           (plist-get memo :existing-dest-files)))))))
-        (let ((retval (reduce func memo)))
-          ;; first check here if passwords matched, and bail out if they didn't.
-          (if (not (eq '() (plist-get retval :existing-dest-files)))
-              (cyanide-prompt-before-export-all-projects-1 retval)
-            (cyanide-export-all-projects-1 retval)))))))
-
 (defun cd-proj-root ()
   "Change directory to the root of the currently active project."
   (when (not (bound-and-true-p cyanide-current-project))
@@ -230,8 +120,20 @@
     (split-string
      (directory-file-name
       (oref
-       (car cyanide-project-collection)
+       proj
        :path))
+     "/"))
+   "/"))
+
+(cl-defmethod toplevel-of ((path string))
+  "Return the location of the directory one level up from PROJ"
+  (mapconcat
+   (lambda (str)
+     str)
+   (butlast
+    (split-string
+     (directory-file-name
+      path)
      "/"))
    "/"))
 
@@ -309,27 +211,7 @@ a pre-existing project init file, prompt whether to load it."
                          cyanide-view-collection)))
             project-name (file-name-nondirectory (directory-file-name path)))
       (switch-to-buffer "*tmp*")
-      (insert
-       (format
-        "%s%s%s%s%s%s%s%s%s%s%s%s"
-        "(cyanide-project :id "
-        "'"
-        project-name
-        " "
-        ":display-name "
-        "\""
-        project-name
-        "\""
-        " "
-        ":default-view '"
-        (when (not (equal view-name "nil")) (oref
-                                             (cyanide-get-one-by-slot
-                                              view-name
-                                              cyanide-view-collection
-                                              ":display-name"
-                                              'equal)
-                                             :id))
-        ")"))
+      (insert (cyanide-project-dotfile-template project-name view-name))
       (message "writing file, path: " path)
       (write-file (dotfile-of path))
       (kill-buffer (file-name-nondirectory (dotfile-of path)))
@@ -349,36 +231,16 @@ a pre-existing project init file, prompt whether to load it."
                         (view)
                         (oref view :display-name))
                       cyanide-view-collection))))
-        (name nil)
+        (project-name nil)
         init-path)
-    (setq name (file-name-nondirectory proj-path))
+    (setq project-name (file-name-nondirectory proj-path))
     (setq init-path (concat proj-path "/.cy/init.el" ))
     (switch-to-buffer "*tmp*")
-    (insert
-     (format
-      "%s%s%s%s%s%s%s%s%s%s%s%s"
-      "(cyanide-project :id "
-      "'"
-      name
-      " "
-      ":display-name "
-      "\""
-      name
-      "\""
-      " "
-      ":default-view "
-      (when (not (equal view-name "nil")) (oref
-                                           (cyanide-get-one-by-slot
-                                            view-name
-                                            cyanide-view-collection
-                                            ":display-name"
-                                            'equal)
-                                           :id))
-      ")"))
+    (insert (cyanide-project-dotfile-template project-name view-name))
     (write-file init-path)
     (kill-buffer (file-name-nondirectory init-path))
     (cyanide-try-load-dotfile init-path '())
-    (cyanide-ask-to-load (intern name))))
+    (cyanide-ask-to-load (intern project-name))))
 
 (defun cyanide-project-initialize-from-git (path)
   "Clone an arbitrary git repository, and initialize it as a `cyanide-project'."
@@ -438,5 +300,105 @@ a directory inside one of the `cyanide-project-toplevel-directories'.
            response
            "y")
         (cyanide-load-project proj)))))
+
+(defun cyanide-project-dotfile-template (project-name view-name)
+  (format
+   "%s%s%s%s%s%s%s%s%s%s%s%s"
+   "(cyanide-project :id "
+   "'"
+   project-name
+   " "
+   ":display-name "
+   "\""
+   project-name
+   "\""
+   " "
+   ":default-view '"
+   (when (not (equal view-name "nil")) (oref
+                                        (cyanide-get-one-by-slot
+                                         view-name
+                                         cyanide-view-collection
+                                         ":display-name"
+                                         'equal)
+                                        :id))
+   ")"))
+
+(defmethod cyanide-export-project-tar ((proj cyanide-project) destination-dir)
+  (let (command
+        destination-long-path
+        (toplevel (toplevel-of proj))
+        (basename (basename proj))
+        (extension ".cy.tar.gz"))
+    (setq destination-long-path
+          (concat (directory-file-name destination-dir) "/" basename extension))
+    (async-shell-command
+     (format
+      (concat "cd %s && tar -czf %s %s")
+      toplevel destination-long-path basename))))
+
+(defun cyanide-export-current-project ()
+  (interactive)
+  (let ((dir (read-directory-name "export project to: "))
+        (response t))
+    (when (not (file-exists-p (directory-file-name dir)))
+      (setq response
+            (read-string "directory does not exist, create it? (y) ")))
+    (when (equal response "y")
+      (mkdir dir)
+      (setq response t))
+    (when (eq response t)
+      (cyanide-export-project-tar (cyanide-get-current-project) dir))
+    (message "canceled export, exiting.")))
+
+(defun cyanide-export-all-toplevels-tar (destination-dir
+                                         destination-basename)
+  (interactive)
+  (let (command
+        destination-tar-path
+        destination-tar-gz-path)
+    (setq
+     destination-tar-path
+     (concat (directory-file-name destination-dir) "/" destination-basename ".tar")
+
+     destination-tar-gz-path
+     (concat destination-tar-path ".gz")
+
+     command
+     (reduce (lambda (memo toplevel)
+               (concat
+                memo
+                (format
+                 " cd %s../; tar -rf %s %s; "
+                 (file-name-directory toplevel)
+                 destination-tar-path
+                 (file-name-nondirectory (directory-file-name toplevel)))))
+             (cons "" cyanide-project-toplevel-directories))
+
+     command
+     (concat
+      command
+      (format "gzip %s && rm -f %s;" destination-tar-path destination-tar-path)))
+    (async-shell-command command)))
+
+(defun cyanide-export-all-toplevels ()
+  (interactive)
+  (let ((destination-dir
+         (read-directory-name
+          "destination dir: "))
+        (destination-basename
+         (read-string
+          "destination filename (will be appended with .tar.gz): "))
+        (response t))
+    (when (not (file-exists-p destination-dir))
+      (setq
+       response
+       (read-string
+        (format "%s does not exist. Create it? (y): " destination-dir))))
+    (when (equal response "y")
+      (mkdir destination-dir)
+      (setq response t))
+    (if (not (eq t response))
+        (message "Cancelled.")
+      (cyanide-export-all-toplevels-tar destination-dir destination-basename))))
 
 (provide 'cyanide-project)

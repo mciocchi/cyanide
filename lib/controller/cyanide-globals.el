@@ -41,7 +41,9 @@
   "This list stores paths which `cyanide-load-toplevel' will scan to check for
    `cyanide-project' directories.")
 
-(defvar cyanide-keyword-search-function 'helm-projectile-ag
+(defvar cyanide-keyword-search-function
+  (lambda () (interactive)
+    (helm-ag (cyanide-project-oref :path)))
   "This variable tells CyanIDE what function to invoke to keyword search the
   current project.")
 

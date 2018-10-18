@@ -18,6 +18,7 @@
 (require 'cyanide-get-one-by-slot "lib/controller/cyanide-get-one-by-slot")
 (require 'cyanide-prompt "lib/controller/cyanide-prompt")
 (require 'cyanide-describeable "lib/models/cyanide-describeable")
+(require 'cyanide-taskable)
 
 ; Tasks are nothing more than cyanide-menu-functions for now, but it is
 ; likely that they will need to provide additional functionality soon.
@@ -30,26 +31,80 @@
 (defun cyanide-task-prompt ()
   "Prompt user for task to execute and execute it."
   (interactive
-   (let ((menu (cyanide-get-one-by-slot 'tasks
-                                        cyanide-menu-item-collection
-                                        ":id"
-                                        'eq)))
-     (if menu
-         (let ((tasks-collection
-                (cyanide-unroll-all-menu-functions 'tasks)))
-           (let ((task-names
-                  (cyanide-list-display-names
-                   tasks-collection)))
-             (cyanide-prompt (lambda (x) (call-interactively
-                                          (oref x :func)))
-                             "Tasks (tab for completion): "
-                             task-names
-                             tasks-collection
-                             ":display-name"
-                             'equal
-                             nil
-                             1)))
-       (message "No tasks menu defined.") ; else
-       nil))))
+   (if (not (bound-and-true-p cyanide-current-project))
+       (progn (message "No cyanide-project has been loaded, no tasks list to view.")
+              nil)
+     (let ((tasks-collection (tasks-of (cyanide-get-current-project))))
+       (if (not (bound-and-true-p tasks-collection))
+           (progn (message "No tasks defined for this project")
+                  nil)
+         (let ((task-names
+                (cyanide-list-display-names
+                 tasks-collection)))
+           (cyanide-prompt (lambda (x) (call-interactively
+                                        (oref x :func)))
+                           "Tasks (tab for completion): "
+                           task-names
+                           tasks-collection
+                           ":display-name"
+                           'equal
+                           nil
+                           1)))))
+   nil))
+
+(cl-defmacro cyanide-simple-task (&key
+                               id
+                               display-name
+                               description
+                               command
+                               prefix
+                               suffix
+                               buffer)
+  "Define a `cyanide-task'. If DISPLAY-NAME or DESCRIPTION are not provided, use
+COMMAND instead. Wrap COMMAND with optional PREFIX and SUFFIX before running in
+BUFFER. Prompt the user with the COMMAND before executing it in order to allow
+the COMMAND to be modified."
+  `(cyanide-task
+    :id ,(if (bound-and-true-p id) id (error "id is required"))
+    :display-name ,(if (bound-and-true-p display-name) display-name command)
+    :description ,(if (bound-and-true-p description) description command)
+    :func (lambda ()
+            (interactive)
+            (let ((default-directory (cyanide-project-oref :path))
+                  (async-shell-command-buffer 'confirm-kill-process))
+              (async-shell-command
+               (read-string "Async shell command: "
+                            (format "%s \n %s \n %s"
+                                    ,(if (bound-and-true-p prefix) prefix "")
+                                    ,(if (bound-and-true-p command)
+                                         command
+                                       (error "command is required"))
+                                    ,(if (bound-and-true-p suffix) suffix "")))
+               ,(if (bound-and-true-p buffer)
+                    buffer
+                  (concat "*" command "*")))))))
+
+;; TODO consider replacing `cyanide-simple-task' with `cyanide-task-advice'
+(defun cyanide-task-advice (orig-fun &key foo &rest args)
+  (message (format "foo: %s" foo))
+  (message (format "args: %s" args))
+  ;; `(cyanide-task
+  ;;   :id ,(if (bound-and-true-p id) id (error "id is required"))
+  ;;   :display-name ,(if (bound-and-true-p display-name) display-name command)
+  ;;   :description ,(if (bound-and-true-p description) description command)
+  ;;   :func (lambda ()
+  ;;           (interactive)
+  ;;           (let ((default-directory (cyanide-project-oref :path))
+  ;;                 (async-shell-command-buffer 'confirm-kill-process))
+  ;;             (async-shell-command
+  ;;              (read-string "Async shell command: "
+  ;;                           (format "%s \n %s \n %s"
+  ;;                                   ,prefix
+  ;;                                   ,(if (bound-and-true-p command)
+  ;;                                        command
+  ;;                                      (error "command is required"))
+  ;;                                   ,suffix))
+  ;;              ,buffer))))
+  (apply orig-fun args))
 
 (provide 'cyanide-task)
